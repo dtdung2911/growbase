@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs ls -la)",
+      "Bash(mkdir -p /Users/dungduong/Sites/Personal/Projects/growbase/src/app/\\\\\\(app\\\\\\)/funds/\\\\[id\\\\])",
+      "Edit(/.claude/skills/growbase-conventions/**)",
+      "Bash(npm install *)",
+      "Bash(npm run *)"
+    ],
+    "additionalDirectories": [
+      "/Users/dungduong/Sites/Personal/Projects/growbase/src/app/(app)/funds"
+    ]
+  }
+}

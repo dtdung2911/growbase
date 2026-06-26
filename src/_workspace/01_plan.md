@@ -1,0 +1,82 @@
+SPRINT:S4 AGENT:planner STATUS:DONE
+STORIES:US-2.03|US-2.04|US-6.03|US-6.05|US-8.01|US-8.02|US-8.03|US-8.04|US-9.04
+ACs:
+  US-2.03:is_system=true→hide_edit_delete|custom_0_tx→hard_DELETE|custom_has_tx→soft_delete_is_active=false|new_category→appears_in_CategoryPicker
+  US-2.04:system_budget_edit_name→reject(BR-SY-002)|custom_budget→full_CRUD|total_pct>100→save_blocked|is_auto_calculated=true→locked_tooltip
+  US-6.03:debt_paid_off→recalculate_debt_budget()|last_debt_paid→celebration_notification|debt_added→budget_pct_auto_updates
+  US-6.05:estimated_expense_CRUD|linked_fund_balance_check|status_tracking(planned/completed/cancelled)
+  US-8.01:account_list+form|soft_delete(is_active=false)|credit_card_toggle+hint
+  US-8.02:income_source_list(current+history)|amount_change→SCD_Type2_new_record
+  US-8.03:member_list+pending_invites|owner_delete_member+send_invite|member_leave_household
+  US-8.04:edit_household_name+type_display+currency
+  US-9.04:every_list→skeleton+empty_state|ErrorBoundary_wrapper|mobile_375px_audit|toast_consistent|ConfirmDialog_all_destructive
+RULES:BR-SY-001|BR-SY-002|BR-SY-003|BR-CA-001|BR-CA-003|BR-CA-004|BR-CA-005|BR-BU-001|BR-BU-002|BR-DT-001|BR-DT-002|BR-DT-003|BR-FU-002|BR-FU-004|BR-SP-001|BR-CO-001
+BLOCKERS:
+  B1:US-6.04_not_in_backlog→user_listed_but_no_story_definition_exists_in_docs/03_PRODUCT_BACKLOG.md→RESOLVED:drop_from_scope(story_undefined)
+  B2:recalculate_debt_budget()_RPC_exists_in_tech_spec(line437)_but_need_verify_deployed_in_Supabase→architect_must_check_migration_status
+  B3:debt_API_only_GET_active→need_POST/PUT/PATCH_for_full_CRUD+paid_off_flow(US-6.03)
+  B4:no_categories_CRUD_API→need_POST/PUT/DELETE_routes(US-2.03)
+  B5:no_income_sources_CRUD_API→need_GET/POST/PUT_routes(US-8.02)
+  B6:no_members_API→need_GET/DELETE+leave_routes(US-8.03)
+  B7:no_estimated_expenses_API→need_full_CRUD(US-6.05)
+  B8:NavBadge_due_soon_count_carry_from_S3→wire_in_US-9.04_polish_pass
+RESOLVED:
+  R1:US-6.04_undefined→dropped_from_scope(not_in_backlog_doc)
+  R2:US-4.04_tagged_S4_in_backlog_but_not_in_sprint_plan_row_or_user_scope→excluded(user_decision)
+  R3:carry-forward_S2_issues(manual_types,type_cast,transfer_atomicity,category_code_lookup)→WARNING_not_S4_scope_unless_polish
+  R4:i18n_S1/S2_retrofit_deferred_from_S3→can_address_in_US-9.04_polish_if_time_permits
+TASKS_DB:
+  DB1:migration_check→verify_recalculate_debt_budget+trigger_on_debt_entries_deployed
+  DB2:add_query_keys→estimatedExpenses|members|invitations_to_queryKeys.ts
+TASKS_APP:
+  A1:API_POST/PUT/DELETE_/api/categories→categories_CRUD(BR-SY-001,BR-CA-003,BR-CA-004,BR-CA-005)
+  A2:API_POST/PUT/DELETE_/api/budget→budget_baselines_CRUD(BR-SY-002,BR-BU-001,BR-BU-002)
+  A3:API_POST/PUT/PATCH_/api/debt/[id]→debt_CRUD+paid_off(BR-DT-001,BR-DT-002)
+  A4:API_CRUD_/api/estimated-expenses→estimated_expenses(US-6.05)
+  A5:API_PUT/DELETE_/api/accounts/[id]→account_mgmt(US-8.01)
+  A6:API_CRUD_/api/income-sources→SCD_Type2_logic(US-8.02)
+  A7:API_GET/DELETE_/api/household/members→member_mgmt(US-8.03)
+  A8:API_PUT_/api/household→edit_name/currency(US-8.04)
+  A9:hook_useIncomeSources→fetch+mutate_income_sources
+  A10:hook_useMembers→fetch_members+invites
+  A11:hook_useEstimatedExpenses→fetch+mutate
+  A12:hook_useDebtMutations→create/update/paid_off_mutations
+  A13:hook_useCategoryMutations→create/update/delete_mutations
+  A14:hook_useBudgetMutations→update_pct/create_custom/delete_custom
+  A15:hook_useAccountMutations→update/soft_delete
+TASKS_PAGES:
+  P1:/settings/page.tsx→settings_hub_with_nav_links(accounts,income,categories,budget,debt,estimated-expenses,members,household)
+  P2:/settings/categories/page.tsx→accordion_tree(cost_type→group→category)+system_lock+custom_CRUD(US-2.03)
+  P3:/settings/budget/page.tsx→system_lines(%_edit)+custom_lines(full_CRUD)+total_validator(US-2.04)
+  P4:/settings/debt/page.tsx→debt_list+form+paid_off_flow+notification(US-6.03)
+  P5:/settings/estimated-expenses/page.tsx→list+form+linked_fund_check(US-6.05)
+  P6:/settings/accounts/page.tsx→account_list+form+soft_delete(US-8.01)
+  P7:/settings/income/page.tsx→current+history_list+SCD2_edit(US-8.02)
+  P8:/settings/members/page.tsx→member_list+invites+owner_actions+leave(US-8.03)
+  P9:/settings/household/page.tsx→edit_name+type+currency(US-8.04)
+  P10:US-9.04_polish→skeleton_audit_all_list_pages|ErrorBoundary_wrapper|mobile_375px_audit|toast_audit|ConfirmDialog_audit|NavBadge_wiring
+ORDER:
+  1.DB1(verify_migrations)
+  2.DB2(query_keys)
+  3.A1→P2(categories)
+  4.A2,A14→P3(budget)
+  5.A3,A12→P4(debt)
+  6.A4,A11→P5(estimated-expenses)
+  7.A5,A15→P6(accounts)
+  8.A6,A9→P7(income)
+  9.A7,A10→P8(members)
+  10.A8→P9(household)
+  11.P1(settings_hub)
+  12.P10(polish_audit)
+RISKS:
+  RISK1:recalculate_debt_budget_may_not_be_deployed→migration_agent_must_verify+deploy_if_missing
+  RISK2:debt_API_currently_GET-only→significant_new_API_work_for_US-6.03
+  RISK3:9_new_settings_sub-pages+7_new_API_route_files→5_day_sprint_tight
+  RISK4:SCD_Type2_income_sources→complex_history_logic(set_old.is_current=false,insert_new.is_current=true)
+  RISK5:member_management→RLS_sensitive(owner-only_delete,self-only_leave)→security_review_critical
+CARRY_FORWARD_S2:
+  K1:database.ts_manual_types→supabase_gen_types_still_needed
+  K2:type_cast_GET_/api/transactions→typed_DB_interface
+  K3:internal_transfer_not_atomic→DB_function_needed
+  K4:system_category_lookup_by_name→code_field
+  K5:NavBadge_due_soon_count→wire_in_P10

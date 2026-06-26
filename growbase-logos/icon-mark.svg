@@ -1,0 +1,8 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img">
+  <title>GrowBase Logo Mark</title>
+  <rect x="4"  y="34" width="16" height="22" rx="3" fill="#0084DB" opacity="0.30"/>
+  <rect x="24" y="22" width="16" height="34" rx="3" fill="#0084DB" opacity="0.62"/>
+  <rect x="44" y="8"  width="16" height="48" rx="3" fill="#0084DB"/>
+  <path d="M12 30 L32 18 L52 4" stroke="#0084DB" stroke-width="2" stroke-dasharray="3 2.5" stroke-linecap="round" fill="none"/>
+  <circle cx="52" cy="4" r="4" fill="#0084DB"/>
+</svg>

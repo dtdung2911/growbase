@@ -1,0 +1,77 @@
+SPRINT:S3 AGENT:planner STATUS:DONE
+STORIES:US-5.01|US-5.02|US-5.03|US-5.04|US-5.05|US-5.06|US-6.01|US-6.02|US-7.01|US-7.02|US-7.03
+ACs:
+  US-5.01:dashboard_loads_800ms|zero_tx_empty_state|month_change_refresh|xem_tat_ca_link
+  US-5.02:row_amount_pct_income|wasteful_warning_style
+  US-5.03:regular_vs_unusual_split|unusual_saving_note
+  US-5.04:actual_gt_budget_red|actual_gt80_warning|actual_lt80_safe
+  US-5.05:fund_contributed_total|fund_withdrawn_total|net_change
+  US-5.06:expand_group_transactions|override_pct_month|next_month_baseline
+  US-6.01:enter_actual_discrepancy|discrepancy_gt100k_warning|same_month_upsert
+  US-6.02:line_chart_monthly_trend|asset_breakdown
+  US-7.01:payment_created_with_due|cancelled_separate_section
+  US-7.02:orange_badge_30d|red_badge_7d|no_badge_gt30
+  US-7.03:mark_paid_advance_date|optional_create_transaction
+RULES:BR-BU-001|BR-BU-002|BR-BU-003|BR-TX-001|BR-TX-002|BR-NW-001|BR-NW-002|BR-SP-001|BR-SP-002|BR-SP-003|BR-CO-002|BR-CO-004
+BLOCKERS:none
+RESOLVED:
+  1:get_budget_with_actuals_RPC→already_in_003_functions.sql
+  2:net_worth_snapshots_table→already_in_002_tables.sql_with_UNIQUE+generated_discrepancy
+  3:scheduled_payments_table→already_in_002_tables.sql
+  4:budget_overrides_table→already_in_002_tables.sql
+  5:RLS_all_S3_tables→already_in_004_rls.sql
+  6:AppShell_currently_mobile_only(max-w-md+BottomNav)→style_guide_requires_desktop_drawer_>=1024px→architect_handles_layout_refactor
+  7:queryKeys_missing_S3_keys(scheduledPayments|netWorth|budgetOverrides|budgetActuals)→add_in_app_layer
+  8:account_balance_not_auto_tracked(BR-CO-004)→net_worth_uses_manual_input+system_estimate_from_tx_sum→architect_decides_system_calc_approach
+WARNINGS:
+  W1:database.ts_manual_types→S2_carry_forward→supabase_gen_types_recommended_before_S3_app_layer
+  W2:type_cast_GET_api_transactions→S2_carry_forward→typed_DB_interface_needed
+  W3:internal_transfer_not_atomic→S2_carry_forward→DB_function_needed(not_blocking_S3_but_tech_debt)
+  W4:system_category_lookup_by_name→S2_carry_forward→code_field_recommended
+  W5:style_guide_deps_not_installed(next-themes+next-intl+fonts)→must_install_before_UI_work
+  W6:i18n_system_not_setup→all_S3_strings_need_vi/en→architect_decides_i18n_integration_scope
+TASKS_DB:
+  DB1:migration_008_add_queryKeys_support→no_new_tables_needed(all_exist)
+  DB2:verify_get_budget_with_actuals_handles_budget_override_correctly→already_in_RPC
+  DB3:IF_system_balance_calc_needed_for_net_worth→create_RPC_get_system_balances(household_id,month)→sum_tx_per_account
+TASKS_APP:
+  APP1:install_deps(next-themes,next-intl,plus-jakarta-sans,jetbrains-mono)→prerequisite
+  APP2:AppShell_responsive_refactor→left_drawer_>=1024px+bottom_nav_<1024px(style_guide_sec5)
+  APP3:queryKeys.ts→add_scheduledPayments|netWorth|budgetOverrides|budgetActuals_keys
+  APP4:API_routes→GET+POST_/api/scheduled-payments|GET+PUT+DELETE_/api/scheduled-payments/[id]|POST_/api/scheduled-payments/[id]/mark-paid
+  APP5:API_routes→GET+POST_/api/net-worth|GET_/api/net-worth/history
+  APP6:API_routes→POST+DELETE_/api/budget/override
+  APP7:hooks→useScheduledPayments|useNetWorth|useBudgetActuals|useDashboardData
+  APP8:dashboard_page→5_metric_cards+SpendingDonut+BudgetProgress+FundOverview+RecentTransactions+MonthlyBufferBanner
+  APP9:reports_page→4_tabs(spending|income|budget_vs_actual|funds)+MonthPicker
+  APP10:budget_page→budget_lines+progress_bars+expandable_groups+inline_override
+  APP11:net_worth_page→account_list+actual_balance_inputs+discrepancy_calc+upsert
+  APP12:net_worth_history→line_chart(Recharts)+asset_breakdown
+  APP13:scheduled_payments_page→CRUD_list+status_sections+form
+  APP14:due_date_alerts→nav_badge_component+count_logic(BR-SP-001)
+  APP15:mark_paid_flow→advance_next_due_date(BR-SP-002)+optional_tx_create(BR-SP-003)
+  APP16:shared_components→BudgetProgressBar|SpendingDonut|MetricCard|DueBadge
+TASK_ORDER:
+  phase1_infra:APP1→APP2→APP3
+  phase2_data:DB3→APP4→APP5→APP6→APP7
+  phase3_pages:APP8→APP9→APP10→APP11→APP12→APP13
+  phase4_features:APP14→APP15→APP16
+DEPENDENCIES:
+  APP8_needs:APP7(hooks)+APP3(keys)+existing_funds_queries+existing_tx_queries
+  APP9_needs:APP7(useBudgetActuals)+get_budget_with_actuals_RPC(exists)
+  APP10_needs:APP6(budget_override_API)+APP7(hooks)
+  APP11_needs:APP5(net_worth_API)+BR-NW-001(UNIQUE_constraint_exists)+BR-NW-002(discrepancy_generated_col)
+  APP13_needs:APP4(scheduled_payments_API)
+  APP14_needs:APP13(scheduled_payments_data)+BR-SP-001(alert_thresholds)
+  APP15_needs:APP4(mark-paid_endpoint)+BR-SP-002(date_advance)+BR-SP-003(optional_tx)
+RISKS:
+  R1:dashboard_800ms_AC→many_parallel_queries→architect_must_design_batching_or_single_RPC
+  R2:budget_override_UX→inline_edit_%_on_mobile_375px→tight_space→needs_careful_UX
+  R3:net_worth_system_balance→BR-CO-004_says_no_auto_account_balance→system_calc_may_be_inaccurate→only_fund_balances_reliable
+  R4:style_guide_AppShell_refactor→touches_ALL_existing_pages→regression_risk
+  R5:i18n_scope→full_vi/en_system_or_hardcode_vi_first→PO_decision_recommended
+KNOWN_S2_CARRY:
+  K1:database.ts_manual_types→supabase_gen_types
+  K2:type_cast_GET_/api/transactions→typed_DB_interface
+  K3:internal_transfer_not_atomic→DB_function
+  K4:system_category_lookup_by_name→code_field

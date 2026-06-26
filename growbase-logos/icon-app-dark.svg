@@ -1,0 +1,9 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" role="img">
+  <title>GrowBase App Icon</title>
+  <rect width="1024" height="1024" rx="224" fill="#05101A"/>
+  <rect x="88"  y="576" width="232" height="320" rx="40" fill="#0084DB" opacity="0.30"/>
+  <rect x="396" y="384" width="232" height="512" rx="40" fill="#0084DB" opacity="0.62"/>
+  <rect x="704" y="160" width="232" height="736" rx="40" fill="#0084DB"/>
+  <path d="M204 496 L512 288 L820 80" stroke="white" stroke-width="22" stroke-dasharray="36 28" fill="none" stroke-linecap="round" opacity="0.50"/>
+  <circle cx="820" cy="80" r="44" fill="white" opacity="0.90"/>
+</svg>
