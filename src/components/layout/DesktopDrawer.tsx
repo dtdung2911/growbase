@@ -61,7 +61,7 @@ export function DesktopDrawer() {
   return (
     <aside className="fixed inset-y-0 z-40 hidden w-[var(--sidebar-width)] flex-col bg-card shadow-sidebar lg:flex">
       {/* Brand */}
-      <div className="flex items-center gap-3 px-6 pb-16 pt-16">
+      <div className="flex items-center gap-3 px-6 pb-16 pt-16 sidebar-nav-brand">
         <div className="flex gap-0.5">
           <div className="h-5 w-1.5 rounded-sm bg-primary/35" />
           <div className="h-6 w-1.5 rounded-sm bg-primary/68" />
@@ -71,26 +71,36 @@ export function DesktopDrawer() {
       </div>
 
       {/* Navigation */}
-      <nav className="sidebar-nav flex-1 space-y-6 overflow-y-auto pl-5">
+      <nav className="sidebar-nav flex-1 overflow-y-auto pl-5">
         {NAV_SECTIONS.map((section) => (
           <div key={section.labelKey}>
-            <p className="mb-2.5 px-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/60">
-              {t(section.labelKey)}
-            </p>
-            <div className="space-y-1.5">
+            <div className="sidebar-nav-paragraph">
+              <p className="px-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/60">
+                {t(section.labelKey)}
+              </p>
+            </div>
+            <div>
               {section.items.map((item) => {
-                const active = pathname.startsWith(item.href)
+                const active = pathname.startsWith(item.href);
                 return (
-                  <Link
+                  <div
                     key={item.href}
-                    href={item.href}
+                    className="sidebar-nav-div"
                     data-active={active}
-                    className="sidebar-nav-link flex items-center gap-3 px-4 py-2.5 text-[14px] font-semibold min-h-[44px] text-muted-foreground"
                   >
-                    <Icon icon={item.icon} className="h-[22px] w-[22px] shrink-0" />
-                    <span>{t(item.labelKey)}</span>
-                  </Link>
-                )
+                    <Link
+                      href={item.href}
+                      data-active={active}
+                      className="sidebar-nav-link flex items-center gap-3 px-4 py-2.5 text-[14px] font-semibold min-h-[44px] text-muted-foreground"
+                    >
+                      <Icon
+                        icon={item.icon}
+                        className="h-[22px] w-[22px] shrink-0"
+                      />
+                      <span>{t(item.labelKey)}</span>
+                    </Link>
+                  </div>
+                );
               })}
             </div>
           </div>
@@ -104,7 +114,9 @@ export function DesktopDrawer() {
             {initials}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-bold text-foreground">{displayName}</p>
+            <p className="truncate text-sm font-bold text-foreground">
+              {displayName}
+            </p>
             <p className="truncate text-xs text-muted-foreground">
               {user?.email || ""}
             </p>
@@ -119,5 +131,5 @@ export function DesktopDrawer() {
         </div>
       </div>
     </aside>
-  )
+  );
 }

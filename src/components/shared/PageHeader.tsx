@@ -38,34 +38,45 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        "mb-6 flex items-center justify-between rounded-[13px] bg-card px-6 py-5",
-        className
+        "mb-6 flex items-center justify-between rounded-[13px] px-6 py-5",
+        className,
       )}
     >
       <div className="min-w-0 flex-1">
-        {(breadcrumbs && breadcrumbs.length > 0) && (
+        {breadcrumbs && breadcrumbs.length > 0 && (
           <nav className="mb-1 flex items-center gap-1 text-xs text-muted-foreground">
             {breadcrumbs.map((crumb, i) => {
-              const label = crumb.labelKey.startsWith("!") ? crumb.labelKey.slice(1) : t(crumb.labelKey)
+              const label = crumb.labelKey.startsWith("!")
+                ? crumb.labelKey.slice(1)
+                : t(crumb.labelKey);
               return (
                 <span key={i} className="flex items-center gap-1">
-                  {i > 0 && <Icon icon="lucide:chevron-right" className="h-3 w-3" />}
+                  {i > 0 && (
+                    <Icon icon="lucide:chevron-right" className="h-3 w-3" />
+                  )}
                   {crumb.href ? (
-                    <Link href={crumb.href} className="transition-colors hover:text-foreground">
+                    <Link
+                      href={crumb.href}
+                      className="transition-colors hover:text-foreground"
+                    >
                       {label}
                     </Link>
                   ) : (
                     <span className="font-medium text-foreground">{label}</span>
                   )}
                 </span>
-              )
+              );
             })}
           </nav>
         )}
         {breadcrumb}
-        <h1 className="text-[22px] font-bold text-foreground">{resolvedTitle}</h1>
+        <h1 className="text-[22px] font-bold text-foreground">
+          {resolvedTitle}
+        </h1>
       </div>
-      {actions && <div className="ml-4 flex shrink-0 items-center gap-2">{actions}</div>}
+      {actions && (
+        <div className="ml-4 flex shrink-0 items-center gap-2">{actions}</div>
+      )}
     </div>
-  )
+  );
 }
