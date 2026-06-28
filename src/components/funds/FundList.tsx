@@ -48,7 +48,6 @@ export function FundList({ funds }: FundListProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-ink">{t("funds.totalFunds")}</h1>
         <Button
           variant="outline"
           size="sm"
@@ -124,7 +123,7 @@ export function FundList({ funds }: FundListProps) {
       />
       <FundForm open={createOpen} onClose={() => setCreateOpen(false)} />
     </div>
-  )
+  );
 }
 
 function SummaryCard({

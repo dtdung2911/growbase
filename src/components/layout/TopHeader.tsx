@@ -53,7 +53,7 @@ export function TopHeader() {
     .toUpperCase()
 
   return (
-    <header className="fixed min-w-[calc(100%-var(--sidebar-width))] top-0 z-40 lg:mb-12 lg:mx-auto">
+    <header className="fixed min-w-[calc(100%-var(--sidebar-width))] top-0 z-40 lg:mx-auto">
       <div className="flex items-center justify-between bg-card px-4 py-2 shadow-soft-xs lg:border-b lg:px-5  header-custom">
         <div className="flex items-center gap-3">
           <HouseholdSwitcher />

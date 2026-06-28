@@ -272,9 +272,11 @@
   border-right: 1px solid hsl(var(--border));
 }
 
+.sidebar-nav-div {
+  padding-top: 16px;
+}
 .sidebar-nav-div[data-active="false"] {
   border-right: 1px solid hsl(var(--border));
-  padding-top: calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));
 }
 
 .sidebar-nav-paragraph {

@@ -70,9 +70,6 @@ export function PageHeader({
           </nav>
         )}
         {breadcrumb}
-        <h1 className="text-[22px] font-bold text-foreground">
-          {resolvedTitle}
-        </h1>
       </div>
       {actions && (
         <div className="ml-4 flex shrink-0 items-center gap-2">{actions}</div>
