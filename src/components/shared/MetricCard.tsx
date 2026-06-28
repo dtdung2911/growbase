@@ -32,7 +32,7 @@ export function MetricCard({
     <div
       className={cn(
         "relative overflow-hidden rounded-[18px] p-4 transition-shadow",
-        variant === "default" && "border border-border bg-card shadow-panel",
+        variant === "default" && "border border-border/40 bg-card shadow-card",
         variant === "income" && "bg-gradient-to-br from-primary to-primary-hover text-white",
         variant === "expense" && "bg-gradient-to-br from-primary to-primary-pressed text-white",
         variant === "primary" && "bg-gradient-to-br from-[#0084DB] to-[#004F8A] text-white",

@@ -85,7 +85,7 @@ export function InviteMemberForm() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-3 rounded-2xl border border-border bg-card p-4 shadow-panel"
+      className="space-y-3 rounded-[13px] border border-border/40 bg-card p-4 shadow-card"
     >
       <div className="flex items-center justify-between">
         <p className="text-sm font-semibold">{t("settings.members.invite")}</p>

@@ -86,7 +86,7 @@ export function EventBudgetClient() {
       ) : (
         <>
           {/* Desktop: table */}
-          <div className="hidden rounded-[15px] border border-border bg-card shadow-panel md:block">
+          <div className="hidden rounded-[13px] border border-border/40 bg-card shadow-card md:block">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -195,7 +195,7 @@ function EventBudgetCard({ budget, onSelect }: EventBudgetCardProps) {
     <button
       type="button"
       onClick={onSelect}
-      className="w-full rounded-[15px] border border-border bg-card p-4 text-left shadow-panel"
+      className="w-full rounded-[13px] border border-border/40 bg-card p-4 text-left shadow-card"
     >
       <div className="flex items-center justify-between gap-2">
         <span className="font-semibold">{budget.name}</span>

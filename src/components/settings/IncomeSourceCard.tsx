@@ -18,7 +18,7 @@ export function IncomeSourceCard({ source, onEdit }: IncomeSourceCardProps) {
   )
 
   return (
-    <div className="rounded-[15px] border border-border bg-card p-4 shadow-panel">
+    <div className="rounded-[13px] border border-border/40 bg-card p-4 shadow-card">
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <h4 className="text-sm font-semibold">{source.source_name}</h4>

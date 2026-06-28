@@ -97,7 +97,7 @@ export function IncomeTab({ transactions }: IncomeTabProps) {
 
   return (
     <div className="grid gap-4 md:grid-cols-[1fr_minmax(0,380px)]">
-      <div className="hidden overflow-hidden rounded-2xl border border-border bg-card shadow-panel md:block">
+      <div className="hidden overflow-hidden rounded-[13px] border border-border/40 bg-card shadow-card md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -141,7 +141,7 @@ export function IncomeTab({ transactions }: IncomeTabProps) {
         {rows.map((row) => (
           <div
             key={row.id}
-            className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 shadow-panel"
+            className="flex items-center justify-between rounded-[13px] border border-border/40 bg-card px-4 py-3 shadow-card"
           >
             <div>
               <p className="text-sm">{row.source}</p>
@@ -154,7 +154,7 @@ export function IncomeTab({ transactions }: IncomeTabProps) {
             </span>
           </div>
         ))}
-        <div className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 shadow-panel">
+        <div className="flex items-center justify-between rounded-[13px] border border-border/40 bg-card px-4 py-3 shadow-card">
           <span className="text-sm font-medium">{t("reports.totalIncome")}</span>
           <span className="text-sm font-medium font-mono tabular-nums text-income">
             {formatVND(total)}
@@ -162,7 +162,7 @@ export function IncomeTab({ transactions }: IncomeTabProps) {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-4 shadow-panel">
+      <div className="rounded-[13px] border border-border/40 bg-card p-4 shadow-card">
         <h3 className="mb-2 text-sm font-medium">{t("reports.source")}</h3>
         <div className="h-64">
           <Chart key={`inc-${topSources.length}`} type="bar" height="100%" width="100%" options={barOptions} series={barSeries} />

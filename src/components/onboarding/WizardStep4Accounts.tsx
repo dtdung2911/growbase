@@ -56,7 +56,7 @@ export function WizardStep4Accounts() {
       <h2 className="text-lg font-semibold">{t("setup.step4Title")}</h2>
 
       {accounts.length === 0 ? (
-        <div className="rounded-2xl bg-card p-6 text-center shadow-soft-xs">
+        <div className="rounded-[13px] border border-border/40 bg-card p-6 text-center shadow-card">
           <p className="text-sm text-muted-foreground">{t("setup.emptyAccount")}</p>
         </div>
       ) : (
@@ -64,7 +64,7 @@ export function WizardStep4Accounts() {
           {accounts.map((account, i) => (
             <div
               key={account.id}
-              className="space-y-3 rounded-2xl bg-card p-4 shadow-soft-xs"
+              className="space-y-3 rounded-[13px] border border-border/40 bg-card p-4 shadow-card"
             >
               <div className="flex items-center justify-between">
                 <Label>{t("setup.account", { index: i + 1 })}</Label>

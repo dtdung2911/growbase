@@ -29,7 +29,7 @@ export function FundOverviewCard({ fund }: FundOverviewCardProps) {
   return (
     <Link
       href={`/funds/${fund.id}`}
-      className="block rounded-[13px] border border-border/40 bg-card p-3 shadow-card transition-shadow duration-200 hover:shadow-panel-hover motion-reduce:transition-none"
+      className="block rounded-[13px] border border-border/40 bg-card p-3 shadow-card transition-shadow duration-200 hover:shadow-md motion-reduce:transition-none"
     >
       <div className="flex items-center gap-2.5">
         <div

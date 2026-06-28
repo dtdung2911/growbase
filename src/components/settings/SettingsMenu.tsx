@@ -33,7 +33,7 @@ export function SettingsMenu() {
   return (
     <div className="space-y-6">
       {/* Data settings */}
-      <div className="rounded-[15px] border border-border bg-card">
+      <div className="rounded-[13px] border border-border/40 bg-card">
         {SETTINGS_ITEMS.map((item, i) => (
           <Link
             key={item.href}
@@ -54,7 +54,7 @@ export function SettingsMenu() {
       </div>
 
       {/* Appearance settings */}
-      <div className="rounded-[15px] border border-border bg-card">
+      <div className="rounded-[13px] border border-border/40 bg-card">
         <div className="border-b border-border px-5 py-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {t("settings.appearance")}

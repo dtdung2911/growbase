@@ -36,7 +36,7 @@ export function FundCard({ fund, onContribute, onWithdraw }: FundCardProps) {
       : null
 
   return (
-    <div className="mb-2 rounded-[15px] border border-border bg-card p-4 shadow-panel">
+    <div className="mb-2 rounded-[13px] border border-border/40 bg-card p-4 shadow-card">
       <div className="flex items-start gap-3">
         <div
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full"

@@ -121,11 +121,11 @@ export function SpendingTab({ transactions, categoryGroups }: SpendingTabProps) 
 
   return (
     <div className="grid gap-4 md:grid-cols-[minmax(0,320px)_1fr]">
-      <div className="rounded-2xl border border-border bg-card p-4 shadow-panel">
+      <div className="rounded-[13px] border border-border/40 bg-card p-4 shadow-card">
         <SpendingDonut data={donutData} formatAmount={formatVND} />
       </div>
 
-      <div className="hidden overflow-hidden rounded-2xl border border-border bg-card shadow-panel md:block">
+      <div className="hidden overflow-hidden rounded-[13px] border border-border/40 bg-card shadow-card md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -163,7 +163,7 @@ export function SpendingTab({ transactions, categoryGroups }: SpendingTabProps) 
         {groups.map((g) => (
           <div
             key={g.behaviorType}
-            className="overflow-hidden rounded-2xl border border-border bg-card shadow-panel"
+            className="overflow-hidden rounded-[13px] border border-border/40 bg-card shadow-card"
           >
             <button
               type="button"

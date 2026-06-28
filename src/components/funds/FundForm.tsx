@@ -137,7 +137,7 @@ function FundFormBody({ onClose }: { onClose: () => void }) {
                 key={type}
                 type="button"
                 onClick={() => selectType(type)}
-                className="flex min-h-[44px] items-center gap-3 rounded-[15px] border border-border bg-card p-3 text-left transition-colors hover:border-primary"
+                className="flex min-h-[44px] items-center gap-3 rounded-[13px] border border-border/40 bg-card p-3 text-left transition-colors hover:border-primary"
               >
                 <div
                   className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full"

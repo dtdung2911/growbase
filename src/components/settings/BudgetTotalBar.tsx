@@ -14,7 +14,7 @@ export function BudgetTotalBar({ total }: BudgetTotalBarProps) {
   return (
     <div
       className={cn(
-        "sticky top-0 z-10 rounded-2xl border p-3 text-center shadow-panel",
+        "sticky top-0 z-10 rounded-[13px] border p-3 text-center shadow-card",
         isOver
           ? "border-destructive/20 bg-destructive/10 text-destructive"
           : "border-success/20 bg-success-soft text-success"

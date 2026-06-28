@@ -41,7 +41,7 @@ export function MonthlyBufferBanner({ fund }: MonthlyBufferBannerProps) {
 
   return (
     <>
-      <div className="flex items-start gap-3 rounded-2xl border border-warning/20 bg-warning-soft p-4 shadow-panel">
+      <div className="flex items-start gap-3 rounded-[13px] border border-warning/20 bg-warning-soft p-4 shadow-card">
         <Icon icon="lucide:alert-circle" className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
         <div className="flex-1 space-y-2">
           <p className="text-sm font-semibold text-warning">

@@ -234,7 +234,7 @@ export function OverviewTab({ data }: OverviewTabProps) {
   return (
     <div className="space-y-4">
       {/* Summary table */}
-      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-panel">
+      <div className="overflow-hidden rounded-[13px] border border-border/40 bg-card shadow-card">
         <Table>
           <TableHeader>
             <TableRow>
@@ -294,14 +294,14 @@ export function OverviewTab({ data }: OverviewTabProps) {
 
       {/* Charts row 1: grouped bar + savings rate area */}
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-2xl border border-border bg-card p-5 shadow-panel">
+        <div className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
           <h3 className="mb-0.5 text-sm font-semibold">{t("reports.incomeVsExpense")}</h3>
           <p className="mb-3 text-xs text-muted-foreground">{t("reports.last6months")}</p>
           <div className="h-64">
             <Chart key={`ie-${categories.join(",")}`} type="bar" height="100%" width="100%" options={incomeExpenseOptions} series={incomeExpenseSeries} />
           </div>
         </div>
-        <div className="rounded-2xl border border-border bg-card p-5 shadow-panel">
+        <div className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
           <h3 className="mb-0.5 text-sm font-semibold">{t("reports.savingsRate")}</h3>
           <p className="mb-3 text-xs text-muted-foreground">{t("reports.trendOverTime")}</p>
           <div className="h-64">
@@ -311,7 +311,7 @@ export function OverviewTab({ data }: OverviewTabProps) {
       </div>
 
       {/* Charts row 2: stacked behavior bar (full width) */}
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-panel">
+      <div className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
         <h3 className="mb-0.5 text-sm font-semibold">{t("reports.expenseBreakdown")}</h3>
         <p className="mb-3 text-xs text-muted-foreground">{t("reports.byBehaviorType")}</p>
         <div className="h-72">

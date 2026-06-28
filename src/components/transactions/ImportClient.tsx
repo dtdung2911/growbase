@@ -506,7 +506,7 @@ function UploadStep({
       </div>
 
       {fileName && rowCount > 0 && (
-        <div className="mt-4 flex items-center gap-2 rounded-2xl border border-border bg-success-soft/40 px-4 py-3">
+        <div className="mt-4 flex items-center gap-2 rounded-[13px] border border-success/20 bg-success-soft/40 px-4 py-3">
           <Icon icon="lucide:file-check-2" className="h-5 w-5 text-success" />
           <div className="text-sm">
             <div className="flex items-center gap-2">
@@ -749,7 +749,7 @@ function PreviewStep({
       </div>
 
       {totalCount === 0 && (
-        <p className="rounded-2xl border border-border bg-warning-soft/40 px-4 py-3 text-sm text-warning">
+        <p className="rounded-[13px] border border-warning/20 bg-warning-soft/40 px-4 py-3 text-sm text-warning">
           {t("import.noValidRows")}
         </p>
       )}

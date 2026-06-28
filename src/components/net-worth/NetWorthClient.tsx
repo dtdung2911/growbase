@@ -140,7 +140,7 @@ export function NetWorthClient() {
             />
           )}
 
-          <div className="hidden overflow-hidden rounded-2xl border border-border bg-card shadow-panel md:block">
+          <div className="hidden overflow-hidden rounded-[13px] border border-border/40 bg-card shadow-card md:block">
             <NetWorthAccountsTable rows={accountRows} onBalanceChange={handleBalanceChange} />
           </div>
           <div className="space-y-2 md:hidden">
@@ -161,7 +161,7 @@ export function NetWorthClient() {
               <h3 className="px-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {t("dashboard.funds")}
               </h3>
-              <div className="hidden overflow-hidden rounded-2xl border border-border bg-card shadow-panel md:block">
+              <div className="hidden overflow-hidden rounded-[13px] border border-border/40 bg-card shadow-card md:block">
                 <NetWorthFundsTable rows={fundRows} />
               </div>
               <div className="space-y-2 md:hidden">
@@ -170,7 +170,7 @@ export function NetWorthClient() {
                   return (
                     <div
                       key={f.id}
-                      className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 shadow-panel"
+                      className="flex items-center justify-between rounded-[13px] border border-border/40 bg-card px-4 py-3 shadow-card"
                     >
                       <div className="flex items-center gap-2">
                         {config && <Icon icon={config.icon} className="h-4 w-4" style={{ color: config.color }} />}
@@ -208,7 +208,7 @@ export function NetWorthClient() {
               <h3 className="px-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {t("netWorth.monthlyHistory")}
               </h3>
-              <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-panel">
+              <div className="overflow-hidden rounded-[13px] border border-border/40 bg-card shadow-card">
                 <NetWorthHistoryTable data={history} />
               </div>
             </div>

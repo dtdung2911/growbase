@@ -148,7 +148,7 @@ export function DashboardClient() {
 
       {/* Budget */}
       {data.budgetLines.length > 0 && (
-        <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-panel">
+        <section className="overflow-hidden rounded-[13px] border border-border/40 bg-card shadow-card">
           <h2 className="px-5 pb-3 pt-5 text-sm font-semibold">{t("dashboard.budget")}</h2>
           {/* Desktop: table */}
           <div className="hidden md:block">

@@ -76,7 +76,7 @@ export default function FundDetailPage({
       />
 
       {/* Fund header card */}
-      <div className="rounded-[15px] border border-border bg-card p-5 shadow-panel">
+      <div className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
         <div className="flex items-start gap-3 mb-4">
           <div
             className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
@@ -180,7 +180,7 @@ export default function FundDetailPage({
           ) : (
             <>
               {/* Desktop: table */}
-              <div className="hidden md:block rounded-[15px] border border-border bg-card shadow-panel">
+              <div className="hidden md:block rounded-[13px] border border-border/40 bg-card shadow-card">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -239,7 +239,7 @@ export default function FundDetailPage({
                   return (
                     <div
                       key={tx.id}
-                      className="flex items-center gap-3 rounded-[15px] border border-border bg-card p-3 shadow-panel"
+                      className="flex items-center gap-3 rounded-[13px] border border-border/40 bg-card p-3 shadow-card"
                     >
                       <div
                         className={cn(
@@ -284,7 +284,7 @@ export default function FundDetailPage({
         </TabsContent>
 
         <TabsContent value="info" className="mt-3">
-          <div className="rounded-[15px] border border-border bg-card p-4 shadow-panel space-y-3">
+          <div className="rounded-[13px] border border-border/40 bg-card p-4 shadow-card space-y-3">
             <InfoRow label={t("funds.fundType")} value={t(`funds.type.${fund.fund_type}`)} />
             <InfoRow label={t("funds.monthlyAmount")} value={formatVND(monthly)} mono />
             <InfoRow label={t("funds.contributionDay")} value={`${fund.contribution_day}`} />

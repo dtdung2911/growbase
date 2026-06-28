@@ -121,7 +121,7 @@ export function BudgetVsActualTab({ budgetLines }: BudgetVsActualTabProps) {
 
   return (
     <div className="space-y-4">
-      <div className="hidden overflow-hidden rounded-2xl border border-border bg-card shadow-panel md:block">
+      <div className="hidden overflow-hidden rounded-[13px] border border-border/40 bg-card shadow-card md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -153,7 +153,7 @@ export function BudgetVsActualTab({ budgetLines }: BudgetVsActualTabProps) {
               return (
                 <div
                   key={line.cost_type_id}
-                  className="rounded-2xl border border-border bg-card p-4 shadow-panel space-y-1"
+                  className="rounded-[13px] border border-border/40 bg-card p-4 shadow-card space-y-1"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">{line.cost_type_name}</span>
@@ -178,7 +178,7 @@ export function BudgetVsActualTab({ budgetLines }: BudgetVsActualTabProps) {
         ))}
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-4 shadow-panel">
+      <div className="rounded-[13px] border border-border/40 bg-card p-4 shadow-card">
         <h3 className="mb-2 text-sm font-medium">{t("reports.budgetVsActual")}</h3>
         <div className="h-72">
           <Chart type="bar" height="100%" width="100%" options={chartOptions} series={chartSeries} />

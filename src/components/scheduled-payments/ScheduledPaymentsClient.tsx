@@ -105,7 +105,7 @@ export function ScheduledPaymentsClient() {
       ) : (
         <>
           {/* Desktop: table */}
-          <div className="hidden overflow-hidden rounded-2xl border border-border bg-card shadow-panel md:block">
+          <div className="hidden overflow-hidden rounded-[13px] border border-border/40 bg-card shadow-card md:block">
             <Table>
               <TableHeader>
                 <TableRow>

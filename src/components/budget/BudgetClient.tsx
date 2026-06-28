@@ -293,7 +293,7 @@ function MobileCostTypeGroup({
   const groupConfig = STATUS_CONFIG[groupStatus]
 
   return (
-    <div className="rounded-2xl border border-border bg-card shadow-panel overflow-hidden">
+    <div className="rounded-[13px] border border-border/40 bg-card shadow-card overflow-hidden">
       {/* Group header */}
       <button
         type="button"

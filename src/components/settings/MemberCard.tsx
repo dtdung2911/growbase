@@ -1,16 +1,19 @@
 "use client"
 
-import { cn } from "@/lib/utils/cn"
 import { Icon } from "@iconify/react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import type { Member } from "@/types/app"
+import type { VariantProps } from "class-variance-authority"
+import type { badgeVariants } from "@/components/ui/badge"
 
-const ROLE_BADGE_CLASS: Record<string, string> = {
-  owner: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300",
-  member: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  viewer: "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400",
+type BadgeVariant = VariantProps<typeof badgeVariants>["variant"]
+
+const ROLE_BADGE_VARIANT: Record<string, BadgeVariant> = {
+  owner: "violet",
+  member: "default",
+  viewer: "secondary",
 }
 
 type MemberCardProps = {
@@ -21,22 +24,19 @@ type MemberCardProps = {
 
 export function MemberCard({ member, isOwner, onDelete }: MemberCardProps) {
   const { t, locale } = useTranslation()
-  const roleClass = ROLE_BADGE_CLASS[member.role]
+  const roleVariant = ROLE_BADGE_VARIANT[member.role] ?? "secondary"
   const canDelete = isOwner && member.role !== "owner"
   const joinedDate = new Date(member.joined_at).toLocaleDateString(
     locale === "vi" ? "vi-VN" : "en-US"
   )
 
   return (
-    <div className="rounded-[15px] border border-border bg-card p-4 shadow-panel">
+    <div className="rounded-[13px] border border-border/40 bg-card p-4 shadow-card">
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <h4 className="text-sm font-semibold">{member.display_name}</h4>
           <div className="flex flex-wrap gap-1.5">
-            <Badge
-              variant="secondary"
-              className={cn("text-[10px] font-normal", roleClass)}
-            >
+            <Badge variant={roleVariant} className="text-[10px] font-normal">
               {t(`settings.members.role.${member.role}`)}
             </Badge>
           </div>

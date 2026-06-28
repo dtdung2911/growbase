@@ -89,7 +89,7 @@ export function FundReportTab({ funds }: FundReportTabProps) {
 
   return (
     <div className="space-y-4">
-      <div className="hidden overflow-hidden rounded-2xl border border-border bg-card shadow-panel md:block">
+      <div className="hidden overflow-hidden rounded-[13px] border border-border/40 bg-card shadow-card md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -161,7 +161,7 @@ export function FundReportTab({ funds }: FundReportTabProps) {
           return (
             <div
               key={fund.id}
-              className="rounded-2xl border border-border bg-card p-4 shadow-panel space-y-2"
+              className="rounded-[13px] border border-border/40 bg-card p-4 shadow-card space-y-2"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -191,7 +191,7 @@ export function FundReportTab({ funds }: FundReportTabProps) {
             </div>
           )
         })}
-        <div className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 shadow-panel">
+        <div className="flex items-center justify-between rounded-[13px] border border-border/40 bg-card px-4 py-3 shadow-card">
           <span className="text-sm font-medium">{t("funds.totalFunds")}</span>
           <span className="text-sm font-medium font-mono tabular-nums">
             {formatVND(totalBalance)}
@@ -200,7 +200,7 @@ export function FundReportTab({ funds }: FundReportTabProps) {
       </div>
 
       {withTarget.length > 0 && (
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-panel">
+        <div className="rounded-[13px] border border-border/40 bg-card p-4 shadow-card">
           <h3 className="mb-2 text-sm font-medium">{t("reports.completion")}</h3>
           <div className="h-64">
             <Chart key={`fund-${withTarget.length}`} type="bar" height="100%" width="100%" options={chartOptions} series={chartSeries} />
