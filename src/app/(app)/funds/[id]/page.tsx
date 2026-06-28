@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
 import { Icon } from "@iconify/react"
 import { cn } from "@/lib/utils/cn"
 import { formatVND, formatVNDCompact } from "@/lib/utils/currency"
@@ -12,6 +11,7 @@ import { ContributeModal } from "@/components/funds/ContributeModal"
 import { WithdrawModal } from "@/components/funds/WithdrawModal"
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog"
 import { SkeletonCard } from "@/components/shared/SkeletonCard"
+import { PageHeader } from "@/components/shared/PageHeader"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Table,
@@ -67,14 +67,13 @@ export default function FundDetailPage({
 
   return (
     <div className="mx-auto max-w-2xl space-y-4 p-4 pb-16">
-      {/* Back */}
-      <Link
-        href="/funds"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <Icon icon="lucide:arrow-left" className="h-4 w-4" />
-        {t("common.back")}
-      </Link>
+      <PageHeader
+        titleKey={`!${fund.name}`}
+        breadcrumbs={[
+          { labelKey: "nav.funds", href: "/funds" },
+          { labelKey: `!${fund.name}` },
+        ]}
+      />
 
       {/* Fund header card */}
       <div className="rounded-[15px] border border-border bg-card p-5 shadow-panel">
@@ -117,7 +116,7 @@ export default function FundDetailPage({
             <>
               <div className="h-2 w-full overflow-hidden rounded-full bg-background">
                 <div
-                  className="h-full rounded-full transition-all"
+                  className="h-full rounded-full [transition:width_300ms_ease]"
                   style={{
                     width: `${Math.min(progress, 100)}%`,
                     backgroundColor: color,

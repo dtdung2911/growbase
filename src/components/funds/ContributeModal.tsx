@@ -228,7 +228,7 @@ function ContributeForm({ fund, onClose }: { fund: Fund; onClose: () => void }) 
           {progressAfter !== null && (
             <div className="h-1.5 w-full overflow-hidden rounded-full bg-card">
               <div
-                className="h-full rounded-full transition-all"
+                className="h-full rounded-full [transition:width_300ms_ease]"
                 style={{
                   width: `${progressAfter}%`,
                   backgroundColor: fund.color || config.color,

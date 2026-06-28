@@ -10,6 +10,7 @@ import {
   useInvestmentPurchases,
 } from "@/lib/hooks/useInvestments"
 import { useTranslation } from "@/lib/i18n/useTranslation"
+import { PageHeader } from "@/components/shared/PageHeader"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { SkeletonList } from "@/components/shared/SkeletonList"
@@ -95,9 +96,7 @@ export function InvestmentClient() {
 
   return (
     <div className="p-4 pb-16">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-lg font-semibold">{t("investment.title")}</h1>
-      </div>
+      <PageHeader titleKey="nav.investments" />
 
       <Tabs defaultValue="holdings">
         <TabsList className="w-full">

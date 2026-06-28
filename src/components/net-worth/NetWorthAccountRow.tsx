@@ -27,8 +27,8 @@ export function NetWorthAccountRow({
   return (
     <div
       className={cn(
-        "space-y-2 rounded-[15px] border bg-card p-4 shadow-panel",
-        mismatch ? "border-warning/20" : "border-border"
+        "space-y-2 rounded-2xl border bg-card p-4 shadow-panel",
+        mismatch ? "border-warning/30" : "border-border"
       )}
     >
       <div className="flex items-center justify-between">

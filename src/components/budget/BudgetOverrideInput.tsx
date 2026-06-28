@@ -59,7 +59,7 @@ export function BudgetOverrideInput({
         max={100}
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        className="w-16 rounded-xl border bg-inset px-2 py-1.5 text-base font-mono tabular-nums min-h-[44px]"
+        className="w-16 rounded-xl border border-border bg-inset px-2 py-1.5 text-base font-mono tabular-nums min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
         disabled={isPending}
       />
       <span className="text-sm text-muted-foreground">%</span>

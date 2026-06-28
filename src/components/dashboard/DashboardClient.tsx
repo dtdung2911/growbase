@@ -21,15 +21,24 @@ import {
 import { cn } from "@/lib/utils/cn"
 import { FundOverviewCard } from "@/components/dashboard/FundOverviewCard"
 import { RecentTransactionsList } from "@/components/dashboard/RecentTransactionsList"
+import { IncomeExpenseBar, WeekdayChart, TopExpensesWidget } from "@/components/dashboard/DashboardCharts"
 import { TransactionReminder } from "@/components/shared/TransactionReminder"
 import { QuickAddSheet } from "@/components/transactions/QuickAddSheet"
+import { useAppStore } from "@/lib/stores/appStore"
+import { PageHeader } from "@/components/shared/PageHeader"
 import type { BudgetActualLine } from "@/types/app"
+
+function trendPct(current: number, prev: number): number | null {
+  if (prev === 0) return null
+  return Math.round(((current - prev) / prev) * 1000) / 10
+}
 
 export function DashboardClient() {
   const { data, isLoading } = useDashboardData()
   const { showReminder, dismiss } = useTransactionReminder()
   const [quickAddOpen, setQuickAddOpen] = useState(false)
   const { t } = useTranslation()
+  const month = useAppStore((s) => s.currentMonth)
 
   if (isLoading) {
     return (
@@ -48,9 +57,12 @@ export function DashboardClient() {
   if (!data) return null
 
   const savings = data.totalIncome - data.totalExpense
+  const incomeDelta = trendPct(data.totalIncome, data.lastMonthIncome)
+  const expenseDelta = trendPct(data.totalExpense, data.lastMonthExpense)
 
   return (
     <div className="space-y-6">
+      <PageHeader titleKey="nav.dashboard" />
       {showReminder && (
         <TransactionReminder
           onAdd={() => setQuickAddOpen(true)}
@@ -67,6 +79,7 @@ export function DashboardClient() {
           amount={data.totalIncome}
           formatAmount={formatVND}
           trend="up"
+          trendPct={incomeDelta}
           icon="lucide:trending-up"
           variant="income"
         />
@@ -75,6 +88,7 @@ export function DashboardClient() {
           amount={data.totalExpense}
           formatAmount={formatVND}
           trend="down"
+          trendPct={expenseDelta !== null ? -expenseDelta : null}
           icon="lucide:trending-down"
           variant="expense"
         />
@@ -86,85 +100,114 @@ export function DashboardClient() {
           icon="lucide:piggy-bank"
         />
         <MetricCard
-          label={t("dashboard.savingsRate")}
-          amount={data.savingsRate}
-          formatAmount={(n) => `${n}%`}
+          label={data.netWorth !== null ? t("dashboard.netWorth") : t("dashboard.savingsRate")}
+          amount={data.netWorth !== null ? data.netWorth : data.savingsRate}
+          formatAmount={data.netWorth !== null ? formatVND : (n) => `${n}%`}
           trend={data.savingsRate >= 0 ? "up" : "down"}
-          icon="lucide:percent"
+          icon={data.netWorth !== null ? "lucide:landmark" : "lucide:percent"}
         />
       </div>
 
-      {/* Spending + Budget row */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <section className="rounded-[15px] border border-border bg-card p-7 shadow-panel">
-          <h2 className="text-base font-extrabold">{t("dashboard.spending")}</h2>
-          <div className="mt-4">
-            <SpendingDonut data={data.spendingByBehavior} formatAmount={formatVND} />
-          </div>
+      {/* Income vs Expense bar chart + Spending donut */}
+      <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
+        <section className="overflow-hidden rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
+          <h2 className="mb-1 text-sm font-semibold">{t("dashboard.incomeVsExpense")}</h2>
+          <p className="mb-3 text-xs text-muted-foreground">{t("dashboard.vsLastMonth")}</p>
+          <IncomeExpenseBar
+            income={data.totalIncome}
+            expense={data.totalExpense}
+            lastIncome={data.lastMonthIncome}
+            lastExpense={data.lastMonthExpense}
+            month={month}
+          />
         </section>
 
-        {data.budgetLines.length > 0 && (
-          <section className="rounded-[15px] border border-border bg-card shadow-panel overflow-hidden">
-            <h2 className="text-base font-extrabold px-7 pt-7 pb-3">{t("dashboard.budget")}</h2>
-            {/* Desktop: table */}
-            <div className="hidden md:block">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("budget.groupName")}</TableHead>
-                    <TableHead className="text-right">{t("budget.spent")}</TableHead>
-                    <TableHead className="text-right">{t("budget.allocated")}</TableHead>
-                    <TableHead className="text-center w-[70px]">{t("budget.usagePercent")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {data.budgetLines.map((line: BudgetActualLine) => {
-                    const usage = Math.round(line.usage_pct ?? 0)
-                    return (
-                      <TableRow key={line.cost_type_id}>
-                        <TableCell className="text-sm font-medium">{line.cost_type_name}</TableCell>
-                        <TableCell className="text-right font-mono tabular-nums text-sm">{formatVND(line.actual_amount)}</TableCell>
-                        <TableCell className="text-right font-mono tabular-nums text-sm text-muted-foreground">{formatVND(line.budget_amount)}</TableCell>
-                        <TableCell className="text-center">
-                          <span className={cn(
-                            "text-xs font-medium",
-                            usage > 100 ? "text-expense" : usage > 85 ? "text-orange-500" : "text-muted-foreground"
-                          )}>
-                            {usage}%
-                          </span>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-            {/* Mobile: compact cards */}
-            <div className="md:hidden px-4 pb-4 space-y-3">
-              {data.budgetLines.map((line: BudgetActualLine) => (
-                <div key={line.cost_type_id}>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold">{line.cost_type_name}</span>
-                    <span className="text-xs font-bold text-muted-foreground">
-                      {Math.round(line.usage_pct ?? 0)}%
-                    </span>
-                  </div>
-                  <BudgetProgressBar percentage={line.usage_pct ?? 0} className="mt-2" />
-                  <div className="mt-1 flex justify-between text-xs text-muted-foreground">
-                    <span className="font-mono tabular-nums">{formatVND(line.actual_amount)}</span>
-                    <span className="font-mono tabular-nums">{formatVND(line.budget_amount)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+        <section className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
+          <h2 className="mb-3 text-sm font-semibold">{t("dashboard.spending")}</h2>
+          <SpendingDonut data={data.spendingByBehavior} formatAmount={formatVND} />
+        </section>
+      </div>
+
+      {/* Top expense categories + Weekday spending */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        {data.topExpenseCategories.length > 0 && (
+          <section className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
+            <h2 className="mb-4 text-sm font-semibold">{t("dashboard.topExpenses")}</h2>
+            <TopExpensesWidget
+              categories={data.topExpenseCategories}
+              totalExpense={data.totalExpense}
+            />
           </section>
         )}
+
+        <section className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
+          <h2 className="mb-3 text-sm font-semibold">{t("dashboard.weekdaySpending")}</h2>
+          <WeekdayChart data={data.weekdaySpending} />
+        </section>
       </div>
+
+      {/* Budget */}
+      {data.budgetLines.length > 0 && (
+        <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-panel">
+          <h2 className="px-5 pb-3 pt-5 text-sm font-semibold">{t("dashboard.budget")}</h2>
+          {/* Desktop: table */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("budget.groupName")}</TableHead>
+                  <TableHead className="text-right">{t("budget.spent")}</TableHead>
+                  <TableHead className="text-right">{t("budget.allocated")}</TableHead>
+                  <TableHead className="w-[70px] text-center">{t("budget.usagePercent")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.budgetLines.map((line: BudgetActualLine) => {
+                  const usage = Math.round(line.usage_pct ?? 0)
+                  return (
+                    <TableRow key={line.cost_type_id}>
+                      <TableCell className="text-sm font-medium">{line.cost_type_name}</TableCell>
+                      <TableCell className="text-right font-mono tabular-nums text-sm">{formatVND(line.actual_amount)}</TableCell>
+                      <TableCell className="text-right font-mono tabular-nums text-sm text-muted-foreground">{formatVND(line.budget_amount)}</TableCell>
+                      <TableCell className="text-center">
+                        <span className={cn(
+                          "text-xs font-medium",
+                          usage > 100 ? "text-destructive" : usage > 85 ? "text-warning" : "text-muted-foreground"
+                        )}>
+                          {usage}%
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </div>
+          {/* Mobile */}
+          <div className="space-y-3 px-4 pb-4 md:hidden">
+            {data.budgetLines.map((line: BudgetActualLine) => (
+              <div key={line.cost_type_id}>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold">{line.cost_type_name}</span>
+                  <span className="text-xs font-bold text-muted-foreground">
+                    {Math.round(line.usage_pct ?? 0)}%
+                  </span>
+                </div>
+                <BudgetProgressBar percentage={line.usage_pct ?? 0} className="mt-2" />
+                <div className="mt-1 flex justify-between text-xs text-muted-foreground">
+                  <span className="font-mono tabular-nums">{formatVND(line.actual_amount)}</span>
+                  <span className="font-mono tabular-nums">{formatVND(line.budget_amount)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Funds */}
       {data.funds.length > 0 && (
         <section>
-          <h2 className="mb-3 text-base font-extrabold">{t("dashboard.funds")}</h2>
+          <h2 className="mb-3 text-sm font-semibold">{t("dashboard.funds")}</h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {data.funds.map((fund) => (
               <FundOverviewCard key={fund.id} fund={fund} />
@@ -175,7 +218,7 @@ export function DashboardClient() {
 
       {/* Recent transactions */}
       <section>
-        <h2 className="mb-3 text-base font-extrabold">{t("dashboard.recentTx")}</h2>
+        <h2 className="mb-3 text-sm font-semibold">{t("dashboard.recentTx")}</h2>
         <RecentTransactionsList transactions={data.recentTransactions} />
       </section>
     </div>

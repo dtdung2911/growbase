@@ -15,6 +15,7 @@ import { BudgetOverrideInput } from "@/components/budget/BudgetOverrideInput"
 import { BudgetProgressBar } from "@/components/shared/BudgetProgressBar"
 import { SkeletonList } from "@/components/shared/SkeletonList"
 import { EmptyState } from "@/components/shared/EmptyState"
+import { PageHeader } from "@/components/shared/PageHeader"
 import {
   Table,
   TableBody,
@@ -35,10 +36,10 @@ function getStatus(usagePct: number): StatusLevel {
 }
 
 const STATUS_CONFIG: Record<StatusLevel, { label: string; className: string }> = {
-  safe: { label: "budget.status.safe", className: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" },
-  monitor: { label: "budget.status.monitor", className: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" },
-  warning: { label: "budget.status.warning", className: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400" },
-  over: { label: "budget.status.over", className: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" },
+  safe: { label: "budget.status.safe", className: "bg-success/10 text-success" },
+  monitor: { label: "budget.status.monitor", className: "bg-info/10 text-info" },
+  warning: { label: "budget.status.warning", className: "bg-warning/10 text-warning" },
+  over: { label: "budget.status.over", className: "bg-destructive/10 text-destructive" },
 }
 
 type GroupedBudget = {
@@ -127,8 +128,9 @@ export function BudgetClient() {
 
   return (
     <div className="space-y-4 p-4">
+      <PageHeader titleKey="nav.budget" />
       {/* Summary */}
-      <div className="rounded-[15px] border border-border bg-card p-4 shadow-panel">
+      <div className="rounded-[13px] border border-border/40 bg-card p-4 shadow-card">
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
             <p className="text-xs text-muted-foreground">{t("budget.allocated")}</p>
@@ -149,7 +151,7 @@ export function BudgetClient() {
       </div>
 
       {/* Desktop: grouped table */}
-      <div className="hidden md:block rounded-[15px] border border-border bg-card shadow-panel overflow-hidden">
+      <div className="hidden md:block rounded-[13px] border border-border/40 bg-card shadow-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -291,7 +293,7 @@ function MobileCostTypeGroup({
   const groupConfig = STATUS_CONFIG[groupStatus]
 
   return (
-    <div className="rounded-[15px] border border-border bg-card shadow-panel overflow-hidden">
+    <div className="rounded-2xl border border-border bg-card shadow-panel overflow-hidden">
       {/* Group header */}
       <button
         type="button"

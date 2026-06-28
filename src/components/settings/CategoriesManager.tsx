@@ -144,7 +144,7 @@ export function CategoriesManager() {
   return (
     <>
       {/* Desktop table */}
-      <div className="hidden rounded-[15px] border border-border bg-card shadow-panel md:block">
+      <div className="hidden overflow-hidden rounded-2xl border border-border bg-card shadow-panel md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -244,7 +244,7 @@ export function CategoriesManager() {
           return (
             <div
               key={ct.id}
-              className="rounded-[15px] border border-border bg-card shadow-panel"
+              className="rounded-2xl border border-border bg-card shadow-panel"
             >
               <div className="flex min-h-[44px] items-center justify-between p-3">
                 <button

@@ -73,7 +73,7 @@ export function FundCard({ fund, onContribute, onWithdraw }: FundCardProps) {
             <div className="mt-2 space-y-1">
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                 <div
-                  className="h-full rounded-full transition-all"
+                  className="h-full rounded-full [transition:width_300ms_ease]"
                   style={{ width: `${Math.min(progress, 100)}%`, backgroundColor: color }}
                 />
               </div>
@@ -100,7 +100,7 @@ export function FundCard({ fund, onContribute, onWithdraw }: FundCardProps) {
             <div className="mt-2 space-y-1">
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                 <div
-                  className="h-full rounded-full transition-all"
+                  className="h-full rounded-full [transition:width_300ms_ease]"
                   style={{ width: `${freedomProgress}%`, backgroundColor: color }}
                 />
               </div>

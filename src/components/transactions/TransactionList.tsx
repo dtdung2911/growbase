@@ -85,7 +85,7 @@ export function TransactionList({ transactions }: TransactionListProps) {
       <FilterBar filters={filters} onChange={setFilters} />
 
       {/* Desktop: table view */}
-      <div className="mt-3 hidden md:block rounded-[15px] border border-border bg-card shadow-panel">
+      <div className="mt-3 hidden overflow-hidden md:block rounded-[13px] border border-border/40 bg-card shadow-card">
         <Table>
           <TableHeader>
             <TableRow>
@@ -161,7 +161,7 @@ export function TransactionList({ transactions }: TransactionListProps) {
             <h3 className="mb-1 px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {group.label}
             </h3>
-            <div className="divide-y divide-border/40 rounded-[15px] border border-border bg-card shadow-panel">
+            <div className="divide-y divide-border/40 rounded-[13px] border border-border/40 bg-card shadow-card">
               {group.items.map((tx) => (
                 <TransactionItem
                   key={tx.id}

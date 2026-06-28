@@ -18,7 +18,7 @@ export function NetWorthHero({ total, delta, updatedAt }: NetWorthHeroProps) {
   const isUp = (delta ?? 0) > 0
 
   return (
-    <div className="flex flex-col items-center gap-2 rounded-2xl border border-border/40 bg-card p-6 text-center shadow-card">
+    <div className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-6 text-center shadow-panel">
       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
         {t("netWorth.heroTitle")}
       </p>

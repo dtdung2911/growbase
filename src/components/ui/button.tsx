@@ -5,24 +5,21 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils/cn"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-[15px] font-semibold ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-[15px] font-semibold ring-offset-background transition-[background-color,color,box-shadow,transform,filter] duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-black/12 dark:disabled:bg-white/[0.12] hover:brightness-[0.8] hover:-translate-y-px active:brightness-[0.6] active:translate-y-px [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow-soft-sm hover:bg-primary-hover hover:shadow-soft-md hover:-translate-y-px active:bg-primary-pressed active:translate-y-0",
-        destructive:
-          "bg-destructive text-destructive-foreground shadow-soft-sm hover:bg-destructive/90",
-        outline:
-          "border border-input bg-card hover:bg-accent hover:text-accent-foreground",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        default: "bg-primary text-primary-foreground",
+        destructive: "bg-destructive text-destructive-foreground",
+        outline: "border border-input bg-card",
+        secondary: "bg-secondary text-secondary-foreground",
         ghost: "hover:bg-accent hover:text-accent-foreground shadow-none",
-        link: "text-primary underline-offset-4 hover:underline shadow-none",
+        link: "text-primary underline-offset-4 hover:underline shadow-none hover:brightness-100 hover:translate-y-0 active:brightness-100 active:translate-y-0",
       },
       size: {
         default: "min-h-[44px] px-5 py-2",
-        sm: "min-h-[36px] px-3.5 text-sm",
-        lg: "min-h-[48px] px-8",
+        sm: "min-h-[30px] min-w-[44px] px-3.5 text-sm",
+        lg: "min-h-[56px] px-8",
         icon: "h-10 w-10",
       },
     },

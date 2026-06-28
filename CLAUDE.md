@@ -1,5 +1,5 @@
-# CLAUDE.md — GrowBase Dev Context v2
-# Token-optimized. Agents read AGENT_PROTOCOL.md for full rules.
+# CLAUDE.md — GrowBase Dev Context
+# Token-optimized.
 
 ## Project
 GrowBase — family finance web app (Next.js 14 + Supabase + TypeScript)
@@ -14,7 +14,12 @@ GrowBase — family finance web app (Next.js 14 + Supabase + TypeScript)
 | `docs/05_UX_SPEC.md` | Building UI — screens, components, UX rules |
 | `docs/06_STYLE_GUIDE.md` | Visual identity — colors, typography, spacing, component patterns |
 
-**Read sections, not full files.** Each agent has assigned sections in AGENT_PROTOCOL.md.
+## Workflow
+Use **BMad Method** for all feature work:
+- `bmad-prd` → PRD creation
+- `bmad-create-epics-and-stories` → Epic/Story breakdown
+- `bmad-dev-story` → Dev story for implementation
+- `bmad-code-review` → Code review
 
 ## Stack
 Next.js 14 App Router · TypeScript · Tailwind · shadcn/ui (Spike Admin blue theme) · Supabase · TanStack Query v5 · Zustand · ApexCharts · React Hook Form · Zod · sonner
@@ -41,18 +46,12 @@ Next.js 14 App Router · TypeScript · Tailwind · shadcn/ui (Spike Admin blue t
 - Theme: light default, dark toggle. Floating ThemeToggle (bottom-right) on all pages. Also in Settings > Appearance
 - Language: switchable vi/en. Floating toggle (bottom-right) on all pages. Also in Settings > Appearance
 
-## Non-Negotiable Rules (full list in AGENT_PROTOCOL.md)
+## Non-Negotiable Rules
 1. Fund ops = atomic RPC only
 2. behavior_type = DB trigger, readonly in UI
 3. is_system=true = immutable
 4. Auth check first in every API route
 5. Keys from keys.ts factory
-
-## Token Optimization (always active)
-- Workspace logs use /caveman ultra format
-- Agents read only assigned doc sections
-- Inter-agent communication via compact logs (_workspace/*.md)
-- No full doc reproduction in logs
 
 ## Zustand Store
 ```typescript
@@ -63,9 +62,6 @@ Next.js 14 App Router · TypeScript · Tailwind · shadcn/ui (Spike Admin blue t
 ```typescript
 keys.transactions(hid, month) // always use factory, never hardcode
 ```
-
-## Agent Pipeline
-See pm-agent-v2.md. 7 agents: planner→architect→migration→developer→reviewer→validator→qa
 
 ## Error Patterns
 - Lists: skeleton loading, not spinner

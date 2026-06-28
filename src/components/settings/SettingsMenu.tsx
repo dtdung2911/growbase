@@ -19,7 +19,6 @@ const SETTINGS_ITEMS: SettingsItem[] = [
   { labelKey: "settings.estimatedExpenses", href: "/settings/estimated-expenses", icon: "lucide:receipt" },
   { labelKey: "settings.accounts", href: "/settings/accounts", icon: "lucide:wallet" },
   { labelKey: "settings.income", href: "/settings/income", icon: "lucide:trending-up" },
-  { labelKey: "settings.members", href: "/settings/members", icon: "lucide:users" },
   { labelKey: "settings.household", href: "/settings/household", icon: "lucide:home" },
 ]
 

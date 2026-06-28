@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { SkeletonList } from "@/components/shared/SkeletonList"
 import { EmptyState } from "@/components/shared/EmptyState"
+import { PageHeader } from "@/components/shared/PageHeader"
 import { BudgetProgressBar } from "@/components/shared/BudgetProgressBar"
 import { EventBudgetForm } from "@/components/event-budgets/EventBudgetForm"
 import { EventBudgetDetail } from "@/components/event-budgets/EventBudgetDetail"
@@ -60,17 +61,19 @@ export function EventBudgetClient() {
 
   return (
     <div className="p-4 pb-16">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-lg font-semibold">{t("eventBudget.title")}</h1>
-        <Button
-          size="sm"
-          onClick={() => setFormOpen(true)}
-          className="min-h-[44px] gap-1"
-        >
-          <Icon icon="lucide:plus" className="h-4 w-4" />
-          {t("eventBudget.add")}
-        </Button>
-      </div>
+      <PageHeader
+        titleKey="nav.eventBudgets"
+        actions={
+          <Button
+            size="sm"
+            onClick={() => setFormOpen(true)}
+            className="min-h-[44px] gap-1"
+          >
+            <Icon icon="lucide:plus" className="h-4 w-4" />
+            {t("eventBudget.add")}
+          </Button>
+        }
+      />
 
       {budgets.length === 0 ? (
         <EmptyState

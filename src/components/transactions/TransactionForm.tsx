@@ -235,14 +235,14 @@ export function TransactionForm({
           type="button"
           onClick={() => setValue("is_unusual_income", !isUnusual)}
           className={cn(
-            "flex w-full items-center gap-2 rounded-xl border px-3 py-2 text-sm",
-            isUnusual && "border-amber-500 bg-amber-500/10"
+            "flex w-full min-h-[44px] items-center gap-2 rounded-xl border px-3 py-2 text-sm transition-colors motion-reduce:transition-none",
+            isUnusual && "border-warning bg-warning/10"
           )}
         >
           <div
             className={cn(
               "h-4 w-4 rounded border",
-              isUnusual ? "border-amber-500 bg-amber-500" : "border-muted-foreground"
+              isUnusual ? "border-warning bg-warning" : "border-muted-foreground"
             )}
           />
           {t("tx.unusualIncome")}

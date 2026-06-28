@@ -14,6 +14,7 @@ import { NetWorthHero } from "@/components/net-worth/NetWorthHero"
 import { NetWorthDiscrepancyBanner } from "@/components/net-worth/NetWorthDiscrepancyBanner"
 import { NetWorthAccountRow } from "@/components/net-worth/NetWorthAccountRow"
 import { NetWorthAccountsTable, type NetWorthAccountRowData } from "@/components/net-worth/NetWorthAccountsTable"
+import { PageHeader } from "@/components/shared/PageHeader"
 import { NetWorthFundsTable, type NetWorthFundRowData } from "@/components/net-worth/NetWorthFundsTable"
 import { NetWorthChart } from "@/components/net-worth/NetWorthChart"
 import { NetWorthHistoryTable } from "@/components/net-worth/NetWorthHistoryTable"
@@ -121,6 +122,7 @@ export function NetWorthClient() {
 
   return (
     <div className="space-y-4 p-4 pb-16">
+      <PageHeader titleKey="nav.netWorth" />
       <Tabs defaultValue="current">
         <TabsList className="w-full">
           <TabsTrigger value="current" className="flex-1 text-xs">{t("netWorth.title")}</TabsTrigger>
@@ -138,7 +140,7 @@ export function NetWorthClient() {
             />
           )}
 
-          <div className="hidden rounded-2xl border border-border/40 bg-card shadow-card md:block">
+          <div className="hidden overflow-hidden rounded-2xl border border-border bg-card shadow-panel md:block">
             <NetWorthAccountsTable rows={accountRows} onBalanceChange={handleBalanceChange} />
           </div>
           <div className="space-y-2 md:hidden">
@@ -159,7 +161,7 @@ export function NetWorthClient() {
               <h3 className="px-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {t("dashboard.funds")}
               </h3>
-              <div className="hidden rounded-2xl border border-border/40 bg-card shadow-card md:block">
+              <div className="hidden overflow-hidden rounded-2xl border border-border bg-card shadow-panel md:block">
                 <NetWorthFundsTable rows={fundRows} />
               </div>
               <div className="space-y-2 md:hidden">
@@ -168,7 +170,7 @@ export function NetWorthClient() {
                   return (
                     <div
                       key={f.id}
-                      className="flex items-center justify-between rounded-[15px] border border-border bg-card px-4 py-3 shadow-panel"
+                      className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 shadow-panel"
                     >
                       <div className="flex items-center gap-2">
                         {config && <Icon icon={config.icon} className="h-4 w-4" style={{ color: config.color }} />}
@@ -206,7 +208,7 @@ export function NetWorthClient() {
               <h3 className="px-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {t("netWorth.monthlyHistory")}
               </h3>
-              <div className="rounded-2xl border border-border/40 bg-card shadow-card">
+              <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-panel">
                 <NetWorthHistoryTable data={history} />
               </div>
             </div>

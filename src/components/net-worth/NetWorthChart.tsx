@@ -48,7 +48,6 @@ export function NetWorthChart({ data, isLoading }: NetWorthChartProps) {
 
   const options: ApexOptions = {
     chart: {
-      type: "line",
       toolbar: { show: false },
       zoom: { enabled: false },
       fontFamily: "inherit",

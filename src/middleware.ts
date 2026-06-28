@@ -27,18 +27,21 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  const { data: household } = await supabase
-    .from("households")
-    .select("onboarding_completed, household_members!inner(user_id, role)")
-    .eq("household_members.user_id", user.id)
-    .eq("household_members.role", "owner")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle()
+  // Load all active household memberships to determine setup state
+  const { data: memberships } = await supabase
+    .from("household_members")
+    .select("household_id, households!inner(onboarding_completed)")
+    .eq("user_id", user.id)
+    .eq("is_active", true)
 
-  const onboarded = household?.onboarding_completed === true
+  type MRow = { household_id: string; households: { onboarding_completed: boolean } }
+  const rows = (memberships ?? []) as unknown as MRow[]
 
-  if (!onboarded) {
+  // needsSetup: no households at all, or any household not yet completed
+  const needsSetup =
+    rows.length === 0 || rows.some((m) => !m.households.onboarding_completed)
+
+  if (needsSetup) {
     if (pathname !== "/setup") {
       const url = request.nextUrl.clone()
       url.pathname = "/setup"
@@ -47,6 +50,7 @@ export async function middleware(request: NextRequest) {
     return response
   }
 
+  // All households complete — fully onboarded. Redirect away from entry pages.
   if (pathname === "/" || pathname === "/login" || pathname === "/setup") {
     const url = request.nextUrl.clone()
     url.pathname = "/dashboard"

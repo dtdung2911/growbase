@@ -23,6 +23,7 @@ import {
 import { useUpdateAccount } from "@/lib/hooks/useAccountMutations"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import type { Account, AccountType } from "@/types/app"
+import { BRAND } from "@/lib/design-tokens"
 
 const ACCOUNT_TYPE_VALUES: AccountType[] = [
   "bank",
@@ -166,7 +167,7 @@ export function AccountEditForm({ account, open, onOpenChange }: AccountEditForm
             <Input
               id="acc-color"
               type="color"
-              value={color || "#0084DB"}
+              value={color || BRAND.primary}
               onChange={(e) => setColor(e.target.value)}
               className="h-10 w-16 rounded-xl border p-1"
             />

@@ -49,6 +49,12 @@
     --info-soft: 194 78% 95%;
     --violet: 256 100% 74%;
 
+    /* Animation */
+    --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+    --duration-fast: 100ms;
+    --duration-normal: 250ms;
+    --duration-slow: 1000ms;
+
     /* Borders */
     --border: 212 45% 93%;
     --input: 212 45% 93%;
@@ -428,16 +434,11 @@ tbody > tr:nth-child(n+9) { animation-delay: 240ms; }
   animation: card-enter 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* Respect reduced motion */
+/* Respect reduced motion — global blanket rule */
 @media (prefers-reduced-motion: reduce) {
-  .shadow-panel,
-  .shadow-soft-xs,
-  tbody > tr,
-  .grid > *,
-  .space-y-2 > *,
-  .space-y-3 > *,
-  .space-y-4 > *,
-  [data-state="active"][role="tabpanel"] {
-    animation: none !important;
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

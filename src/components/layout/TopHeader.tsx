@@ -8,6 +8,7 @@ import { vi, enUS } from "date-fns/locale"
 import { Button } from "@/components/ui/button"
 import { NotificationDropdown } from "@/components/layout/NotificationDropdown"
 import { useAppStore } from "@/lib/stores/appStore"
+import { HouseholdSwitcher } from "@/components/layout/HouseholdSwitcher"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 
 function capitalizeFirst(str: string): string {
@@ -53,9 +54,11 @@ export function TopHeader() {
 
   return (
     <header className="fixed min-w-[calc(100%-var(--sidebar-width))] top-0 z-30 lg:mb-12 lg:mx-auto">
-      <div className="flex items-center justify-between bg-card px-4 py-2 shadow-soft-xs lg:px-5 lg:shadow-topbar header-custom">
-        {/* Month nav */}
-        <div className="flex items-center gap-1">
+      <div className="flex items-center justify-between bg-card px-4 py-2 shadow-soft-xs lg:rounded-2xl lg:border lg:border-border/40 lg:px-5 lg:shadow-card header-custom">
+        <div className="flex items-center gap-3">
+          <HouseholdSwitcher />
+          {/* Month nav */}
+          <div className="flex items-center gap-1">
           <Button
             variant="ghost"
             size="icon"
@@ -75,6 +78,7 @@ export function TopHeader() {
           >
             <Icon icon="lucide:chevron-right" className="h-5 w-5" />
           </Button>
+          </div>
         </div>
 
         {/* Actions */}

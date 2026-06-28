@@ -97,7 +97,7 @@ export function HoldingForm({ holding, open, onOpenChange }: HoldingFormProps) {
               max={100}
               step={0.1}
               {...register("weight_pct", { valueAsNumber: true })}
-              className="min-h-[44px] rounded-xl font-mono text-base tabular-nums"
+              className="h-[44px] rounded-[18px] font-mono text-base tabular-nums"
             />
             {errors.weight_pct && (
               <p className="text-xs text-destructive">{errors.weight_pct.message}</p>
@@ -149,7 +149,7 @@ export function HoldingForm({ holding, open, onOpenChange }: HoldingFormProps) {
               id="holding-notes"
               {...register("notes")}
               rows={2}
-              className="flex w-full rounded-xl border border-input bg-background px-4 py-2.5 text-base ring-offset-background transition-all placeholder:text-faint focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+              className="flex w-full rounded-xl border border-input bg-background px-4 py-2.5 text-base ring-offset-background transition-[border-color,box-shadow] motion-reduce:transition-none placeholder:text-faint focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
             />
           </div>
 

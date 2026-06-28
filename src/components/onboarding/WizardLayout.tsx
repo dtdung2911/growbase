@@ -40,7 +40,7 @@ export function WizardLayout({
       <div className="sticky top-0 z-10 bg-background">
         <div className="h-1 w-full bg-secondary">
           <div
-            className="h-1 bg-primary transition-all"
+            className="h-1 bg-primary [transition:width_300ms_ease] motion-reduce:transition-none"
             style={{ width: `${progress}%` }}
           />
         </div>

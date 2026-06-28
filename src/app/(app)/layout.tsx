@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react"
 import { AppShell } from "@/components/layout/AppShell"
-import { useAppStore } from "@/lib/stores/appStore"
+import { useAppStore, type HouseholdSummary } from "@/lib/stores/appStore"
 import { createClient } from "@/lib/supabase/client"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -53,16 +53,12 @@ function AppLayoutSkeleton() {
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const setHouseholdId = useAppStore((s) => s.setHouseholdId)
+  const setAllHouseholds = useAppStore((s) => s.setAllHouseholds)
   const setUser = useAppStore((s) => s.setUser)
   const householdId = useAppStore((s) => s.householdId)
   const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {
-    if (householdId) {
-      setHydrated(true)
-      return
-    }
-
     const init = async () => {
       const supabase = createClient()
       const {
@@ -77,20 +73,30 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
       const { data } = await supabase
         .from("household_members")
-        .select("household_id")
+        .select("role, households(id, name)")
         .eq("user_id", user.id)
         .eq("is_active", true)
-        .limit(1)
-        .maybeSingle()
+        .order("joined_at", { ascending: true })
 
-      if (data?.household_id) {
-        setHouseholdId(data.household_id)
-      }
+      const allHouseholds: HouseholdSummary[] = (data ?? []).map((m) => ({
+        id: (m.households as { id: string; name: string }).id,
+        name: (m.households as { id: string; name: string }).name,
+        role: m.role as "owner" | "member",
+      }))
+
+      setAllHouseholds(allHouseholds)
+
+      const validId =
+        householdId && allHouseholds.some((h) => h.id === householdId)
+          ? householdId
+          : (allHouseholds[0]?.id ?? null)
+
+      setHouseholdId(validId)
       setHydrated(true)
     }
 
     void init()
-  }, [householdId, setHouseholdId, setUser])
+  }, [setHouseholdId, setAllHouseholds, setUser])
 
   if (!hydrated) {
     return <AppLayoutSkeleton />

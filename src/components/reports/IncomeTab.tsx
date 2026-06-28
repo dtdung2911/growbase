@@ -16,6 +16,7 @@ import {
 import { SortableTableHead } from "@/components/ui/SortableTableHead"
 import { useSortable } from "@/lib/hooks/useSortable"
 import type { TransactionWithJoins } from "@/types/app"
+import { SEMANTIC } from "@/lib/design-tokens"
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false })
 
@@ -57,8 +58,8 @@ export function IncomeTab({ transactions }: IncomeTabProps) {
 
   const barOptions: ApexOptions = useMemo(
     () => ({
-      chart: { type: "bar", toolbar: { show: false }, fontFamily: "inherit" },
-      colors: ["#49d68d"],
+      chart: { toolbar: { show: false }, fontFamily: "inherit" },
+      colors: [SEMANTIC.success],
       plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: "60%" } },
       dataLabels: { enabled: false },
       xaxis: {
@@ -96,7 +97,7 @@ export function IncomeTab({ transactions }: IncomeTabProps) {
 
   return (
     <div className="grid gap-4 md:grid-cols-[1fr_minmax(0,380px)]">
-      <div className="hidden rounded-[15px] border border-border bg-card shadow-panel overflow-hidden md:block">
+      <div className="hidden overflow-hidden rounded-2xl border border-border bg-card shadow-panel md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -140,7 +141,7 @@ export function IncomeTab({ transactions }: IncomeTabProps) {
         {rows.map((row) => (
           <div
             key={row.id}
-            className="flex items-center justify-between rounded-[15px] border border-border bg-card px-4 py-3 shadow-panel"
+            className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 shadow-panel"
           >
             <div>
               <p className="text-sm">{row.source}</p>
@@ -153,7 +154,7 @@ export function IncomeTab({ transactions }: IncomeTabProps) {
             </span>
           </div>
         ))}
-        <div className="flex items-center justify-between rounded-[15px] border border-border bg-card px-4 py-3 shadow-panel">
+        <div className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 shadow-panel">
           <span className="text-sm font-medium">{t("reports.totalIncome")}</span>
           <span className="text-sm font-medium font-mono tabular-nums text-income">
             {formatVND(total)}
@@ -161,10 +162,10 @@ export function IncomeTab({ transactions }: IncomeTabProps) {
         </div>
       </div>
 
-      <div className="rounded-[15px] border border-border bg-card p-4 shadow-panel">
+      <div className="rounded-2xl border border-border bg-card p-4 shadow-panel">
         <h3 className="mb-2 text-sm font-medium">{t("reports.source")}</h3>
         <div className="h-64">
-          <Chart type="bar" height="100%" width="100%" options={barOptions} series={barSeries} />
+          <Chart key={`inc-${topSources.length}`} type="bar" height="100%" width="100%" options={barOptions} series={barSeries} />
         </div>
       </div>
     </div>

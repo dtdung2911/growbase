@@ -64,7 +64,7 @@ function MobileLoginContent({
       </div>
 
       <div className="text-[26px] font-medium tracking-tight mb-1.5">
-        <span style={{ color: "#0084DB" }}>Grow</span>
+        <span className="text-primary">Grow</span>
         <span style={{ color: "var(--login-text-primary)" }}>Base</span>
       </div>
 
@@ -130,7 +130,7 @@ function BrandingPanel() {
         <div className="flex items-center gap-2.5 mb-8">
           <LogoMark size={32} />
           <div className="text-[19px] font-medium tracking-tight">
-            <span style={{ color: "#0084DB" }}>Grow</span>
+            <span className="text-primary">Grow</span>
             <span style={{ color: "var(--login-text-primary)" }}>Base</span>
           </div>
         </div>
@@ -151,11 +151,8 @@ function BrandingPanel() {
         <div className="flex flex-col gap-3">
           {features.map(({ icon, textKey }) => (
             <div key={textKey} className="flex items-center gap-2.5">
-              <div
-                className="w-[26px] h-[26px] rounded-[7px] flex items-center justify-center flex-shrink-0"
-                style={{ background: "rgba(0, 132, 219, 0.12)" }}
-              >
-                <Icon icon={icon} className="w-3.5 h-3.5" style={{ color: "#0084DB" }} />
+              <div className="w-[26px] h-[26px] rounded-[7px] flex items-center justify-center flex-shrink-0 bg-primary/[0.12]">
+                <Icon icon={icon} className="w-3.5 h-3.5 text-primary" />
               </div>
               <span className="text-[12px]" style={{ color: "var(--login-text-secondary)" }}>
                 {t(textKey)}
@@ -167,13 +164,9 @@ function BrandingPanel() {
 
       <div className="relative z-10 mt-6">
         <div
-          className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5"
-          style={{
-            background: "rgba(0, 132, 219, 0.08)",
-            border: "1px solid rgba(0, 132, 219, 0.15)",
-          }}
+          className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 bg-primary/[0.08] border border-primary/[0.15]"
         >
-          <div className="w-1.5 h-1.5 rounded-full bg-brand" />
+          <div className="w-1.5 h-1.5 rounded-full bg-primary" />
           <span className="text-[11px]" style={{ color: "var(--login-text-secondary)" }}>
             {t("login.freeBadge")}
           </span>
@@ -236,19 +229,15 @@ function FormPanel({
         </div>
 
         <button
-          className="w-full flex items-center justify-center gap-2 px-4 py-[11px] rounded-[9px] mb-5 transition-opacity hover:opacity-80"
-          style={{
-            border: "1px solid var(--login-border)",
-            background: "rgba(0, 132, 219, 0.04)",
-          }}
+          className="w-full flex items-center justify-center gap-2 px-4 py-[11px] rounded-[9px] mb-5 transition-opacity hover:opacity-80 bg-primary/[0.04]"
+          style={{ border: "1px solid var(--login-border)" }}
         >
-          <span className="text-[13px]" style={{ color: "#0084DB" }}>
+          <span className="text-[13px] text-primary">
             {t("login.continue")}
           </span>
           <Icon
             icon="lucide:arrow-right"
-            className="w-[14px] h-[14px]"
-            style={{ color: "#0084DB" }}
+            className="w-[14px] h-[14px] text-primary"
           />
         </button>
 
@@ -273,14 +262,13 @@ function GoogleButton({
     <button
       onClick={onClick}
       disabled={loading}
-      className={`${fullWidth ? "w-full" : ""} flex items-center justify-center gap-2.5 px-4 py-[13px] rounded-[10px] transition-opacity hover:opacity-90 active:scale-[0.98] disabled:opacity-60`}
-      style={{ background: "#0084DB" }}
+      className={`${fullWidth ? "w-full" : ""} flex items-center justify-center gap-2.5 px-4 py-[13px] rounded-[10px] transition-opacity hover:opacity-90 active:scale-[0.98] disabled:opacity-60 bg-primary`}
     >
       {loading ? (
         <Icon icon="lucide:loader-2" className="w-[18px] h-[18px] text-white animate-spin" />
       ) : (
         <span className="w-[18px] h-[18px] bg-white rounded-[3px] flex items-center justify-center flex-shrink-0">
-          <span className="text-[11px] font-medium leading-none" style={{ color: "#0084DB" }}>
+          <span className="text-[11px] font-medium leading-none text-primary">
             G
           </span>
         </span>
@@ -299,11 +287,11 @@ function TermsText() {
       style={{ color: "var(--login-text-muted)" }}
     >
       {t("login.terms")}{" "}
-      <a href="/terms" style={{ color: "#0084DB" }} className="hover:underline">
+      <a href="/terms" className="text-primary hover:underline">
         {t("login.termsOfService")}
       </a>{" "}
       {t("login.and")}{" "}
-      <a href="/privacy" style={{ color: "#0084DB" }} className="hover:underline">
+      <a href="/privacy" className="text-primary hover:underline">
         {t("login.privacyPolicy")}
       </a>
     </p>
@@ -319,19 +307,19 @@ function DecorativeBars() {
       viewBox="0 0 180 220"
       aria-hidden="true"
     >
-      <rect x="0" y="120" width="42" height="100" rx="7" fill="#0084DB" opacity="0.06" />
-      <rect x="52" y="76" width="42" height="144" rx="7" fill="#0084DB" opacity="0.06" />
-      <rect x="104" y="20" width="42" height="200" rx="7" fill="#0084DB" opacity="0.08" />
+      <rect x="0" y="120" width="42" height="100" rx="7" className="fill-primary" opacity="0.06" />
+      <rect x="52" y="76" width="42" height="144" rx="7" className="fill-primary" opacity="0.06" />
+      <rect x="104" y="20" width="42" height="200" rx="7" className="fill-primary" opacity="0.08" />
       <path
         d="M21 100 L73 58 L125 14"
-        stroke="#0084DB"
+        className="stroke-primary"
         strokeWidth="2"
         strokeDasharray="5 4"
         strokeLinecap="round"
         fill="none"
         opacity="0.09"
       />
-      <circle cx="125" cy="14" r="7" fill="#0084DB" opacity="0.09" />
+      <circle cx="125" cy="14" r="7" className="fill-primary" opacity="0.09" />
     </svg>
   )
 }

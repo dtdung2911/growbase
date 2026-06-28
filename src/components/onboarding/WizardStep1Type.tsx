@@ -72,7 +72,7 @@ export function WizardStep1Type({
               type="button"
               onClick={() => handleCurrencyChange(c)}
               className={cn(
-                "min-h-[44px] flex-1 rounded-xl border text-base font-medium transition-colors",
+                "min-h-[44px] flex-1 rounded-xl border text-base font-medium transition-colors motion-reduce:transition-none",
                 cur === c
                   ? "border-primary bg-primary/10 text-primary"
                   : "border-border bg-background text-muted-foreground"
@@ -113,7 +113,7 @@ function TypeCard({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex min-h-[96px] flex-col items-center justify-center gap-2 rounded-2xl border text-base font-medium transition-colors",
+        "flex min-h-[96px] flex-col items-center justify-center gap-2 rounded-[13px] border text-base font-medium transition-colors motion-reduce:transition-none",
         selected
           ? "border-primary bg-primary/10 text-primary"
           : "border-border bg-card text-muted-foreground"

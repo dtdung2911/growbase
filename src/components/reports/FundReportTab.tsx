@@ -17,6 +17,7 @@ import {
 import { SortableTableHead } from "@/components/ui/SortableTableHead"
 import { useSortable } from "@/lib/hooks/useSortable"
 import type { Fund } from "@/types/app"
+import { BRAND } from "@/lib/design-tokens"
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false })
 
@@ -42,8 +43,8 @@ export function FundReportTab({ funds }: FundReportTabProps) {
 
   const chartOptions: ApexOptions = useMemo(
     () => ({
-      chart: { type: "bar", stacked: true, toolbar: { show: false }, fontFamily: "inherit" },
-      colors: ["#0084DB", "#e5edf6"],
+      chart: { stacked: true, toolbar: { show: false }, fontFamily: "inherit" },
+      colors: [BRAND.primary, BRAND.tint],
       plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: "55%" } },
       dataLabels: { enabled: false },
       xaxis: {
@@ -88,7 +89,7 @@ export function FundReportTab({ funds }: FundReportTabProps) {
 
   return (
     <div className="space-y-4">
-      <div className="hidden rounded-[15px] border border-border bg-card shadow-panel overflow-hidden md:block">
+      <div className="hidden overflow-hidden rounded-2xl border border-border bg-card shadow-panel md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -160,7 +161,7 @@ export function FundReportTab({ funds }: FundReportTabProps) {
           return (
             <div
               key={fund.id}
-              className="rounded-[15px] border border-border bg-card p-4 shadow-panel space-y-2"
+              className="rounded-2xl border border-border bg-card p-4 shadow-panel space-y-2"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -178,7 +179,7 @@ export function FundReportTab({ funds }: FundReportTabProps) {
                       className="h-1.5 rounded-full"
                       style={{
                         width: `${Math.min(progress, 100)}%`,
-                        backgroundColor: fund.color ?? "#0084DB",
+                        backgroundColor: fund.color ?? BRAND.primary,
                       }}
                     />
                   </div>
@@ -190,7 +191,7 @@ export function FundReportTab({ funds }: FundReportTabProps) {
             </div>
           )
         })}
-        <div className="flex items-center justify-between rounded-[15px] border border-border bg-card px-4 py-3 shadow-panel">
+        <div className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 shadow-panel">
           <span className="text-sm font-medium">{t("funds.totalFunds")}</span>
           <span className="text-sm font-medium font-mono tabular-nums">
             {formatVND(totalBalance)}
@@ -199,10 +200,10 @@ export function FundReportTab({ funds }: FundReportTabProps) {
       </div>
 
       {withTarget.length > 0 && (
-        <div className="rounded-[15px] border border-border bg-card p-4 shadow-panel">
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-panel">
           <h3 className="mb-2 text-sm font-medium">{t("reports.completion")}</h3>
           <div className="h-64">
-            <Chart type="bar" height="100%" width="100%" options={chartOptions} series={chartSeries} />
+            <Chart key={`fund-${withTarget.length}`} type="bar" height="100%" width="100%" options={chartOptions} series={chartSeries} />
           </div>
         </div>
       )}

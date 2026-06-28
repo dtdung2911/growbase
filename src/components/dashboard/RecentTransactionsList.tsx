@@ -22,7 +22,7 @@ export function RecentTransactionsList({ transactions }: RecentTransactionsListP
   }
 
   return (
-    <div className="rounded-[15px] border border-border bg-card shadow-panel">
+    <div className="overflow-hidden rounded-[13px] border border-border/40 bg-card shadow-card">
       {transactions.map((tx) => (
         <div
           key={tx.id}
@@ -51,7 +51,7 @@ export function RecentTransactionsList({ transactions }: RecentTransactionsListP
       ))}
       <Link
         href="/transactions"
-        className="block border-t border-border/50 px-4 py-3 text-center text-sm text-primary hover:bg-accent transition-colors rounded-b-2xl"
+        className="block border-t border-border/50 px-4 py-3 text-center text-sm text-primary hover:bg-accent transition-colors rounded-b-[13px]"
       >
         {t("common.viewAll")}
       </Link>

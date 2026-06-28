@@ -23,6 +23,7 @@ export function useFunds() {
       if (!res.ok) throw new Error(json.error ?? "Không tải được quỹ")
       return json.data
     },
+    staleTime: 30_000,
     enabled: Boolean(householdId),
   })
 }
@@ -38,6 +39,7 @@ export function useFundDetail(fundId: string) {
       if (!res.ok) throw new Error(json.error ?? "Không tải được quỹ")
       return json.data
     },
+    staleTime: 30_000,
     enabled: Boolean(householdId) && Boolean(fundId),
   })
 }
@@ -214,6 +216,7 @@ export function useFundTransactions(fundId: string) {
       if (!res.ok) throw new Error(json.error ?? "Không tải được lịch sử quỹ")
       return json.data
     },
+    staleTime: 30_000,
     enabled: Boolean(householdId) && Boolean(fundId),
   })
 }

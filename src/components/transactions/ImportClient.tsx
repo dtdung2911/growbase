@@ -1,8 +1,8 @@
 "use client"
 
 import { useMemo, useRef, useState } from "react"
-import { useRouter } from "next/navigation"
 import { Icon } from "@iconify/react"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils/cn"
 import { formatVND } from "@/lib/utils/currency"
@@ -25,6 +25,7 @@ import {
 import { parseExcel } from "@/lib/utils/excel"
 import { matchCategory } from "@/lib/utils/category-matcher"
 import { Button } from "@/components/ui/button"
+import { PageHeader } from "@/components/shared/PageHeader"
 import { Badge } from "@/components/ui/badge"
 import {
   Select,
@@ -275,22 +276,14 @@ export function ImportClient() {
 
   return (
     <div className="p-4 pb-24">
-      <div className="mb-6 flex items-center gap-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="min-h-[44px] min-w-[44px]"
-          onClick={() => router.push("/transactions")}
-          aria-label={t("import.back")}
-        >
-          <Icon icon="lucide:arrow-left" className="h-5 w-5" />
-        </Button>
-        <h1 className="text-xl font-bold text-ink">{t("import.title")}</h1>
-      </div>
+      <PageHeader
+        titleKey="import.title"
+        breadcrumbs={[{ labelKey: "nav.transactions", href: "/transactions" }]}
+      />
 
       <StepsIndicator current={step} />
 
-      <div className="mt-6 rounded-[15px] border border-border bg-card p-6 shadow-panel">
+      <div className="mt-6 rounded-[13px] border border-border/40 bg-card p-6 shadow-card">
         {step === 1 && (
           <UploadStep
             fileName={fileName}
@@ -491,7 +484,7 @@ function UploadStep({
           onDrop(e)
         }}
         className={cn(
-          "flex flex-col items-center justify-center gap-3 rounded-[15px] border-2 border-dashed px-6 py-12 text-center transition-colors",
+          "flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-6 py-12 text-center transition-colors",
           dragActive ? "border-primary bg-primary/5" : "border-border bg-background"
         )}
       >
@@ -513,7 +506,7 @@ function UploadStep({
       </div>
 
       {fileName && rowCount > 0 && (
-        <div className="mt-4 flex items-center gap-2 rounded-[15px] border border-border bg-success-soft/40 px-4 py-3">
+        <div className="mt-4 flex items-center gap-2 rounded-2xl border border-border bg-success-soft/40 px-4 py-3">
           <Icon icon="lucide:file-check-2" className="h-5 w-5 text-success" />
           <div className="text-sm">
             <div className="flex items-center gap-2">
@@ -756,12 +749,12 @@ function PreviewStep({
       </div>
 
       {totalCount === 0 && (
-        <p className="rounded-[15px] border border-border bg-warning-soft/40 px-4 py-3 text-sm text-warning">
+        <p className="rounded-2xl border border-border bg-warning-soft/40 px-4 py-3 text-sm text-warning">
           {t("import.noValidRows")}
         </p>
       )}
 
-      <div className="hidden overflow-hidden rounded-[15px] border border-border md:block">
+      <div className="hidden overflow-hidden rounded-[13px] border border-border/40 md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -858,7 +851,7 @@ function PreviewStep({
           <div
             key={row.index}
             className={cn(
-              "rounded-[15px] border border-border bg-card p-3",
+              "rounded-[13px] border border-border/40 bg-card p-3",
               !row.valid && "border-warning/40 bg-warning-soft/30"
             )}
           >

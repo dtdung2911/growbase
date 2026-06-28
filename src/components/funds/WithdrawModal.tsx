@@ -34,8 +34,6 @@ import {
 } from "@/lib/validations/fund"
 import type { Fund } from "@/types/app"
 
-const AMBER = "#EF9F27"
-
 type WithdrawModalProps = {
   fund: Fund | null
   open: boolean
@@ -228,8 +226,7 @@ function WithdrawFormBody({ fund, onClose }: { fund: Fund; onClose: () => void }
           <Button
             type="submit"
             disabled={withdraw.isPending || exceedsBalance}
-            className="min-h-[44px] text-white hover:opacity-90"
-            style={{ backgroundColor: AMBER }}
+            className="min-h-[44px] bg-warning text-white hover:opacity-90"
           >
             {withdraw.isPending && (
               <Icon icon="lucide:loader-2" className="h-4 w-4 animate-spin" />

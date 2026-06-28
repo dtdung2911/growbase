@@ -1,18 +1,14 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { withAuth, withAuthUser } from "@/lib/supabase/auth-check"
 import { supabaseAdmin } from "@/lib/supabase/admin"
 import { householdSchema } from "@/lib/validations/household"
 import { updateHouseholdSchema } from "@/lib/validations/household-settings"
 
 export async function GET() {
-  const supabase = createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ data: null, error: "Chưa đăng nhập" }, { status: 401 })
-  }
+  // AD-1: withAuth() mandatory first call
+  const auth = await withAuth()
+  if (auth.error) return auth.error
+  const { user } = auth
 
   const { data, error } = await supabaseAdmin
     .from("households")
@@ -38,14 +34,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const supabase = createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ data: null, error: "Chưa đăng nhập" }, { status: 401 })
-  }
+  // AD-2: Onboarding system op — user may not have a household yet, withAuth() would 403
+  const auth = await withAuthUser()
+  if (auth.error) return auth.error
+  const { user } = auth
 
   const body = await request.json().catch(() => null)
   const parsed = householdSchema.safeParse(body)
@@ -114,14 +106,10 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const supabase = createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ data: null, error: "Chưa đăng nhập" }, { status: 401 })
-  }
+  // AD-1: withAuth() mandatory first call
+  const auth = await withAuth()
+  if (auth.error) return auth.error
+  const { user } = auth
 
   // Guard: check caller is owner
   const { data: member } = await supabaseAdmin

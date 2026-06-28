@@ -1,6 +1,6 @@
 "use client"
 
-import { cn } from "@/lib/utils/cn"
+import { Badge } from "@/components/ui/badge"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import type { UrgencyLevel } from "@/types/app"
 
@@ -22,16 +22,8 @@ export function DueBadge({ urgencyLevel, daysUntilDue }: DueBadgeProps) {
           : t("scheduledPayments.daysLeft", { days: daysUntilDue })
         : t("scheduledPayments.daysLeft", { days: daysUntilDue })
 
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
-        urgencyLevel === "overdue" && "bg-rose-500/10 text-rose-500",
-        urgencyLevel === "due-soon" && "bg-rose-500/10 text-rose-500",
-        urgencyLevel === "upcoming" && "bg-amber-500/10 text-amber-500"
-      )}
-    >
-      {label}
-    </span>
-  )
+  const variant =
+    urgencyLevel === "overdue" || urgencyLevel === "due-soon" ? "error" : "warning"
+
+  return <Badge variant={variant}>{label}</Badge>
 }

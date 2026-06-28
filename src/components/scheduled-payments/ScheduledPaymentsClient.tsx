@@ -2,12 +2,13 @@
 
 import { useState } from "react"
 import { Icon } from "@iconify/react"
-import { cn } from "@/lib/utils/cn"
 import { formatVND } from "@/lib/utils/currency"
 import { useScheduledPayments } from "@/lib/hooks/useScheduledPayments"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { PageHeader } from "@/components/shared/PageHeader"
 import { SkeletonList } from "@/components/shared/SkeletonList"
 import { EmptyState } from "@/components/shared/EmptyState"
 import { PaymentCard } from "@/components/scheduled-payments/PaymentCard"
@@ -66,37 +67,32 @@ export function ScheduledPaymentsClient() {
   }
 
   return (
-    <div className="p-4">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-lg font-semibold">{t("scheduledPayments.title")}</h1>
-        <Button
-          size="sm"
-          onClick={() => setFormOpen(true)}
-          className="min-h-[44px] gap-1"
-        >
-          <Icon icon="lucide:plus" className="h-4 w-4" />
-          {t("common.add")}
-        </Button>
-      </div>
-
-      {/* Status filter chips */}
-      <div className="mb-3 flex gap-2">
-        {(["all", "active", "cancelled", "expired"] as const).map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => setStatusFilter(s)}
-            className={cn(
-              "rounded-full px-3 py-1 text-xs font-medium transition-colors",
-              statusFilter === s
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
-            )}
+    <div className="space-y-4 p-4">
+      <PageHeader
+        titleKey="nav.scheduledPayments"
+        actions={
+          <Button
+            size="sm"
+            onClick={() => setFormOpen(true)}
+            className="min-h-[44px] gap-1"
           >
-            {s === "all" ? t("common.all") : t(`scheduledPayments.status.${s}`)}
-          </button>
-        ))}
-      </div>
+            <Icon icon="lucide:plus" className="h-4 w-4" />
+            {t("common.add")}
+          </Button>
+        }
+      />
+
+      <Tabs
+        value={statusFilter}
+        onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}
+      >
+        <TabsList className="mb-3">
+          <TabsTrigger value="all">{t("common.all")}</TabsTrigger>
+          <TabsTrigger value="active">{t("scheduledPayments.status.active")}</TabsTrigger>
+          <TabsTrigger value="cancelled">{t("scheduledPayments.status.cancelled")}</TabsTrigger>
+          <TabsTrigger value="expired">{t("scheduledPayments.status.expired")}</TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       {filtered.length === 0 ? (
         <EmptyState
@@ -109,7 +105,7 @@ export function ScheduledPaymentsClient() {
       ) : (
         <>
           {/* Desktop: table */}
-          <div className="hidden md:block rounded-[15px] border border-border bg-card shadow-panel">
+          <div className="hidden overflow-hidden rounded-2xl border border-border bg-card shadow-panel md:block">
             <Table>
               <TableHeader>
                 <TableRow>

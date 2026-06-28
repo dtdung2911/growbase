@@ -269,7 +269,7 @@ function DebtTable({
   }
 
   return (
-    <div className="hidden rounded-[15px] border border-border bg-card shadow-panel md:block">
+    <div className="hidden overflow-hidden rounded-2xl border border-border bg-card shadow-panel md:block">
       <Table>
         <TableHeader>
           <TableRow>

@@ -19,6 +19,7 @@ export function useTransactions() {
       if (!res.ok) throw new Error(json.error ?? "Không tải được giao dịch")
       return json.data
     },
+    staleTime: 60_000,
     enabled: Boolean(householdId),
   })
 }

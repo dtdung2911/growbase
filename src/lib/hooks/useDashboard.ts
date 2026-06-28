@@ -17,6 +17,7 @@ export function useDashboardData() {
       if (!res.ok) throw new Error(json.error ?? "Không tải được dữ liệu")
       return json.data
     },
+    staleTime: 5 * 60_000,
     enabled: Boolean(householdId),
   })
 }

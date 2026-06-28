@@ -1,14 +1,12 @@
 "use client"
 
 import { SettingsMenu } from "@/components/settings/SettingsMenu"
-import { useTranslation } from "@/lib/i18n/useTranslation"
+import { PageHeader } from "@/components/shared/PageHeader"
 
 export default function SettingsPage() {
-  const { t } = useTranslation()
-
   return (
     <div className="space-y-4 pb-16">
-      <h1 className="text-lg font-semibold">{t("settings.title")}</h1>
+      <PageHeader titleKey="nav.settings" />
       <SettingsMenu />
     </div>
   )

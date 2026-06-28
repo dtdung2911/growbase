@@ -1,16 +1,12 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { withAuth, verifyHouseholdMember } from "@/lib/supabase/auth-check"
 import { inviteSchema } from "@/lib/validations/household"
 
 export async function POST(request: Request) {
-  const supabase = createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ data: null, error: "Chưa đăng nhập" }, { status: 401 })
-  }
+  // AD-1: withAuth() mandatory first call
+  const auth = await withAuth()
+  if (auth.error) return auth.error
+  const { user, supabase } = auth
 
   const body = await request.json().catch(() => null)
   const parsed = inviteSchema.safeParse(body)
@@ -22,11 +18,17 @@ export async function POST(request: Request) {
   }
   const { householdId, email, display_name, role } = parsed.data
 
+  // AD-6: Verify user is active member of the specific householdId
+  const guard = await verifyHouseholdMember(supabase, user.id, householdId)
+  if (!guard.ok) return guard.error
+
+  // Additional role check: only owner may invite
   const { data: member } = await supabase
     .from("household_members")
-    .select("household_id, role")
+    .select("role")
     .eq("household_id", householdId)
     .eq("user_id", user.id)
+    .eq("is_active", true)
     .eq("role", "owner")
     .maybeSingle()
 

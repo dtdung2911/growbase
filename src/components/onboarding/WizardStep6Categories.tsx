@@ -29,12 +29,12 @@ export function WizardStep6Categories() {
             {groups?.map((group) => (
               <div
                 key={group.id}
-                className="rounded-2xl bg-card p-4 shadow-soft-xs"
+                className="rounded-[13px] bg-card p-4 shadow-card border border-border/40"
               >
                 <div className="flex items-center gap-2">
                   <span
                     className="h-3 w-3 rounded-full"
-                    style={{ backgroundColor: group.color ?? "#6B7280" }}
+                    style={{ backgroundColor: group.color ?? "hsl(var(--muted-foreground))" }}
                   />
                   <p className="text-sm font-medium">{group.name}</p>
                 </div>
@@ -54,7 +54,7 @@ export function WizardStep6Categories() {
         </>
       )}
 
-      <div className="rounded-2xl bg-primary/5 p-4 text-sm text-primary">
+      <div className="rounded-[13px] bg-primary/5 p-4 text-sm text-primary">
         {t("setup.step6Note")}
       </div>
     </div>
@@ -67,7 +67,7 @@ function CategorySkeleton() {
       {Array.from({ length: 4 }).map((_, i) => (
         <div
           key={i}
-          className="h-20 animate-pulse rounded-2xl bg-muted"
+          className="h-20 animate-shimmer motion-reduce:animate-none rounded-[13px] bg-[linear-gradient(90deg,hsl(var(--muted)/0.2)_25%,hsl(var(--muted)/0.5)_50%,hsl(var(--muted)/0.2)_75%)] bg-[length:200%_100%]"
         />
       ))}
     </div>

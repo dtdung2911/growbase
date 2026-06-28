@@ -17,7 +17,7 @@ Nhận technical design từ Architect và migration log từ Migration Agent, i
 - React components
 - Pages
 
-Không viết SQL migrations — đó là việc của Migration Agent.
+Không viết SQL migrations — đó [QUAN TRỌNG] [EDF/VTI] Giải pháp và mục tiêu tách microservicelà việc của Migration Agent.
 
 ## Input
 

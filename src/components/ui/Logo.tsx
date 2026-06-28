@@ -20,7 +20,7 @@ export function LogoMark({ size = 32 }: { size?: number }) {
           width={barWidth}
           height={h}
           rx={radius}
-          fill="#0084DB"
+          className="fill-primary"
           opacity={[0.35, 0.68, 1][i]}
         />
       ))}

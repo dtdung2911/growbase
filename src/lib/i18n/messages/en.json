@@ -1,4 +1,6 @@
 {
+  "breadcrumb.home": "Home",
+  "breadcrumb.settings": "Settings",
   "nav.dashboard": "Dashboard",
   "nav.transactions": "Transactions",
   "nav.funds": "Funds",
@@ -43,6 +45,12 @@
   "dashboard.recentTx": "Recent transactions",
   "dashboard.savings": "Savings",
   "dashboard.noCategory": "Transaction",
+  "dashboard.totalExpense": "Total Expense",
+  "dashboard.netWorth": "Net Worth",
+  "dashboard.vsLastMonth": "vs last month",
+  "dashboard.topExpenses": "Top Expense Categories",
+  "dashboard.weekdaySpending": "Spending by Day of Week",
+  "dashboard.incomeVsExpense": "Income vs Expense",
 
   "tx.expense": "Expense",
   "tx.expenseShort": "Expense",
@@ -174,6 +182,11 @@
   "reports.fundType": "Fund Type",
   "reports.balance": "Balance",
   "reports.incomeVsExpense": "Income vs Expense",
+  "reports.last6months": "Last 6 months",
+  "reports.trendOverTime": "Trend over time",
+  "reports.expenseBreakdown": "Expense breakdown by behavior",
+  "reports.byBehaviorType": "Categorized by spending behavior type",
+  "reports.lifestyle": "Lifestyle",
   "reports.month": "Month",
   "reports.totalIncome": "Total Income",
   "reports.savings": "Savings",
@@ -284,6 +297,13 @@
   "scheduledPayments.expiryDate": "Expiry Date",
 
   "common.all": "All",
+  "common.sun": "Sun",
+  "common.mon": "Mon",
+  "common.tue": "Tue",
+  "common.wed": "Wed",
+  "common.thu": "Thu",
+  "common.fri": "Fri",
+  "common.sat": "Sat",
 
   "investment.title": "Investment Portfolio",
   "investment.holdings": "Holdings",
@@ -634,6 +654,12 @@
   "settings.members.role.owner": "Owner",
   "settings.members.role.member": "Member",
   "settings.members.role.viewer": "Viewer",
+  "settings.members.invite": "Invite member",
+  "settings.members.sendInvite": "Send invite",
+  "settings.members.inviteSent": "Invitation sent",
+  "settings.members.inviteDisplayName": "Display name",
+  "settings.members.inviteNamePlaceholder": "Spouse / Parent / ...",
+  "settings.members.roleLabel": "Role",
 
   "settings.household.nameLabel": "Household name",
   "settings.household.typeLabel": "Household type",
@@ -698,5 +724,13 @@
   "import.cta": "Import",
   "import.missingCategory": "{{count}} rows missing category",
   "import.categoryGroup": "Category Group",
-  "import.costType": "Spending Type"
+  "import.costType": "Spending Type",
+  "workspace.myWorkspaces": "Workspaces",
+  "workspace.switchWorkspace": "Switch workspace",
+  "workspace.createNew": "Create new household",
+  "workspace.createTitle": "Create new household",
+  "workspace.namePlaceholder": "Family or individual name",
+  "workspace.createSuccess": "Created successfully",
+  "workspace.owner": "Owner",
+  "workspace.member": "Member"
 }

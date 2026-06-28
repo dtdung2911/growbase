@@ -25,7 +25,7 @@ export function PaymentCard({ payment }: PaymentCardProps) {
 
   return (
     <>
-      <div className={cn("space-y-2 rounded-[15px] border border-border bg-card p-4 shadow-panel")}>
+      <div className={cn("space-y-2 rounded-2xl border border-border bg-card p-4 shadow-panel")}>
         <div className="flex items-start justify-between">
           <div>
             <p className="text-sm font-medium">{payment.name}</p>

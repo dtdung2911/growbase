@@ -19,6 +19,7 @@ export function useBudgetActuals() {
       if (!res.ok) throw new Error(json.error ?? "Không tải được ngân sách")
       return json.data
     },
+    staleTime: 5 * 60_000,
     enabled: Boolean(householdId),
   })
 }

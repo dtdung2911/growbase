@@ -19,14 +19,11 @@ export function BudgetProgressBar({ percentage, className }: BudgetProgressBarPr
 
   return (
     <div
-      className={cn("h-1.5 overflow-hidden rounded-full bg-[#e7f0f8] dark:bg-elevated", className)}
+      className={cn("h-1.5 overflow-hidden rounded-full bg-inset dark:bg-elevated", className)}
     >
       <div
-        className={cn("h-full origin-left rounded-full", fillColor)}
-        style={{
-          width: `${clamped}%`,
-          animation: "fillProgress 1.1s ease",
-        }}
+        className={cn("h-full origin-left rounded-full animate-growth-bar motion-reduce:animate-none", fillColor)}
+        style={{ width: `${clamped}%` }}
       />
     </div>
   )

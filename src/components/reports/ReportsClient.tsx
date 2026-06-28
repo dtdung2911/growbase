@@ -14,6 +14,7 @@ import { IncomeTab } from "@/components/reports/IncomeTab"
 import { BudgetVsActualTab } from "@/components/reports/BudgetVsActualTab"
 import { FundReportTab } from "@/components/reports/FundReportTab"
 import { SkeletonList } from "@/components/shared/SkeletonList"
+import { PageHeader } from "@/components/shared/PageHeader"
 
 export function ReportsClient() {
   const { t } = useTranslation()
@@ -46,6 +47,7 @@ export function ReportsClient() {
 
   return (
     <div className="p-4">
+      <PageHeader titleKey="nav.reports" />
       <Tabs defaultValue="overview">
         <TabsList className="w-full">
           <TabsTrigger value="overview" className="flex-1 text-xs">

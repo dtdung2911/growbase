@@ -334,14 +334,31 @@ export type SpendingByBehavior = {
   percentage: number
 }
 
+export type TopExpenseCategory = {
+  name: string
+  icon: string | null
+  amount: number
+  pct: number
+}
+
+export type WeekdaySpending = {
+  day: number // 0=Sun..6=Sat
+  amount: number
+}
+
 export type DashboardData = {
   totalIncome: number
   totalExpense: number
   savingsRate: number
+  lastMonthIncome: number
+  lastMonthExpense: number
+  netWorth: number | null
   spendingByBehavior: SpendingByBehavior[]
   budgetLines: BudgetActualLine[]
   funds: Fund[]
   recentTransactions: TransactionWithJoins[]
+  topExpenseCategories: TopExpenseCategory[]
+  weekdaySpending: WeekdaySpending[]
 }
 
 export type InvestmentHolding = {

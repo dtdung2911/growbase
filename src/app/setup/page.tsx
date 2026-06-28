@@ -19,13 +19,13 @@ export default async function SetupPage() {
       "id, name, household_type, currency, onboarding_completed, household_members!inner(user_id)"
     )
     .eq("household_members.user_id", user.id)
+    .eq("onboarding_completed", false)
+    .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle()
 
-  if (data?.onboarding_completed === true) {
-    redirect("/dashboard")
-  }
-
+  // Middleware already redirects fully-onboarded users away from /setup.
+  // If !data here, user has no incomplete household → show wizard to create one.
   const initialHousehold: Household | null = data
     ? {
         id: data.id,

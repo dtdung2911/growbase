@@ -29,7 +29,7 @@ export function FundOverviewCard({ fund }: FundOverviewCardProps) {
   return (
     <Link
       href={`/funds/${fund.id}`}
-      className="block rounded-[15px] border border-border bg-card p-3 shadow-panel hover:shadow-panel-hover transition-shadow"
+      className="block rounded-[13px] border border-border/40 bg-card p-3 shadow-card transition-shadow duration-200 hover:shadow-panel-hover motion-reduce:transition-none"
     >
       <div className="flex items-center gap-2.5">
         <div
@@ -56,7 +56,7 @@ export function FundOverviewCard({ fund }: FundOverviewCardProps) {
       {progress !== null && (
         <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full rounded-full transition-all"
+            className="h-full rounded-full [transition:width_300ms_ease]"
             style={{
               width: `${progress}%`,
               backgroundColor: color,
