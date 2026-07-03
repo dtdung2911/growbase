@@ -14,6 +14,10 @@
     --popover: 0 0% 100%;
     --popover-foreground: 218 30% 16%;
 
+    --primary-color: #0084DB;
+    --primary-color-hover: #006BB3;
+    --primary-color-pressed: #005A99;
+
     /* Brand primary: #0084DB */
     --primary: 204 100% 43%;
     --primary-hover: 205 100% 36%;
@@ -213,6 +217,14 @@
   }
 }
 
+.login-card {
+  border: 1px solid hsl(var(--border));
+  box-shadow:
+    -10px 10px 6px hsl(var(--border) / 10%),
+    0 10px 6px hsl(var(--border) / 3%),
+    0 -1px 6px hsl(var(--border) / 10%);
+}
+
 /* ── Login page decorative blobs (Spike template) ── */
 .login-shell {
   position: relative;
@@ -402,9 +414,9 @@
 .shadow-card {
   border: 1px solid hsl(var(--border));
   box-shadow:
-    -10px 10px 0 hsl(var(--border) / 10%), 
-    0 10px 10px hsl(0deg 0% 0% / 3%), 
-    0 -1px 0 hsl(var(--border) / 10%);
+    -10px 10px 6px hsl(var(--border) / 10%),
+    0 10px 6px hsl(var(--border) / 3%),
+    0 -1px 6px hsl(var(--border) / 10%);
 }
 
 /* Stagger children in list containers */

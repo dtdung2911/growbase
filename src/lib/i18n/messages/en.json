@@ -15,7 +15,6 @@
   "nav.section.main": "Main",
   "nav.section.analytics": "Analytics",
   "nav.section.settings": "System",
-
   "common.save": "Save",
   "common.cancel": "Cancel",
   "common.delete": "Delete",
@@ -29,12 +28,10 @@
   "common.month": "Month",
   "common.monthLabel": "Month {{month}}",
   "common.sortBy": "Sort by {{column}}",
-
   "toast.saved": "Saved",
   "toast.deleted": "Deleted",
   "toast.error": "Something went wrong",
   "toast.markPaid": "Marked as paid",
-
   "dashboard.title": "Dashboard",
   "dashboard.income": "Income",
   "dashboard.expense": "Expense",
@@ -51,7 +48,6 @@
   "dashboard.topExpenses": "Top Expense Categories",
   "dashboard.weekdaySpending": "Spending by Day of Week",
   "dashboard.incomeVsExpense": "Income vs Expense",
-
   "tx.expense": "Expense",
   "tx.expenseShort": "Expense",
   "tx.income": "Income",
@@ -92,7 +88,6 @@
   "tx.debt": "Debt",
   "tx.selectDebt": "Select debt",
   "tx.directionFilter": "In/Out",
-
   "budget.title": "Budget",
   "budget.allocated": "Allocated",
   "budget.spent": "Spent",
@@ -108,7 +103,6 @@
   "budget.status.monitor": "Monitor",
   "budget.status.warning": "Warning",
   "budget.status.over": "Over budget",
-
   "netWorth.title": "Net Worth",
   "netWorth.totalRecorded": "Total Recorded",
   "netWorth.totalSystem": "System Estimate",
@@ -133,7 +127,6 @@
   "netWorth.netWorthAmount": "Net Worth",
   "netWorth.change": "Change",
   "netWorth.noChanges": "No changes",
-
   "scheduledPayments.title": "Scheduled Payments",
   "scheduledPayments.add": "Add payment",
   "scheduledPayments.markPaid": "Mark as paid",
@@ -151,7 +144,6 @@
   "scheduledPayments.selectAccount": "Select account",
   "scheduledPayments.category": "Category",
   "scheduledPayments.selectCategory": "Select category",
-
   "reports.title": "Reports",
   "reports.spending": "Spending",
   "reports.income": "Income",
@@ -201,7 +193,6 @@
   "reports.statusMonitor": "Monitor",
   "reports.statusWarning": "Warning",
   "reports.statusOver": "Over",
-
   "funds.deposit": "Deposit",
   "funds.withdraw": "Withdraw",
   "funds.totalFunds": "Total Funds",
@@ -276,12 +267,9 @@
   "funds.descFreedom": "Spend freely each month",
   "funds.next": "Next",
   "funds.fundNamePlaceholder": "e.g. Minnie's Tuition Fund",
-
   "budget.allocation": "Allocation",
   "budget.adjusted": "adjusted",
-
   "netWorth.saving": "Saving...",
-
   "scheduledPayments.name": "Name",
   "scheduledPayments.amount": "Amount",
   "scheduledPayments.period": "Period",
@@ -295,7 +283,6 @@
   "scheduledPayments.status.cancelled": "Cancelled",
   "scheduledPayments.status.expired": "Expired",
   "scheduledPayments.expiryDate": "Expiry Date",
-
   "common.all": "All",
   "common.sun": "Sun",
   "common.mon": "Mon",
@@ -304,7 +291,6 @@
   "common.thu": "Thu",
   "common.fri": "Fri",
   "common.sat": "Sat",
-
   "investment.title": "Investment Portfolio",
   "investment.holdings": "Holdings",
   "investment.dcaPlan": "DCA Plan",
@@ -338,7 +324,6 @@
   "investment.emptyHoldings": "No stocks in your portfolio yet.",
   "investment.emptyDca": "No DCA plans yet.",
   "investment.emptyPurchases": "No purchases yet.",
-
   "eventBudget.title": "Event Budget",
   "eventBudget.add": "Create Budget",
   "eventBudget.name": "Event Name",
@@ -362,7 +347,6 @@
   "eventBudget.deleteDesc": "This action cannot be undone.",
   "eventBudget.usage": "Used",
   "common.back": "Back",
-
   "behavior.fixed": "Fixed",
   "behavior.variable": "Variable",
   "behavior.wasteful": "Wasteful",
@@ -370,7 +354,6 @@
   "behavior.savings_investment": "Savings",
   "behavior.income": "Income",
   "behavior.loan": "Loan",
-
   "setup.stepLabel": "{{current}} / {{total}}",
   "setup.next": "Continue",
   "setup.back": "Back",
@@ -431,7 +414,6 @@
   "setup.step7Subtitle": "based on income {{amount}}",
   "setup.step7Total": "Total",
   "setup.step7Note": "Add custom budget → Settings → Budget",
-
   "login.tagline": "your financial growth platform",
   "login.googleButton": "Continue with Google",
   "login.emailButton": "Continue with Email",
@@ -452,7 +434,6 @@
   "login.feature2": "Smart 5-type fund management",
   "login.feature3": "Share with the whole family",
   "login.freeBadge": "Free — no credit card needed",
-
   "invite.notFound": "Invite not found",
   "invite.notFoundDesc": "The invite link is invalid or has been deleted.",
   "invite.expired": "Invite expired",
@@ -463,7 +444,6 @@
   "invite.signInToJoin": "Sign in to join",
   "invite.alreadyMember": "You are already a member",
   "invite.joined": "Joined household",
-
   "settings.title": "Settings",
   "settings.categories": "Categories",
   "settings.budget": "Budget",
@@ -474,7 +454,6 @@
   "settings.income": "Income",
   "settings.members": "Members",
   "settings.household": "Household",
-
   "settings.categories.empty": "No categories",
   "settings.categories.emptyDesc": "Categories help classify your income and expenses",
   "settings.categories.emptyGroup": "No categories in this group",
@@ -507,7 +486,6 @@
   "settings.categories.addGroupDesc": "Create a new category group",
   "settings.categories.deleteCostTypeDesc": "Are you sure you want to delete cost type \"{{name}}\"? This action cannot be undone.",
   "settings.categories.deleteGroupDesc": "Are you sure you want to delete group \"{{name}}\"? This action cannot be undone.",
-
   "settings.budget.empty": "No budget allocation",
   "settings.budget.emptyDesc": "Set up allocation percentages for each spending group",
   "settings.budget.systemSection": "System",
@@ -523,7 +501,6 @@
   "settings.budget.namePlaceholder": "E.g.: Entertainment",
   "settings.budget.pctLabel": "Budget percentage (%)",
   "settings.budget.descLabel": "Description",
-
   "settings.debt.empty": "No debts",
   "settings.debt.emptyDesc": "Add debts to track repayment progress",
   "settings.debt.addDebt": "Add debt",
@@ -570,7 +547,6 @@
   "settings.debt.progress": "Progress",
   "settings.debt.markPaidOff": "Mark as paid off",
   "settings.debt.edit": "Edit",
-
   "settings.estimated.empty": "No estimated expenses",
   "settings.estimated.emptyDesc": "Add estimated expenses for financial planning",
   "settings.estimated.addExpense": "Add expense",
@@ -595,7 +571,6 @@
   "settings.estimated.fundLabel": "Linked fund (optional)",
   "settings.estimated.fundPlaceholder": "Fund UUID",
   "settings.estimated.statusLabel": "Status",
-
   "settings.accounts.empty": "No accounts",
   "settings.accounts.emptyDesc": "Accounts are created during initial setup",
   "settings.accounts.adminNote": "Accounts are created during setup. Contact admin to add new ones.",
@@ -617,7 +592,6 @@
   "settings.accounts.type.credit_card": "Credit Card",
   "settings.accounts.type.investment": "Investment",
   "settings.accounts.type.precious_metal": "Precious Metal",
-
   "settings.income.empty": "No income sources",
   "settings.income.emptyDesc": "Add income sources to track finances",
   "settings.income.addIncome": "Add income",
@@ -637,7 +611,6 @@
   "settings.income.editNote": "Changing income will create a new record. Old records are saved in history.",
   "settings.income.updateIncome": "Update income",
   "settings.income.addSource": "Add income source",
-
   "settings.members.empty": "No members",
   "settings.members.emptyDesc": "No members found",
   "settings.members.section": "Members ({{count}})",
@@ -660,24 +633,20 @@
   "settings.members.inviteDisplayName": "Display name",
   "settings.members.inviteNamePlaceholder": "Spouse / Parent / ...",
   "settings.members.roleLabel": "Role",
-
   "settings.household.nameLabel": "Household name",
   "settings.household.typeLabel": "Household type",
   "settings.household.currencyLabel": "Currency",
   "settings.household.type.personal": "Personal",
   "settings.household.type.family": "Family",
   "settings.household.saveChanges": "Save changes",
-
   "settings.appearance": "Appearance",
   "settings.language": "Language",
   "settings.theme": "Theme",
   "settings.themeLight": "Light",
   "settings.themeDark": "Dark",
-
   "common.saving": "Saving...",
   "common.processing": "Processing...",
   "common.optional": "Optional",
-
   "notification.title": "Notifications",
   "notification.empty": "No notifications",
   "notification.txReminder": "No transactions recorded today",
@@ -732,5 +701,29 @@
   "workspace.namePlaceholder": "Family or individual name",
   "workspace.createSuccess": "Created successfully",
   "workspace.owner": "Owner",
-  "workspace.member": "Member"
+  "workspace.member": "Member",
+  "setupV2.hook.title": "This is Minnie's home",
+  "setupV2.hook.placeholder": "Minnie's demo dashboard will appear here (story 4.6). Continue to get started.",
+  "setupV2.hook.cta": "Your turn now",
+  "setupV2.goal.title": "What do you want for your family?",
+  "setupV2.goal.subtitle": "Pick one goal — the numbers are editable right here, and you can always add more goals later.",
+  "setupV2.goal.emergency.name": "Emergency fund",
+  "setupV2.goal.emergency.desc": "3 × monthly spending — calculated automatically after income",
+  "setupV2.goal.education.name": "Education fund",
+  "setupV2.goal.house.name": "Buy a home",
+  "setupV2.goal.travel.name": "Family travel",
+  "setupV2.goal.custom.name": "Custom goal",
+  "setupV2.goal.custom.desc": "Name + target + timeline",
+  "setupV2.goal.years": "{{n}} years",
+  "setupV2.goal.months": "{{n}} months",
+  "setupV2.goal.editor.nameLabel": "Goal name",
+  "setupV2.goal.editor.namePlaceholder": "e.g. A car for the family",
+  "setupV2.goal.editor.targetLabel": "Target amount",
+  "setupV2.goal.editor.monthsLabel": "Timeline (months)",
+  "setupV2.nav.back": "Back",
+  "setupV2.nav.next": "Continue",
+  "setupV2.nav.skip": "Skip",
+  "setupV2.nav.stepLabel": "{{current}} / {{total}}",
+  "setupV2.income.placeholder": "The Income screen lands in story 4.3.",
+  "setupV2.tada.placeholder": "The Tada screen lands in story 4.5."
 }

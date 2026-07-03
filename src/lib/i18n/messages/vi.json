@@ -15,7 +15,6 @@
   "nav.section.main": "Chính",
   "nav.section.analytics": "Phân tích",
   "nav.section.settings": "Hệ thống",
-
   "common.save": "Lưu",
   "common.cancel": "Hủy",
   "common.delete": "Xóa",
@@ -29,12 +28,10 @@
   "common.month": "Tháng",
   "common.monthLabel": "Tháng {{month}}",
   "common.sortBy": "Sắp xếp theo {{column}}",
-
   "toast.saved": "Đã lưu",
   "toast.deleted": "Đã xóa",
   "toast.error": "Có lỗi xảy ra",
   "toast.markPaid": "Đã thanh toán",
-
   "dashboard.title": "Tổng quan",
   "dashboard.income": "Thu nhập",
   "dashboard.expense": "Chi tiêu",
@@ -51,7 +48,6 @@
   "dashboard.topExpenses": "Chi tiêu theo danh mục",
   "dashboard.weekdaySpending": "Chi tiêu theo ngày trong tuần",
   "dashboard.incomeVsExpense": "Thu nhập vs Chi tiêu",
-
   "tx.expense": "Chi tiêu",
   "tx.expenseShort": "Chi",
   "tx.income": "Thu nhập",
@@ -92,7 +88,6 @@
   "tx.debt": "Khoản nợ",
   "tx.selectDebt": "Chọn khoản nợ",
   "tx.directionFilter": "Thu/Chi",
-
   "budget.title": "Ngân sách",
   "budget.allocated": "Phân bổ",
   "budget.spent": "Đã chi",
@@ -108,7 +103,6 @@
   "budget.status.monitor": "Theo dõi",
   "budget.status.warning": "Cảnh báo",
   "budget.status.over": "Vượt ngân sách",
-
   "netWorth.title": "Tài sản ròng",
   "netWorth.totalRecorded": "Thực tế ghi nhận",
   "netWorth.totalSystem": "Hệ thống ước tính",
@@ -133,7 +127,6 @@
   "netWorth.netWorthAmount": "Tài sản ròng",
   "netWorth.change": "Thay đổi",
   "netWorth.noChanges": "Không có thay đổi",
-
   "scheduledPayments.title": "Khoản định kỳ",
   "scheduledPayments.add": "Thêm khoản định kỳ",
   "scheduledPayments.markPaid": "Đánh dấu đã trả",
@@ -151,7 +144,6 @@
   "scheduledPayments.selectAccount": "Chọn tài khoản",
   "scheduledPayments.category": "Danh mục",
   "scheduledPayments.selectCategory": "Chọn danh mục",
-
   "reports.title": "Báo cáo",
   "reports.spending": "Chi tiêu",
   "reports.income": "Thu nhập",
@@ -201,7 +193,6 @@
   "reports.statusMonitor": "Theo dõi",
   "reports.statusWarning": "Cảnh báo",
   "reports.statusOver": "Vượt mức",
-
   "funds.deposit": "Nạp quỹ",
   "funds.withdraw": "Rút quỹ",
   "funds.totalFunds": "Tổng quỹ",
@@ -276,12 +267,9 @@
   "funds.descFreedom": "Tiêu thoải mái hàng tháng",
   "funds.next": "Tiếp tục",
   "funds.fundNamePlaceholder": "VD: Quỹ học phí Minnie",
-
   "budget.allocation": "Phân bổ",
   "budget.adjusted": "đã điều chỉnh",
-
   "netWorth.saving": "Đang lưu...",
-
   "scheduledPayments.name": "Tên khoản",
   "scheduledPayments.amount": "Số tiền",
   "scheduledPayments.period": "Chu kỳ",
@@ -295,7 +283,6 @@
   "scheduledPayments.status.cancelled": "Đã huỷ",
   "scheduledPayments.status.expired": "Hết hạn",
   "scheduledPayments.expiryDate": "Ngày hết hạn",
-
   "common.all": "Tất cả",
   "common.sun": "CN",
   "common.mon": "T2",
@@ -304,7 +291,6 @@
   "common.thu": "T5",
   "common.fri": "T6",
   "common.sat": "T7",
-
   "investment.title": "Danh mục đầu tư",
   "investment.holdings": "Danh mục nắm giữ",
   "investment.dcaPlan": "Kế hoạch DCA",
@@ -338,7 +324,6 @@
   "investment.emptyHoldings": "Chưa có mã CK nào trong danh mục.",
   "investment.emptyDca": "Chưa có kế hoạch DCA nào.",
   "investment.emptyPurchases": "Chưa có giao dịch mua nào.",
-
   "eventBudget.title": "Ngân sách sự kiện",
   "eventBudget.add": "Tạo ngân sách",
   "eventBudget.name": "Tên sự kiện",
@@ -362,7 +347,6 @@
   "eventBudget.deleteDesc": "Hành động này không thể hoàn tác.",
   "eventBudget.usage": "Đã dùng",
   "common.back": "Quay lại",
-
   "behavior.fixed": "Cố định",
   "behavior.variable": "Phát sinh",
   "behavior.wasteful": "Lãng phí",
@@ -370,7 +354,6 @@
   "behavior.savings_investment": "Tiết kiệm",
   "behavior.income": "Thu nhập",
   "behavior.loan": "Vay nợ",
-
   "setup.stepLabel": "{{current}} / {{total}}",
   "setup.next": "Tiếp tục",
   "setup.back": "Quay lại",
@@ -431,7 +414,6 @@
   "setup.step7Subtitle": "dựa trên thu nhập {{amount}}",
   "setup.step7Total": "Tổng",
   "setup.step7Note": "Thêm ngân sách tùy chỉnh → Cài đặt → Ngân sách",
-
   "login.tagline": "nền tảng để tăng trưởng tài chính",
   "login.googleButton": "Tiếp tục với Google",
   "login.emailButton": "Tiếp tục với Email",
@@ -452,7 +434,6 @@
   "login.feature2": "Quản lý 5 loại quỹ thông minh",
   "login.feature3": "Chia sẻ với cả gia đình",
   "login.freeBadge": "Miễn phí — không cần thẻ tín dụng",
-
   "invite.notFound": "Lời mời không tồn tại",
   "invite.notFoundDesc": "Liên kết lời mời không hợp lệ hoặc đã bị xoá.",
   "invite.expired": "Lời mời đã hết hạn",
@@ -463,7 +444,6 @@
   "invite.signInToJoin": "Đăng nhập để tham gia",
   "invite.alreadyMember": "Bạn đã là thành viên",
   "invite.joined": "Đã tham gia hộ gia đình",
-
   "settings.title": "Cài đặt",
   "settings.categories": "Danh mục",
   "settings.budget": "Ngân sách",
@@ -474,7 +454,6 @@
   "settings.income": "Thu nhập",
   "settings.members": "Thành viên",
   "settings.household": "Hộ gia đình",
-
   "settings.categories.empty": "Chưa có danh mục",
   "settings.categories.emptyDesc": "Danh mục giúp phân loại thu chi của bạn",
   "settings.categories.emptyGroup": "Chưa có danh mục trong nhóm này",
@@ -507,7 +486,6 @@
   "settings.categories.addGroupDesc": "Tạo nhóm danh mục mới",
   "settings.categories.deleteCostTypeDesc": "Bạn có chắc muốn xoá loại chi phí \"{{name}}\"? Hành động này không thể hoàn tác.",
   "settings.categories.deleteGroupDesc": "Bạn có chắc muốn xoá nhóm \"{{name}}\"? Hành động này không thể hoàn tác.",
-
   "settings.budget.empty": "Chưa có phân bổ ngân sách",
   "settings.budget.emptyDesc": "Thiết lập tỉ lệ phân bổ cho từng nhóm chi tiêu",
   "settings.budget.systemSection": "Hệ thống",
@@ -523,7 +501,6 @@
   "settings.budget.namePlaceholder": "Ví dụ: Giải trí",
   "settings.budget.pctLabel": "Phần trăm ngân sách (%)",
   "settings.budget.descLabel": "Mô tả",
-
   "settings.debt.empty": "Chưa có khoản nợ",
   "settings.debt.emptyDesc": "Thêm khoản nợ để theo dõi tiến trình trả nợ",
   "settings.debt.addDebt": "Thêm khoản nợ",
@@ -570,7 +547,6 @@
   "settings.debt.progress": "Tiến độ",
   "settings.debt.markPaidOff": "Đánh dấu đã trả hết",
   "settings.debt.edit": "Sửa",
-
   "settings.estimated.empty": "Chưa có chi phí ước tính",
   "settings.estimated.emptyDesc": "Thêm chi phí dự kiến để lập kế hoạch tài chính",
   "settings.estimated.addExpense": "Thêm chi phí",
@@ -595,7 +571,6 @@
   "settings.estimated.fundLabel": "Quỹ liên kết (tuỳ chọn)",
   "settings.estimated.fundPlaceholder": "UUID quỹ",
   "settings.estimated.statusLabel": "Trạng thái",
-
   "settings.accounts.empty": "Chưa có tài khoản",
   "settings.accounts.emptyDesc": "Tài khoản được tạo trong quá trình thiết lập ban đầu",
   "settings.accounts.adminNote": "Tài khoản được tạo trong quá trình thiết lập. Liên hệ admin để thêm mới.",
@@ -617,7 +592,6 @@
   "settings.accounts.type.credit_card": "Thẻ tín dụng",
   "settings.accounts.type.investment": "Đầu tư",
   "settings.accounts.type.precious_metal": "Kim loại quý",
-
   "settings.income.empty": "Chưa có nguồn thu nhập",
   "settings.income.emptyDesc": "Thêm nguồn thu nhập để theo dõi tài chính",
   "settings.income.addIncome": "Thêm thu nhập",
@@ -637,7 +611,6 @@
   "settings.income.editNote": "Thay đổi thu nhập sẽ tạo bản ghi mới. Bản ghi cũ được lưu trong lịch sử.",
   "settings.income.updateIncome": "Cập nhật thu nhập",
   "settings.income.addSource": "Thêm nguồn thu nhập",
-
   "settings.members.empty": "Chưa có thành viên",
   "settings.members.emptyDesc": "Không tìm thấy thành viên nào",
   "settings.members.section": "Thành viên ({{count}})",
@@ -660,24 +633,20 @@
   "settings.members.inviteDisplayName": "Tên hiển thị",
   "settings.members.inviteNamePlaceholder": "Vợ / Chồng / ...",
   "settings.members.roleLabel": "Vai trò",
-
   "settings.household.nameLabel": "Tên hộ gia đình",
   "settings.household.typeLabel": "Loại hộ",
   "settings.household.currencyLabel": "Đơn vị tiền tệ",
   "settings.household.type.personal": "Cá nhân",
   "settings.household.type.family": "Gia đình",
   "settings.household.saveChanges": "Lưu thay đổi",
-
   "settings.appearance": "Giao diện",
   "settings.language": "Ngôn ngữ",
   "settings.theme": "Chế độ hiển thị",
   "settings.themeLight": "Sáng",
   "settings.themeDark": "Tối",
-
   "common.saving": "Đang lưu...",
   "common.processing": "Đang xử lý...",
   "common.optional": "Tuỳ chọn",
-
   "notification.title": "Thông báo",
   "notification.empty": "Không có thông báo",
   "notification.txReminder": "Bạn chưa nhập giao dịch hôm nay",
@@ -732,5 +701,29 @@
   "workspace.namePlaceholder": "Tên gia đình hoặc cá nhân",
   "workspace.createSuccess": "Đã tạo thành công",
   "workspace.owner": "Chủ sở hữu",
-  "workspace.member": "Thành viên"
+  "workspace.member": "Thành viên",
+  "setupV2.hook.title": "Đây là nhà Minnie",
+  "setupV2.hook.placeholder": "Dashboard demo của nhà Minnie sẽ xuất hiện ở đây (story 4.6). Bấm tiếp tục để bắt đầu.",
+  "setupV2.hook.cta": "Đến lượt nhà bạn",
+  "setupV2.goal.title": "Bạn muốn gì cho gia đình mình?",
+  "setupV2.goal.subtitle": "Chọn một mục tiêu — con số sửa được ngay tại chỗ, sau này luôn thêm được mục tiêu khác.",
+  "setupV2.goal.emergency.name": "Quỹ khẩn cấp",
+  "setupV2.goal.emergency.desc": "3 × chi tiêu tháng — tự tính sau khi có thu nhập",
+  "setupV2.goal.education.name": "Quỹ học cho con",
+  "setupV2.goal.house.name": "Mua nhà",
+  "setupV2.goal.travel.name": "Du lịch gia đình",
+  "setupV2.goal.custom.name": "Tự nhập mục tiêu",
+  "setupV2.goal.custom.desc": "Tên + số đích + thời hạn",
+  "setupV2.goal.years": "{{n}} năm",
+  "setupV2.goal.months": "{{n}} tháng",
+  "setupV2.goal.editor.nameLabel": "Tên mục tiêu",
+  "setupV2.goal.editor.namePlaceholder": "Ví dụ: Mua xe cho cả nhà",
+  "setupV2.goal.editor.targetLabel": "Số đích",
+  "setupV2.goal.editor.monthsLabel": "Thời hạn (tháng)",
+  "setupV2.nav.back": "Quay lại",
+  "setupV2.nav.next": "Tiếp tục",
+  "setupV2.nav.skip": "Bỏ qua",
+  "setupV2.nav.stepLabel": "{{current}} / {{total}}",
+  "setupV2.income.placeholder": "Màn Thu nhập sẽ hoàn thiện ở story 4.3.",
+  "setupV2.tada.placeholder": "Màn Tada sẽ hoàn thiện ở story 4.5."
 }

@@ -33,19 +33,19 @@ export function LoginClient() {
     >
       {/* Mobile (< md) */}
       <div className="md:hidden w-full max-w-sm px-6 py-12 flex flex-col items-center">
-        <MobileLoginContent onGoogleLogin={handleGoogleLogin} loading={loading} />
+        <MobileLoginContent
+          onGoogleLogin={handleGoogleLogin}
+          loading={loading}
+        />
       </div>
 
       {/* Desktop (≥ md) */}
-      <div
-        className="hidden md:grid md:grid-cols-2 w-full max-w-4xl min-h-[560px] rounded-2xl overflow-hidden"
-        style={{ border: "1px solid var(--login-border)" }}
-      >
+      <div className="hidden md:grid md:grid-cols-2 w-full max-w-4xl min-h-[560px] rounded-2xl overflow-hidden login-card">
         <BrandingPanel />
         <FormPanel onGoogleLogin={handleGoogleLogin} loading={loading} />
       </div>
     </div>
-  )
+  );
 }
 
 function MobileLoginContent({

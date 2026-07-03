@@ -1,6 +1,6 @@
 # Story 3.6: Standardize Onboarding, Login & Layout Components
 
-Status: review
+Status: done
 
 ## Story
 
@@ -109,6 +109,18 @@ so that first impressions are polished and consistent with the rest of the app.
     - Static data (categories, currencies): `staleTime: 24 * 60 * 60 * 1000` (24 hours)
     - Fund balances: `staleTime: 30 * 1000` (30 sec — changes frequently)
   - [x] Do NOT set a global stale time in QueryClient config — configure per query
+
+### Review Findings
+
+- [x] [Review][Decision] `src/types/database.ts` emptied (488→0 lines) — breaks TS build — **Resolved**: reverted to prior committed content (`git checkout HEAD -- src/types/database.ts`). Regeneration via `supabase gen types` deferred to a separate task, not bundled into this story.
+- [x] [Review][Decision] `supabase/config.toml` — `auto_expose_new_tables` commented out + `[inbucket]` renamed to `[local_smtp]` — **Resolved**: reverted both changes to prior committed content (`git checkout HEAD -- supabase/config.toml`), keeping config aligned with the installed CLI (`v2.106.0`).
+- [x] [Review][Decision] `LoginClient.tsx` — `.login-card` class border is dead code — **Resolved**: removed the inline `style={{ border: "1px solid var(--login-border)" }}` from the desktop container in `src/app/login/LoginClient.tsx`; the `.login-card` class's `border: 1px solid hsl(var(--border))` (globals.css:217) is now the single source of truth.
+- [x] [Review][Patch] `.shadow-card` hardcodes a non-theme-aware gray, breaking dark mode [src/app/globals.css:~410] — **Resolved**: replaced hardcoded `hsl(0deg 0% 51.16% / 10%)` / `hsl(0deg 0% 0% / 3%)` with `hsl(var(--border) / 10%)` / `hsl(var(--border) / 3%)`.
+- [x] [Review][Patch] `.login-card` duplicates the same hardcoded-gray pattern with a different value [src/app/globals.css:~216] — **Resolved**: replaced hardcoded `hsl(0deg 0% 80% / 10%)` / `hsl(0deg 0% 80% / 3%)` with `hsl(var(--border) / 10%)` / `hsl(var(--border) / 3%)`.
+- [x] [Review][Patch] `supabase/.temp/cli-latest` tracked and version-bumped in this diff — **Resolved**: reverted to prior committed content (`git checkout HEAD -- supabase/.temp/cli-latest`) and added `supabase/.temp/` to `.gitignore`. Note: the file is already git-tracked, so it will still show as modified until untracked with `git rm -r --cached supabase/.temp/` (not done here — leaving to maintainer discretion).
+- [x] [Review][Defer] `docs/06_STYLE_GUIDE.md` adds "NO: shadow-panel" while `globals.css:407-408` still references `.shadow-panel` in a shared animation selector (`.shadow-panel, .shadow-card, .shadow-soft-xs { animation: card-enter }`) — deferred, pre-existing shadow-panel usage predates this diff and a full audit of remaining call sites is out of scope for this story
+- [x] [Review][Defer] `CLAUDE.md`/`docs/06_STYLE_GUIDE.md` describe UI details not present in this diff's code hunks (`sidebar-nav-link[data-active]`, `header-custom::before` notch, `card-enter` 400ms animation, Badge variant table, `--sidebar-width`/`--topbar-height` vars) — deferred, likely implemented in earlier already-committed work (`feat: fix app v2`, `feat: update css style` commits), not verifiable from this diff alone and not blocking
+- [x] [Review][Defer] Story AC4 describes TopHeader as `rounded-2xl` float style, but `CLAUDE.md`/style guide (edited in this diff) redefine it as flat/flush matching the already-committed `TopHeader.tsx` implementation — deferred, `TopHeader.tsx` itself isn't touched by this diff so this looks like docs catching up to prior already-shipped work rather than a new violation; worth a maintainer confirming AC4 was formally amended
 
 ## Dev Notes
 
