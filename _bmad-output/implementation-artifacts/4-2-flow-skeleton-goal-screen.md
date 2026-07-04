@@ -53,6 +53,36 @@ so that mục tiêu của tôi trở thành xương sống câu chuyện tài ch
   - [x] `npm run type-check` — 0 errors mới (2 pre-existing layout.tsx đã biết)
   - [x] Business flows verify (browser hoặc trace, ghi rõ method): (a) `/setup` render shell 4 bước; (b) chọn goal → sửa số inline → Tiếp tục enable; (c) chưa chọn → Tiếp tục disabled; (d) reload giữa chừng → lựa chọn còn nguyên; (e) đổi vi/en → toàn bộ text đổi
 
+### Review Findings
+
+**Scope note**: repo chưa commit theo từng story (epic 4/5 nằm chung 1 khối uncommitted). Diff review giới hạn 6 file core của 4.2 (`OnboardingV2Shell.tsx`, `GoalStep.tsx`, `onboardingV2Store.ts`, `onboardingV2.ts`, `onboardingV2.test.ts`, `SetupClient.tsx`), loại `TadaStep.tsx`/`IncomeStep.tsx`/`HookStep.tsx` vì bị story 4.3/4.5/4.6 ghi đè hoàn toàn. Kể cả trong 6 file core, 1 số hunk (`monthlyIncomeSchema`, `completeOnboardingV2Schema`, nhánh `canProceed` step===2) thuộc scope story 4.3 — không chấm điểm theo AC của 4.2, defer sang review 4.3.
+
+3 layer: Blind Hunter (no context) + Edge Case Hunter (đọc code thật, trả về `[]` — không edge case chưa xử lý) + Acceptance Auditor (đối chiếu AC). Tổng 22 raw finding → 4 patch (đã áp dụng), 6 defer, 12 dismiss.
+
+- [x] [Review][Patch] `GoalStep.tsx` — import `HouseFillIcon` không dùng (dead code sau khi bỏ dòng comment tham chiếu nó) — đã xoá import.
+- [x] [Review][Patch] `GoalStep.tsx:121` — class `hover:shadow-card-hover` không tồn tại trong Tailwind config/globals.css (grep xác nhận), no-op hoàn toàn — đã xoá.
+- [x] [Review][Patch] `GoalStep.tsx`, `OnboardingV2Shell.tsx` — 3 chỗ semicolon lạc (`;`) vi phạm convention no-semi của codebase (Prettier không semi) — đã xoá.
+- [x] [Review][Patch] `OnboardingV2Shell.tsx:44` — `pb-16` (padding cứng, không phải safe-area thật) bị xoá khỏi footer ở phiên bản trước mà không thay thế; `BottomNav.tsx:40` dùng đúng pattern `pb-[env(safe-area-inset-bottom)]` — đã áp dụng cùng pattern cho footer onboarding để tránh CTA dính sát home-indicator iOS.
+
+- [ ] [Review][Defer] `OnboardingV2Shell.tsx` — footer nav (Back/Continue/Skip) giờ ẩn hoàn toàn ở step 3 (Tada) qua `{step < ONBOARDING_V2_TOTAL_STEPS - 1 && (...)}`, đổi hành vi so với bản trước (luôn hiện). Xác nhận hợp lý vì `TadaStep` có CTA riêng (`setupV2.tada.cta` = "Vào Dashboard"), nhưng đây là deviation chưa từng log — thuộc nội dung UI của step Tada (story 4.5), nên defer ghi chú chính thức vào Dev Notes của story 4.5 thay vì sửa ở đây.
+- [ ] [Review][Defer] `OnboardingV2Shell.tsx` — class `shadow-card` được thêm lại vào sticky footer, ngược với lý do đã log ở Deviation 2 (chọn border-t vì "shadow-soft là dead token"). `shadow-card` là token sống (định nghĩa thật trong `globals.css:409`), không phải shadow-soft — quyết định thêm lại có thể hợp lý (elevate sticky bar) nhưng Dev Notes chưa cập nhật lý do. Defer: cần dev xác nhận có giữ `shadow-card` không và cập nhật Deviation 2 cho khớp.
+- [ ] [Review][Defer] `onboardingV2.ts` — `monthlyIncomeSchema = z.number().positive()` thiếu `.finite()`: `Infinity` pass validation, không có ràng buộc integer (khác `targetMonths` được assert integer). Thuộc scope story 4.3, không phải AC của 4.2 — defer sang review 4.3.
+- [ ] [Review][Defer] `onboardingV2.ts` — message lỗi Zod (`"Bạn hãy nhập thu nhập của cả nhà nhé"`, `"Thu nhập cần lớn hơn 0..."`) hardcode tiếng Việt trong schema, bypass hệ thống `t()`/i18n — vi phạm rule "All strings via t(), no hardcode" nhưng thuộc scope story 4.3 (income step chưa tới lượt review).
+- [ ] [Review][Defer] `onboardingV2.test.ts` — không có test cho case `Infinity`/non-integer `monthlyIncome`, coverage bất đối xứng so với `targetMonths` (đã test integer). Thuộc scope story 4.3.
+- [ ] [Review][Defer] `onboardingV2.ts` — `completeOnboardingV2Schema`/`CompleteOnboardingV2Input` được thêm + test đầy đủ nhưng chưa thấy wire vào store/API route trong diff hiện tại — cần verify khi review story dùng schema này (4.3/4.4) để không sót dead code.
+
+- Dismiss (không action):
+  - Blind Hunter: "reformatting churn mixed with logic changes gây khó review" — nhận xét quy trình, không phải bug, không có action code.
+  - Blind Hunter: "Skip button mới, chưa rõ i18n key tồn tại chưa" — SAI: verify lại diff, Skip button đã tồn tại từ trước (chỉ bị reformat lại toàn bộ block khiến nhìn giống mới thêm); key `setupV2.nav.skip` đã có sẵn cả vi/en (verify trực tiếp JSON).
+  - Blind Hunter: "canProceed step2 kế thừa gap Infinity/integer từ monthlyIncomeSchema" — hệ quả của finding đã defer ở trên (monthlyIncomeSchema), không phải bug riêng của 4.2's canProceed logic.
+  - Blind Hunter: "test description mix VN/EN trong onboardingV2.test.ts" — toàn bộ test mới thuộc scope 4.3, nit không đáng action riêng.
+  - Blind Hunter: "Skip và CTA chính dùng chung handler `next`" — pre-existing từ trước diff này, không phải regression của 4.2.
+  - Blind Hunter: "xoá comment tracking story 4.7 không kèm cross-reference" — cosmetic, git status đã show rõ các file wizard cũ bị xoá, không mất thông tin thực tế.
+  - Acceptance Auditor: "Skip button mới không có trong AC1-4" — false positive, xem dismiss ở trên (Skip đã có từ trước).
+  - Acceptance Auditor: "wizard files đã xoá (D trong git status) trong khi comment ref story 4.7 bị xoá, work của 4.7 bị kéo sớm hơn scope 4.2" — factual nhưng không phải lỗi của 4.2: story `4-7-remove-old-wizard-verify` đã tồn tại và đang ở status `review` trong sprint-status.yaml (đã làm xong, chỉ chưa review) — thứ tự review không đúng thứ tự story number nhưng không phải deviation của riêng 4.2.
+  - Acceptance Auditor: "story 4.3 logic (monthlyIncomeSchema...) lẫn vào diff đang review" — đã biết và annotate rõ từ đầu ở CHECKPOINT, không phải finding mới.
+  - Edge Case Hunter: trả về `[]` sau khi đọc code thật (đã có tool access) — không có edge case chưa xử lý nào phát hiện thêm, không nhận xét thêm.
+
 ## Dev Notes
 
 ### Context từ codebase (recon 02-07-2026)
@@ -155,3 +185,4 @@ Full suite: **327/327 tests pass** (310 cũ + 17 mới, 0 regression). Type-chec
 
 - 02-07-2026: Store + validation + tests, GoalStep, step placeholders, i18n setupV2.* (20 keys), SetupClient chuyển sang flow v2 (tạm dùng WizardLayout).
 - 03-07-2026: Tạo OnboardingV2Shell riêng (ngắt phụ thuộc WizardLayout/keys setup.* cũ), thêm 4 keys setupV2.nav.*, rewire SetupClient. Verify 11 business flows (9 manual browser + 2 automated). 327/327 tests pass. Status → review.
+- 04-07-2026: Code review (3-layer adversarial). 4 patch áp dụng (xoá import chết, xoá class Tailwind không tồn tại, xoá semicolon lạc, thêm safe-area padding đúng pattern `BottomNav.tsx`). 6 defer (đa số thuộc scope story 4.3, 2 thuộc doc-gap của story 4.5). 12 dismiss. Verify lại: 17/17 test onboardingV2.test.ts pass, tsc 2 lỗi pre-existing (không đổi).

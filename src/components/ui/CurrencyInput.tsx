@@ -12,6 +12,7 @@ interface CurrencyInputProps {
   disabled?: boolean
   className?: string
   id?: string
+  autoFocus?: boolean
 }
 
 function formatDisplay(value: number, currency: "VND" | "USD") {
@@ -34,6 +35,7 @@ export function CurrencyInput({
   disabled,
   className,
   id,
+  autoFocus,
 }: CurrencyInputProps) {
   const [focused, setFocused] = React.useState(false)
 
@@ -50,6 +52,7 @@ export function CurrencyInput({
       inputMode="numeric"
       disabled={disabled}
       placeholder={placeholder}
+      autoFocus={autoFocus}
       value={display}
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}

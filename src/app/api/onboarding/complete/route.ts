@@ -1,84 +1,78 @@
+export const runtime = "nodejs"
+
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
-import { completeOnboardingSchema } from "@/lib/validations/onboarding"
+import { withAuthUser } from "@/lib/supabase/auth-check"
+import { supabaseAdmin } from "@/lib/supabase/admin"
+import { completeOnboardingV2Schema } from "@/lib/validations/onboardingV2"
+import {
+  BUDGET_TEMPLATE,
+  EMERGENCY_FUND_MONTHS,
+  EMERGENCY_FUND_TIMELINE_MONTHS,
+  estimateEmergencyTarget,
+  calculateFeasibility,
+  calculateTodayRemaining,
+} from "@/lib/constants/budgetTemplate"
 
-export async function POST(request: Request) {
-  const supabase = createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+// AD-1: auth check trước tiên. withAuthUser() (không phải withAuth()) vì user chưa có household.
+export async function POST(req: Request) {
+  const auth = await withAuthUser()
+  if (auth.error) return auth.error
+  const { user } = auth
 
-  if (!user) {
-    return NextResponse.json({ data: null, error: "Chưa đăng nhập" }, { status: 401 })
-  }
-
-  const body = await request.json().catch(() => null)
-  const parsed = completeOnboardingSchema.safeParse(body)
+  const body = await req.json()
+  const parsed = completeOnboardingV2Schema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json(
       { data: null, error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ" },
       { status: 400 }
     )
   }
-  const { householdId, incomes, accounts, debts, budgetPcts } = parsed.data
 
-  const p_income_sources = incomes.map((i) => ({
-    source_name: i.sourceName,
-    monthly_amount: i.monthlyAmount,
-    member_id: i.memberId ?? null,
-  }))
+  const { goal, monthlyIncome } = parsed.data
 
-  const p_accounts = accounts.map((a) => ({
-    name: a.name,
-    bank_name: a.bankName ?? null,
-    account_type: a.accountType,
-    owner_name: a.ownerName ?? null,
-    is_credit_card: a.isCreditCard,
-  }))
+  const targetAmount = goal.targetAmount ?? estimateEmergencyTarget(monthlyIncome)
+  const months = goal.fundType === "emergency" ? EMERGENCY_FUND_TIMELINE_MONTHS : goal.targetMonths!
 
-  const p_debt_entries = debts.map((d) => ({
-    creditor_name: d.creditorName,
-    debt_type: d.debtType,
-    total_amount: d.totalAmount,
-    remaining_amount: d.remainingAmount ?? null,
-    monthly_payment: d.monthlyPayment,
-    expected_end_date: d.expectedEndDate ?? null,
-    member_id: d.memberId ?? null,
-  }))
+  const targetDate =
+    goal.fundType === "goal"
+      ? new Date(Date.now() + goal.targetMonths! * 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+      : null
+  const targetMonthsExpense = goal.fundType === "emergency" ? EMERGENCY_FUND_MONTHS : null
 
-  const p_budget_pcts = budgetPcts.map((b) => ({
+  const p_budget_pcts = BUDGET_TEMPLATE.map((b) => ({
     name: b.name,
     budget_pct: b.budgetPct,
     linked_group_names: b.linkedCategoryGroupNames,
   }))
 
-  const { data, error } = await supabase.rpc("complete_onboarding", {
-    p_household_id: householdId,
-    p_income_sources: p_income_sources,
-    p_accounts: p_accounts,
-    p_debt_entries: p_debt_entries,
-    p_budget_pcts: p_budget_pcts,
+  // AD-2: Onboarding create là System Op → supabaseAdmin, không phải user-scoped client
+  const { data: householdId, error } = await supabaseAdmin.rpc("complete_onboarding_v2", {
+    p_user_id: user.id,
+    p_display_name: user.user_metadata?.full_name ?? user.email ?? "Owner",
+    p_monthly_income: monthlyIncome,
+    p_budget_pcts,
+    p_goal: {
+      fund_type: goal.fundType,
+      name: goal.name,
+      target_amount: targetAmount,
+      target_date: targetDate,
+      target_months_expense: targetMonthsExpense,
+    },
   })
 
   if (error) {
-    const msg = error.message
-    if (msg.includes("Access denied")) {
-      return NextResponse.json({ data: null, error: "Access denied" }, { status: 403 })
+    if (error.message.includes("Already onboarded")) {
+      return NextResponse.json({ data: null, error: "Already onboarded" }, { status: 409 })
     }
-    if (msg.includes("Household not found")) {
-      return NextResponse.json(
-        { data: null, error: "Household not found" },
-        { status: 404 }
-      )
-    }
-    if (msg.includes("already completed")) {
-      return NextResponse.json(
-        { data: null, error: "Onboarding already completed" },
-        { status: 409 }
-      )
-    }
-    return NextResponse.json({ data: null, error: msg }, { status: 500 })
+    return NextResponse.json({ data: null, error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json({ data: { householdId: data }, error: null })
+  return NextResponse.json({
+    data: {
+      householdId,
+      feasibility: calculateFeasibility(targetAmount, months, monthlyIncome),
+      todayRemaining: calculateTodayRemaining(monthlyIncome),
+    },
+    error: null,
+  })
 }

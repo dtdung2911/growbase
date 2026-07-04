@@ -8,15 +8,16 @@ import type { TransactionWithJoins } from "@/types/app"
 
 type RecentTransactionsListProps = {
   transactions: TransactionWithJoins[]
+  emptyMessage?: string
 }
 
-export function RecentTransactionsList({ transactions }: RecentTransactionsListProps) {
+export function RecentTransactionsList({ transactions, emptyMessage }: RecentTransactionsListProps) {
   const { t } = useTranslation()
 
   if (transactions.length === 0) {
     return (
       <p className="py-8 text-center text-sm text-muted-foreground">
-        {t("common.noData")}
+        {emptyMessage ?? t("common.noData")}
       </p>
     )
   }

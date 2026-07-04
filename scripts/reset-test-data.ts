@@ -51,18 +51,20 @@ function loadEnvLocal(): void {
   } catch {
     throw new Error("Không đọc được .env.local — chạy script từ project root")
   }
-  for (const line of raw.split("\n")) {
+  for (const line of raw.split(/\r?\n/)) {
     const match = line.match(/^([A-Z0-9_]+)=(.*)$/)
     if (match && process.env[match[1]] === undefined) {
-      process.env[match[1]] = match[2].replace(/^["']|["']$/g, "")
+      process.env[match[1]] = match[2].trim().replace(/^["']|["']$/g, "")
     }
   }
 }
 
 async function deleteHouseholdRows(db: SupabaseClient, table: string): Promise<number> {
   let query = db.from(table).delete({ count: "exact" })
+  // .eq(is_system,false) chặn xoá nhầm system row bị gắn household_id do data bug —
+  // verifySystemSeed không bắt được case này (chỉ đếm rows household_id IS NULL).
   query = HOUSEHOLD_NULLABLE_TABLES.has(table)
-    ? query.not("household_id", "is", null)
+    ? query.not("household_id", "is", null).eq("is_system", false)
     : query.neq("id", "00000000-0000-0000-0000-000000000000")
   const { count, error } = await query
   if (error) throw new Error(`Xoá ${table} thất bại: ${error.message}`)
@@ -102,6 +104,13 @@ async function main(): Promise<void> {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!url || !serviceKey) {
     throw new Error("Thiếu NEXT_PUBLIC_SUPABASE_URL hoặc SUPABASE_SERVICE_ROLE_KEY trong .env.local")
+  }
+
+  // Service role key + script xoá data = chỉ được phép chạy local. Chặn luôn trường hợp
+  // shell env export URL prod đè .env.local (loadEnvLocal không override biến đã có).
+  const host = new URL(url).hostname
+  if (host !== "localhost" && host !== "127.0.0.1") {
+    throw new Error(`Chỉ chạy trên local Supabase — URL đang trỏ "${host}". Huỷ.`)
   }
 
   const db = createClient(url, serviceKey)

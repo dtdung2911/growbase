@@ -155,14 +155,15 @@ export function WeekdayChart({ data }: WeekdayChartProps) {
 type TopExpensesProps = {
   categories: TopExpenseCategory[]
   totalExpense: number
+  emptyMessage?: string
 }
 
-export function TopExpensesWidget({ categories, totalExpense }: TopExpensesProps) {
+export function TopExpensesWidget({ categories, totalExpense, emptyMessage }: TopExpensesProps) {
   const { t } = useTranslation()
 
   if (categories.length === 0) {
     return (
-      <p className="py-6 text-center text-xs text-muted-foreground">{t("common.noData")}</p>
+      <p className="py-6 text-center text-xs text-muted-foreground">{emptyMessage ?? t("common.noData")}</p>
     )
   }
 

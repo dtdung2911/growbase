@@ -9,7 +9,6 @@ import { TadaStep } from "@/components/onboarding/v2/TadaStep"
 import { useOnboardingV2Store } from "@/lib/stores/onboardingV2Store"
 
 // Onboarding v2 — 4 bước "mở quà": Hook → Mục tiêu → Thu nhập → Tada (PRD onboarding-v2 F1).
-// Wizard 7 bước cũ ngắt khỏi render tại đây; components cũ xoá ở story 4.7.
 export function SetupClient() {
   const step = useOnboardingV2Store((s) => s.step)
 

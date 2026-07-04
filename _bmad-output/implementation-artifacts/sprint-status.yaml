@@ -36,7 +36,7 @@
 # - Retrospective appends its action items to action_items; sprint-status surfaces open ones
 
 generated: 02-07-2026
-last_updated: 03-07-2026
+last_updated: 04-07-2026
 project: growbase
 project_key: NOKEY
 tracking_system: file-system
@@ -66,21 +66,21 @@ development_status:
   epic-3-retrospective: done
 
   epic-4: in-progress
-  4-1-reset-test-data-seed: review
+  4-1-reset-test-data-seed: done
   4-2-flow-skeleton-goal-screen: review
-  4-3-income-screen: backlog
-  4-4-tada-api-initialize: backlog
-  4-5-tada-ui-reveal: backlog
-  4-6-hook-demo-nha-minh: backlog
-  4-7-remove-old-wizard-verify: backlog
+  4-3-income-screen: review
+  4-4-tada-api-initialize: review
+  4-5-tada-ui-reveal: review
+  4-6-hook-demo-nha-minh: review
+  4-7-remove-old-wizard-verify: review
   epic-4-retrospective: optional
 
-  epic-5: backlog
-  5-1-insight-engine-formula-v1: backlog
-  5-2-day-zero-dashboard: backlog
-  5-3-first-expense-cta-promise: backlog
-  5-4-daily-insight-greeting: backlog
-  5-5-insight-behavior-feedback: backlog
+  epic-5: in-progress
+  5-1-insight-engine-formula-v1: review
+  5-2-day-zero-dashboard: review
+  5-3-first-expense-cta-promise: review
+  5-4-daily-insight-greeting: review
+  5-5-insight-behavior-feedback: review
   epic-5-retrospective: optional
 
   epic-6: backlog

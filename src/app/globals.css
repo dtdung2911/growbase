@@ -493,8 +493,8 @@ tbody > tr:nth-child(n+9) { animation-delay: 240ms; }
 /* Respect reduced motion — global blanket rule */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
-    animation-duration: 0.01ms !important;
+    animation-duration: 0.02ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: 0.02ms !important;
   }
 }

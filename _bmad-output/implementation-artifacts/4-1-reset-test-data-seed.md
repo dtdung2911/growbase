@@ -4,7 +4,7 @@ baseline_commit: a5a6ff584884a573a887fe0749453a2f96a6724f
 
 # Story 4.1: Reset dữ liệu test & seed cấu trúc mới
 
-Status: review
+Status: done
 
 ## Story
 
@@ -50,6 +50,27 @@ so that onboarding v2 được build và dogfood trên nền dữ liệu sạch,
   - [x] `npm run type-check`: script 0 errors (2 errors pre-existing tại `src/app/(app)/layout.tsx:82-83` — file không thuộc story, có từ baseline)
   - [x] Chạy script trên local Supabase với test fixture thật (69 rows xoá, FK order pass); redirect `/setup` verify bằng manual trace `src/middleware.ts:33` (join `household_members!inner` rỗng → gate đẩy về `/setup`)
   - [x] App không crash: reset về trạng thái tương đương fresh install — dashboard redirect về setup là hành vi đúng theo middleware gate
+
+## Senior Developer Review (AI)
+
+**Ngày:** 03-07-2026 · **Outcome:** Approved (3 patches applied 03-07-2026, 1 deferred) · **Reviewers:** Blind Hunter (subagent) + Edge Case Hunter & Acceptance Auditor (inline — subagent hit session limit)
+
+**Kết quả audit AC:** AC1-3 satisfied. `DELETE_ORDER` 22 bảng khớp chính xác 22 bảng trong schema (verify tĩnh migrations) và khớp danh sách AC1. FK order con-trước-cha đúng toàn bộ. Claims trong Dev Agent Record (22 bảng, idempotent, 69 rows) nhất quán. File List khớp thực tế.
+
+### Action Items
+
+- [x] **[High]** `scripts/reset-test-data.ts:~120` — Không có guard chống chạy nhầm vào remote Supabase. Script dùng service role key, chỉ có confirm prompt "RESET" — gõ theo quán tính là mất data thật. Đồng thời shell env đè `.env.local` thầm lặng (nếu terminal export URL prod). **Fix:** fail cứng nếu hostname của `NEXT_PUBLIC_SUPABASE_URL` không thuộc {localhost, 127.0.0.1} (bao luôn rủi ro env-precedence). [Review][Patch]
+- [x] **[Medium]** `scripts/reset-test-data.ts:~70` — Delete trên 3 bảng `HOUSEHOLD_NULLABLE_TABLES` filter `.not("household_id","is",null)` không loại trừ `is_system=true`. Row system bị gắn nhầm household_id (data bug) sẽ bị xoá thầm lặng, `verifySystemSeed` không bắt được (chỉ đếm rows NULL). Vi phạm invariant #3 (is_system immutable). **Fix:** thêm `.eq("is_system", false)`. [Review][Patch]
+- [x] **[Low]** `scripts/reset-test-data.ts:~58` — Env parser vỡ với CRLF (`\r` dính cuối value → "fetch failed" khó debug), không trim value. **Fix:** `split(/\r?\n/)` + `.trim()` value trước khi strip quote. [Review][Patch]
+- [x] **[Low]** Fail giữa chừng (bước N/22) để DB nửa vời mà không nói gì — re-run vốn idempotent nhưng script không nói. **Fix:** catch trong main in thêm "Chạy lại script để hoàn tất — delete là idempotent." [Review][Defer → deferred-work.md]
+
+### Dismissed (noise)
+
+- Zero-UUID `.neq("id",...)` giả định PK uuid — verified 22/22 bảng có `id uuid` (migrations). Không áp dụng.
+- Non-TTY hang / race với dev server / NODE_OPTIONS cross-platform — dev script chạy tay trên macOS, đã chạy thật OK (Node 20.19.6).
+- Orphan rows `household_id NULL AND is_system=false` — không có code path nào tạo ra (clone luôn set household_id).
+- `verifySystemSeed` hậu kiểm count-only — đúng thiết kế user đã quyết 02-07 (dynamic before/after).
+- `householdCount` "trang trí" — sai; nó được in trong confirm prompt đúng theo Task 3.
 
 ## Dev Notes
 

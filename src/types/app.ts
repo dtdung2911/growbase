@@ -22,52 +22,6 @@ export type Household = {
   onboarding_completed: boolean
 }
 
-export type WizardStep = 1 | 2 | 3 | 4 | 5 | 6 | 7
-
-export type IncomeDraft = {
-  id: string
-  sourceName: string
-  monthlyAmount: number
-  memberId?: string | null
-}
-
-export type AccountDraft = {
-  id: string
-  name: string
-  bankName?: string
-  accountType: AccountType
-  ownerName?: string
-  isCreditCard: boolean
-}
-
-export type DebtDraft = {
-  id: string
-  creditorName: string
-  debtType: DebtType
-  totalAmount: number
-  remainingAmount?: number
-  monthlyPayment: number
-  expectedEndDate?: string
-  memberId?: string | null
-}
-
-export type BudgetPctDraft = {
-  name: string
-  budgetPct: number
-  linkedCategoryGroupNames: string[]
-  isAutoCalculated?: boolean
-}
-
-export type WizardData = {
-  householdId: string | null
-  householdType: HouseholdType | null
-  currency: Currency
-  incomes: IncomeDraft[]
-  accounts: AccountDraft[]
-  debts: DebtDraft[]
-  budgetPcts: BudgetPctDraft[]
-}
-
 // S2: Transaction domain types
 export type TransactionDirection = "in" | "out"
 export type TransactionType =
@@ -359,6 +313,8 @@ export type DashboardData = {
   recentTransactions: TransactionWithJoins[]
   topExpenseCategories: TopExpenseCategory[]
   weekdaySpending: WeekdaySpending[]
+  hasAnyTransactionEver: boolean
+  yesterdayTransactions: Pick<TransactionWithJoins, "amount" | "direction" | "behavior_type">[]
 }
 
 export type InvestmentHolding = {

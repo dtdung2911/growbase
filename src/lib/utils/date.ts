@@ -1,4 +1,4 @@
-import { format, startOfMonth, endOfMonth } from "date-fns"
+import { format, startOfMonth, endOfMonth, subDays } from "date-fns"
 
 export const monthRange = (yearMonth: string) => {
   const date = new Date(yearMonth + "-01")
@@ -9,5 +9,7 @@ export const monthRange = (yearMonth: string) => {
 }
 
 export const toYearMonth = (date = new Date()) => format(date, "yyyy-MM")
+
+export const yesterday = (date = new Date()) => format(subDays(date, 1), "yyyy-MM-dd")
 
 export const firstDayOfMonth = (yearMonth: string) => yearMonth + "-01"

@@ -29,6 +29,57 @@ export const COST_TYPE_GROUP_LABELS: Record<CostTypeGroupKey, { vi: string; en: 
   other: { vi: "Khác", en: "Other", goalVi: "" },
 }
 
+// "Chi tiêu tháng" cho quỹ khẩn cấp (OQ2): loại income (không phải chi),
+// savings_investment (để dành) và other (dòng sổ sách) — còn 81% thu nhập.
+export const SPENDING_COST_TYPE_GROUPS: readonly CostTypeGroupKey[] = [
+  "fixed",
+  "variable",
+  "wasteful",
+  "debt_repayment",
+]
+
+// "Chi tiêu thoải mái" (AR7 — todayRemaining): chỉ nhóm linh hoạt, không gồm
+// fixed (cam kết cố định) hay debt/savings (đã cam kết khác).
+export const FLEXIBLE_COST_TYPE_GROUPS: readonly CostTypeGroupKey[] = ["variable", "wasteful"]
+
+export const EMERGENCY_FUND_MONTHS = 3
+
+// Preset quỹ khẩn cấp không có targetMonths — mốc "gom đủ trong 1 năm" (ASSUMPTION, story 4.4).
+export const EMERGENCY_FUND_TIMELINE_MONTHS = 12
+
+function sumBudgetPct(groups: readonly CostTypeGroupKey[]): number {
+  return BUDGET_TEMPLATE.filter((l) => groups.includes(l.costTypeGroup)).reduce((sum, l) => sum + l.budgetPct, 0)
+}
+
+export function estimateEmergencyTarget(monthlyIncome: number): number {
+  const target = EMERGENCY_FUND_MONTHS * monthlyIncome * (sumBudgetPct(SPENDING_COST_TYPE_GROUPS) / 100)
+  return Math.floor(target / 100_000) * 100_000
+}
+
+export interface FeasibilityResult {
+  monthlyNeeded: number
+  available: number
+  feasible: boolean
+}
+
+export function calculateFeasibility(
+  targetAmount: number,
+  months: number,
+  monthlyIncome: number
+): FeasibilityResult {
+  const monthlyNeeded = targetAmount / months
+  const totalBudget = monthlyIncome * (sumBudgetPct(SPENDING_COST_TYPE_GROUPS) / 100)
+  const available = monthlyIncome - totalBudget
+  // epsilon tránh false-negative do sai số float ở biên (VND không cần độ chính xác dưới 1 đồng)
+  return { monthlyNeeded, available, feasible: monthlyNeeded <= available + 1 }
+}
+
+export function calculateTodayRemaining(monthlyIncome: number, today: Date = new Date()): number {
+  const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate()
+  const flexibleMonthly = monthlyIncome * (sumBudgetPct(FLEXIBLE_COST_TYPE_GROUPS) / 100)
+  return Math.floor(flexibleMonthly / daysInMonth)
+}
+
 // 18 dòng tĩnh (total = 100%). Onboarding S1 INSERT vào budget_baselines per household.
 // "Chi trả nợ" auto-calculated từ debt_entries (trigger debt_budget_recalc).
 // Group names khớp 005_seed.sql system category_groups.

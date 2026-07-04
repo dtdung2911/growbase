@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { withAuth } from "@/lib/supabase/auth-check"
-import { monthRange } from "@/lib/utils/date"
+import { monthRange, yesterday } from "@/lib/utils/date"
 
 function prevMonth(month: string) {
   const [y, m] = month.split("-").map(Number)
@@ -42,6 +42,11 @@ export async function GET(request: NextRequest) {
   const currentTxs = (allTxs ?? []).filter(
     (tx) => tx.transaction_date >= from && tx.transaction_date <= to
   )
+
+  const yesterdayDate = yesterday()
+  const yesterdayTransactions = (allTxs ?? [])
+    .filter((tx) => tx.transaction_date === yesterdayDate && !tx.exclude_from_budget_report)
+    .map((tx) => ({ amount: tx.amount, direction: tx.direction, behavior_type: tx.behavior_type }))
   const prevTxs = (allTxs ?? []).filter(
     (tx) => tx.transaction_date >= prevFrom && tx.transaction_date <= prevTo
   )
@@ -122,16 +127,22 @@ export async function GET(request: NextRequest) {
   }))
 
   // Budget lines
-  const { data: budgetData } = await supabase
-    .from("v_budget_actual")
-    .select("*")
+  const { data: budgetData } = await supabase.rpc("get_budget_with_actuals", {
+    p_household_id: hid,
+    p_month: month,
+  })
+
+  // Has this household ever recorded a transaction (any month) — distinguishes
+  // a genuine day-0 household from one simply viewing an empty month
+  const { count: transactionCount } = await supabase
+    .from("transactions")
+    .select("id", { count: "exact", head: true })
     .eq("household_id", hid)
-    .eq("budget_month", month)
 
   // Funds
   const { data: fundsData } = await supabase
     .from("funds")
-    .select("id, name, fund_type, color, target_amount, current_balance, freedom_target_monthly")
+    .select("id, name, fund_type, color, target_amount, current_balance, freedom_target_monthly, monthly_contribution")
     .eq("household_id", hid)
     .eq("is_active", true)
     .order("sort_order")
@@ -177,6 +188,8 @@ export async function GET(request: NextRequest) {
       recentTransactions: recentTxs ?? [],
       topExpenseCategories,
       weekdaySpending,
+      hasAnyTransactionEver: (transactionCount ?? 0) > 0,
+      yesterdayTransactions,
     },
     error: null,
   })

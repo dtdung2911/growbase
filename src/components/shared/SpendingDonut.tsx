@@ -12,6 +12,7 @@ const Chart = dynamic(() => import("react-apexcharts"), { ssr: false })
 type SpendingDonutProps = {
   data: SpendingByBehavior[]
   formatAmount: (n: number) => string
+  emptyMessage?: string
 }
 
 const BEHAVIOR_COLORS: Record<string, string> = {
@@ -22,7 +23,7 @@ const BEHAVIOR_COLORS: Record<string, string> = {
   savings_investment: SEMANTIC.violet,
 }
 
-export function SpendingDonut({ data, formatAmount }: SpendingDonutProps) {
+export function SpendingDonut({ data, formatAmount, emptyMessage }: SpendingDonutProps) {
   const { t } = useTranslation()
 
   const hasData = data.length > 0
@@ -95,7 +96,7 @@ export function SpendingDonut({ data, formatAmount }: SpendingDonutProps) {
     <div className="relative flex items-center">
       {!hasData && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
-          {t("common.noData")}
+          {emptyMessage ?? t("common.noData")}
         </div>
       )}
       <Chart type="donut" height={160} width="100%" options={options} series={series} />

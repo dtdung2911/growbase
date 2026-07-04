@@ -8,7 +8,6 @@ import {
 } from "@/lib/stores/onboardingV2Store"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 
-// Shell 4 bước flow v2 — độc lập với WizardLayout/keys `setup.*` cũ (xoá ở story 4.7)
 export function OnboardingV2Shell({ children }: { children: ReactNode }) {
   const { t } = useTranslation()
   const step = useOnboardingV2Store((s) => s.step)
@@ -36,30 +35,44 @@ export function OnboardingV2Shell({ children }: { children: ReactNode }) {
         </p>
       </div>
 
-      <main className="mx-auto w-full max-w-lg flex-1 px-4 pb-28 pt-4">{children}</main>
+      <main className="mx-auto w-full max-w-lg flex-1 px-4 pb-28 pt-4">
+        {children}
+      </main>
 
-      <footer className="sticky bottom-0 z-10 border-t border-border/40 bg-card">
-        <div className="mx-auto flex max-w-lg items-center gap-3 px-4 py-3 pb-16">
-          {showPrev && (
-            <Button type="button" variant="ghost" onClick={prev} className="min-h-[44px]">
-              {t("setupV2.nav.back")}
+      {step < ONBOARDING_V2_TOTAL_STEPS - 1 && (
+        <footer className="sticky bottom-0 z-10 border-t border-border/40 bg-card shadow-card">
+          <div className="mx-auto flex max-w-lg items-center gap-3 px-4 py-3 pb-[env(safe-area-inset-bottom)]">
+            {showPrev && (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={prev}
+                className="min-h-[44px]"
+              >
+                {t("setupV2.nav.back")}
+              </Button>
+            )}
+            {step === 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={next}
+                className="min-h-[44px]"
+              >
+                {t("setupV2.nav.skip")}
+              </Button>
+            )}
+            <Button
+              type="button"
+              onClick={next}
+              disabled={!canProceed}
+              className="ml-auto min-h-[44px] flex-1 sm:flex-none"
+            >
+              {step === 0 ? t("setupV2.hook.cta") : t("setupV2.nav.next")}
             </Button>
-          )}
-          {step === 0 && (
-            <Button type="button" variant="outline" onClick={next} className="min-h-[44px]">
-              {t("setupV2.nav.skip")}
-            </Button>
-          )}
-          <Button
-            type="button"
-            onClick={next}
-            disabled={!canProceed}
-            className="ml-auto min-h-[44px] flex-1 sm:flex-none"
-          >
-            {step === 0 ? t("setupV2.hook.cta") : t("setupV2.nav.next")}
-          </Button>
-        </div>
-      </footer>
+          </div>
+        </footer>
+      )}
     </div>
   )
 }

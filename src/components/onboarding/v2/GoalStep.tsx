@@ -8,7 +8,6 @@ import type { OnboardingGoal } from "@/lib/validations/onboardingV2"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import { formatVNDCompact } from "@/lib/utils/currency"
 import { cn } from "@/lib/utils/cn"
-import HouseFillIcon from "@iconify-react/bi/house-fill";
 import ShieldDuotoneIcon from "@iconify-react/stash/shield-duotone";
 import GraduationCapDuotoneIcon from "@iconify-react/stash/graduation-cap-duotone";
 import HomeTwotoneIcon from "@iconify-react/ant-design/home-twotone";
@@ -43,7 +42,6 @@ const GOAL_PRESETS = [
   },
   {
     presetId: "house",
-    // emoji: <HouseFillIcon height="1em" style={{ color: "var(--primary)" }} />,
     emoji: (
       <HouseLineDuotoneIcon
         height="1.5em"
@@ -57,8 +55,10 @@ const GOAL_PRESETS = [
   {
     presetId: "travel",
     emoji: (
-      <IslandDuotoneIcon 
-      height="1.8em" style={{ color: "var(--primary-color)" }} />
+      <IslandDuotoneIcon
+        height="1.8em"
+        style={{ color: "var(--primary-color)" }}
+      />
     ),
     fundType: "goal",
     targetAmount: 30_000_000,
@@ -119,7 +119,9 @@ export function GoalStep() {
               key={preset.presetId}
               className={cn(
                 "rounded-[13px] border bg-card shadow-card transition-[border-color,box-shadow] duration-[250ms] motion-reduce:transition-none",
-                selected ? "border-primary ring-2 ring-primary/20" : "border-border/40"
+                selected
+                  ? "border-primary ring-2 ring-primary/20"
+                  : "border-border/40",
               )}
             >
               <button
@@ -137,9 +139,11 @@ export function GoalStep() {
                     {t(`setupV2.goal.${preset.presetId}.name`)}
                   </span>
                   <span className="block text-sm text-muted-foreground">
-                    {preset.targetAmount !== null && preset.targetMonths !== null ? (
+                    {preset.targetAmount !== null &&
+                    preset.targetMonths !== null ? (
                       <span className="font-mono tabular-nums">
-                        {formatVNDCompact(preset.targetAmount)} / {durationLabel(preset.targetMonths)}
+                        {formatVNDCompact(preset.targetAmount)} /{" "}
+                        {durationLabel(preset.targetMonths)}
                       </span>
                     ) : (
                       t(`setupV2.goal.${preset.presetId}.desc`)
@@ -152,7 +156,9 @@ export function GoalStep() {
                 <div className="space-y-3 border-t border-border/40 p-4">
                   {preset.presetId === "custom" && (
                     <div className="space-y-1.5">
-                      <Label htmlFor="goal-name">{t("setupV2.goal.editor.nameLabel")}</Label>
+                      <Label htmlFor="goal-name">
+                        {t("setupV2.goal.editor.nameLabel")}
+                      </Label>
                       <Input
                         id="goal-name"
                         value={goal.name}
@@ -162,7 +168,9 @@ export function GoalStep() {
                     </div>
                   )}
                   <div className="space-y-1.5">
-                    <Label htmlFor="goal-target">{t("setupV2.goal.editor.targetLabel")}</Label>
+                    <Label htmlFor="goal-target">
+                      {t("setupV2.goal.editor.targetLabel")}
+                    </Label>
                     <CurrencyInput
                       id="goal-target"
                       value={goal.targetAmount ?? 0}
@@ -170,19 +178,25 @@ export function GoalStep() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="goal-months">{t("setupV2.goal.editor.monthsLabel")}</Label>
+                    <Label htmlFor="goal-months">
+                      {t("setupV2.goal.editor.monthsLabel")}
+                    </Label>
                     <Input
                       id="goal-months"
                       inputMode="numeric"
                       value={goal.targetMonths ?? ""}
                       onChange={(e) => {
                         const digits = e.target.value.replace(/\D/g, "")
-                        updateGoal({ targetMonths: digits ? Number(digits) : null })
+                        updateGoal({
+                          targetMonths: digits ? Number(digits) : null,
+                        })
                       }}
                       className="font-mono tabular-nums"
                     />
                     {goal.targetMonths !== null && goal.targetMonths > 0 && (
-                      <p className="text-xs text-muted-foreground">{durationLabel(goal.targetMonths)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {durationLabel(goal.targetMonths)}
+                      </p>
                     )}
                   </div>
                 </div>

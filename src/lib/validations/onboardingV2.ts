@@ -14,3 +14,14 @@ export const goalSchema = z
   })
 
 export type OnboardingGoal = z.infer<typeof goalSchema>
+
+export const monthlyIncomeSchema = z
+  .number({ invalid_type_error: "Bạn hãy nhập thu nhập của cả nhà nhé" })
+  .positive("Thu nhập cần lớn hơn 0 — nhập số gần đúng cũng được")
+
+export const completeOnboardingV2Schema = z.object({
+  goal: goalSchema,
+  monthlyIncome: monthlyIncomeSchema,
+})
+
+export type CompleteOnboardingV2Input = z.infer<typeof completeOnboardingV2Schema>

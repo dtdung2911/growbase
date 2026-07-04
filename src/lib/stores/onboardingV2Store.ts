@@ -2,7 +2,7 @@
 
 import { create } from "zustand"
 import { persist, createJSONStorage } from "zustand/middleware"
-import { goalSchema, type OnboardingGoal } from "@/lib/validations/onboardingV2"
+import { goalSchema, monthlyIncomeSchema, type OnboardingGoal } from "@/lib/validations/onboardingV2"
 
 // Flow 4 bước: 0 Hook → 1 Mục tiêu → 2 Thu nhập → 3 Tada
 export const ONBOARDING_V2_TOTAL_STEPS = 4
@@ -35,7 +35,7 @@ export const useOnboardingV2Store = create<OnboardingV2State>()(
         const s = get()
         if (s.step === 0) return true
         if (s.step === 1) return s.goal !== null && goalSchema.safeParse(s.goal).success
-        if (s.step === 2) return s.monthlyIncome !== null && s.monthlyIncome > 0
+        if (s.step === 2) return monthlyIncomeSchema.safeParse(s.monthlyIncome).success
         return false
       },
     }),

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { goalSchema } from "@/lib/validations/onboardingV2"
+import { completeOnboardingV2Schema, goalSchema, monthlyIncomeSchema } from "@/lib/validations/onboardingV2"
 
 const validGoal = {
   presetId: "education" as const,
@@ -51,5 +51,68 @@ describe("goalSchema", () => {
   it("từ chối presetId/fundType ngoài enum", () => {
     expect(goalSchema.safeParse({ ...validGoal, presetId: "yacht" }).success).toBe(false)
     expect(goalSchema.safeParse({ ...validGoal, fundType: "freedom" }).success).toBe(false)
+  })
+})
+
+describe("monthlyIncomeSchema", () => {
+  it("chấp nhận số dương", () => {
+    expect(monthlyIncomeSchema.safeParse(20_000_000).success).toBe(true)
+    expect(monthlyIncomeSchema.safeParse(1).success).toBe(true)
+  })
+
+  it("từ chối 0 và số âm", () => {
+    expect(monthlyIncomeSchema.safeParse(0).success).toBe(false)
+    expect(monthlyIncomeSchema.safeParse(-5_000_000).success).toBe(false)
+  })
+
+  it("từ chối null/undefined/không phải số", () => {
+    expect(monthlyIncomeSchema.safeParse(null).success).toBe(false)
+    expect(monthlyIncomeSchema.safeParse(undefined).success).toBe(false)
+    expect(monthlyIncomeSchema.safeParse("20000000").success).toBe(false)
+  })
+})
+
+describe("completeOnboardingV2Schema", () => {
+  it("accepts a valid goal + monthlyIncome payload", () => {
+    const result = completeOnboardingV2Schema.safeParse({ goal: validGoal, monthlyIncome: 20_000_000 })
+    expect(result.success).toBe(true)
+  })
+
+  it("accepts emergency goal with null targetAmount/targetMonths", () => {
+    const emergencyGoal = {
+      presetId: "emergency",
+      fundType: "emergency",
+      name: "Quỹ khẩn cấp",
+      targetAmount: null,
+      targetMonths: null,
+    }
+    const result = completeOnboardingV2Schema.safeParse({ goal: emergencyGoal, monthlyIncome: 20_000_000 })
+    expect(result.success).toBe(true)
+  })
+
+  it("rejects income 0 or negative", () => {
+    expect(completeOnboardingV2Schema.safeParse({ goal: validGoal, monthlyIncome: 0 }).success).toBe(false)
+    expect(completeOnboardingV2Schema.safeParse({ goal: validGoal, monthlyIncome: -1 }).success).toBe(false)
+  })
+
+  it("rejects targetAmount 0", () => {
+    const result = completeOnboardingV2Schema.safeParse({
+      goal: { ...validGoal, targetAmount: 0 },
+      monthlyIncome: 20_000_000,
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects non-integer targetMonths", () => {
+    const result = completeOnboardingV2Schema.safeParse({
+      goal: { ...validGoal, targetMonths: 5.5 },
+      monthlyIncome: 20_000_000,
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects missing goal or monthlyIncome", () => {
+    expect(completeOnboardingV2Schema.safeParse({ monthlyIncome: 20_000_000 }).success).toBe(false)
+    expect(completeOnboardingV2Schema.safeParse({ goal: validGoal }).success).toBe(false)
   })
 })
