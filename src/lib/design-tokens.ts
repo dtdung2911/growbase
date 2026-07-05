@@ -1,5 +1,5 @@
 export const BRAND = {
-  primary: "#0084DB",
+  primary: "#0085db",
   hover: "#006BB8",
   pressed: "#004F8A",
   tint: "#EBF5FF",
@@ -9,7 +9,7 @@ export const SEMANTIC = {
   success: "#49d68d",
   warning: "#ffbd6f",
   error: "#ff917d",
-  info: "#49c8e6",
+  info: "#0085db",
   violet: "#9b78ff",
 } as const
 

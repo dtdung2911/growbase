@@ -5,6 +5,8 @@ import { Icon } from "@iconify/react"
 import { cn } from "@/lib/utils/cn"
 import { formatVNDCompact } from "@/lib/utils/currency"
 import { useTranslation } from "@/lib/i18n/useTranslation"
+import { computeGoalProgress, goalProgressInputFromFund } from "@/lib/insight/goalProgress"
+import { GoalDualProgress } from "@/components/funds/GoalDualProgress"
 import { FUND_TYPE_CONFIG } from "@/types/app"
 import type { Fund } from "@/types/app"
 
@@ -25,6 +27,9 @@ export function FundOverviewCard({ fund }: FundOverviewCardProps) {
 
   const isUrgent =
     fund.fund_type === "emergency" && progress !== null && progress < 50
+
+  const goalProgress =
+    fund.fund_type === "goal" ? computeGoalProgress(goalProgressInputFromFund(fund)) : null
 
   return (
     <Link
@@ -53,7 +58,8 @@ export function FundOverviewCard({ fund }: FundOverviewCardProps) {
           />
         )}
       </div>
-      {progress !== null && (
+      {goalProgress && <GoalDualProgress fund={fund} progress={goalProgress} />}
+      {!goalProgress && progress !== null && (
         <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
           <div
             className="h-full rounded-full [transition:width_300ms_ease]"

@@ -114,6 +114,7 @@ export type Fund = {
   per_member: boolean
   amount_per_member: number | null
   sort_order: number
+  created_at: string
 }
 
 export type FundTransaction = {

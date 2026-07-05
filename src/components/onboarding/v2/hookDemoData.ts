@@ -197,6 +197,7 @@ function buildFunds(t: TFunction): Fund[] {
       per_member: false,
       amount_per_member: null,
       sort_order: 1,
+      created_at: "2026-01-05T00:00:00+07:00",
     },
     {
       id: "demo-fund-emergency",
@@ -221,6 +222,7 @@ function buildFunds(t: TFunction): Fund[] {
       per_member: false,
       amount_per_member: null,
       sort_order: 2,
+      created_at: "2026-01-05T00:00:00+07:00",
     },
   ]
 }

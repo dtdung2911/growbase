@@ -36,7 +36,7 @@
 # - Retrospective appends its action items to action_items; sprint-status surfaces open ones
 
 generated: 02-07-2026
-last_updated: 04-07-2026
+last_updated: 2026-07-05
 project: growbase
 project_key: NOKEY
 tracking_system: file-system
@@ -83,11 +83,11 @@ development_status:
   5-5-insight-behavior-feedback: review
   epic-5-retrospective: optional
 
-  epic-6: backlog
-  6-1-expected-line-narrative-engine: backlog
-  6-2-goal-progress-card: backlog
-  6-3-milestone-celebration: backlog
-  6-4-goals-crud: backlog
+  epic-6: in-progress
+  6-1-expected-line-narrative-engine: done
+  6-2-goal-progress-card: done
+  6-3-milestone-celebration: done
+  6-4-goals-crud: done
   epic-6-retrospective: optional
 
   epic-7: backlog

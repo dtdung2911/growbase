@@ -142,7 +142,7 @@ export async function GET(request: NextRequest) {
   // Funds
   const { data: fundsData } = await supabase
     .from("funds")
-    .select("id, name, fund_type, color, target_amount, current_balance, freedom_target_monthly, monthly_contribution")
+    .select("id, name, fund_type, color, target_amount, current_balance, freedom_target_monthly, monthly_contribution, created_at, target_date")
     .eq("household_id", hid)
     .eq("is_active", true)
     .order("sort_order")

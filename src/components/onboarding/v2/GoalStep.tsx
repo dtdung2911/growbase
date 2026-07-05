@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect } from "react"
 import { CurrencyInput } from "@/components/ui/CurrencyInput"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -97,6 +98,13 @@ export function GoalStep() {
   const updateGoal = (patch: Partial<OnboardingGoal>) => {
     if (goal) setGoal({ ...goal, ...patch })
   }
+
+  // Mặc định chọn "Quỹ khẩn cấp" khi chưa có goal — nút Tiếp tục enable ngay
+  // và preview x3 thu nhập luôn hiện ở step Thu nhập (issue 2+3).
+  useEffect(() => {
+    if (goal === null) selectPreset(GOAL_PRESETS[0])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const durationLabel = (months: number) =>
     months % 12 === 0

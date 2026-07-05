@@ -30,12 +30,16 @@ export function TadaStep() {
   const completeOnboarding = useCompleteOnboardingV2()
   const fired = useRef(false)
 
+  // Deps [goal, monthlyIncome] (không phải []): store rehydrate từ sessionStorage
+  // có thể xong SAU lần mount đầu. Với [] effect chỉ chạy 1 lần lúc goal còn null →
+  // return sớm → mutation không bao giờ fire → spinner kẹt vĩnh viễn (issue 4).
+  // fired ref đảm bảo chỉ gọi mutate đúng 1 lần khi goal + income đã sẵn sàng.
   useEffect(() => {
     if (fired.current || !goal || monthlyIncome === null) return
     fired.current = true
     completeOnboarding.mutate({ goal, monthlyIncome })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [goal, monthlyIncome])
 
   const [revealed, setRevealed] = useState<TadaRevealStage[]>([])
   useEffect(() => {

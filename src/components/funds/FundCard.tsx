@@ -4,6 +4,8 @@ import { Icon } from "@iconify/react"
 import { cn } from "@/lib/utils/cn"
 import { formatVNDCompact } from "@/lib/utils/currency"
 import { useTranslation } from "@/lib/i18n/useTranslation"
+import { computeGoalProgress, goalProgressInputFromFund } from "@/lib/insight/goalProgress"
+import { GoalDualProgress } from "@/components/funds/GoalDualProgress"
 import { FUND_TYPE_CONFIG } from "@/types/app"
 import type { Fund } from "@/types/app"
 
@@ -28,6 +30,8 @@ export function FundCard({ fund, onContribute, onWithdraw }: FundCardProps) {
 
   const isUrgent = fund.fund_type === "emergency" && progress !== null && progress < 50
   const isFreedom = fund.fund_type === "freedom" && fund.reset_monthly
+  const goalProgress =
+    fund.fund_type === "goal" ? computeGoalProgress(goalProgressInputFromFund(fund)) : null
 
   const freedomCap = fund.amount_per_member ?? monthly
   const freedomProgress =
@@ -69,7 +73,9 @@ export function FundCard({ fund, onContribute, onWithdraw }: FundCardProps) {
             </div>
           </div>
 
-          {progress !== null && (
+          {goalProgress && <GoalDualProgress fund={fund} progress={goalProgress} />}
+
+          {!goalProgress && progress !== null && (
             <div className="mt-2 space-y-1">
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                 <div

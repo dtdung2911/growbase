@@ -77,11 +77,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         .eq("user_id", user.id)
         .eq("is_active", true)
         .order("joined_at", { ascending: true })
+        .returns<{ role: "owner" | "member"; households: { id: string; name: string } }[]>()
 
       const allHouseholds: HouseholdSummary[] = (data ?? []).map((m) => ({
-        id: (m.households as { id: string; name: string }).id,
-        name: (m.households as { id: string; name: string }).name,
-        role: m.role as "owner" | "member",
+        id: m.households.id,
+        name: m.households.name,
+        role: m.role,
       }))
 
       setAllHouseholds(allHouseholds)

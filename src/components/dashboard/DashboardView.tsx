@@ -19,6 +19,7 @@ import { RecentTransactionsList } from "@/components/dashboard/RecentTransaction
 import { IncomeExpenseBar, WeekdayChart, TopExpensesWidget } from "@/components/dashboard/DashboardCharts"
 import { FirstExpenseCta } from "@/components/dashboard/FirstExpenseCta"
 import { DailyInsightBanner } from "@/components/dashboard/DailyInsightBanner"
+import { MilestoneCelebration } from "@/components/dashboard/MilestoneCelebrationDialog"
 import type { BudgetActualLine, DashboardData } from "@/types/app"
 
 function trendPct(current: number, prev: number): number | null {
@@ -37,6 +38,8 @@ export function DashboardView({ data, month }: { data: DashboardData; month: str
 
   return (
     <div className="space-y-6">
+      <MilestoneCelebration funds={data.funds} />
+
       {/* Daily insight / first-expense CTA */}
       {data.hasAnyTransactionEver ? <DailyInsightBanner data={data} /> : <FirstExpenseCta />}
 

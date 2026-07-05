@@ -10,6 +10,7 @@ import { FUND_TYPE_CONFIG } from "@/types/app"
 import { ContributeModal } from "@/components/funds/ContributeModal"
 import { WithdrawModal } from "@/components/funds/WithdrawModal"
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog"
+import { GoalEditSheet } from "@/components/funds/GoalEditSheet"
 import { SkeletonCard } from "@/components/shared/SkeletonCard"
 import { PageHeader } from "@/components/shared/PageHeader"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -34,6 +35,7 @@ export default function FundDetailPage({
   const [contributeOpen, setContributeOpen] = useState(false)
   const [withdrawOpen, setWithdrawOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
 
   if (isLoading) {
     return (
@@ -93,6 +95,16 @@ export default function FundDetailPage({
                 ` · ${monthsToTarget} ${t("funds.monthsToTarget")}`}
             </p>
           </div>
+          {fund.fund_type === "goal" && (
+            <button
+              type="button"
+              onClick={() => setEditOpen(true)}
+              aria-label={t("funds.editGoal")}
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
+            >
+              <Icon icon="lucide:pencil" className="h-5 w-5" />
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setDeleteOpen(true)}
@@ -310,6 +322,9 @@ export default function FundDetailPage({
         open={withdrawOpen}
         onClose={() => setWithdrawOpen(false)}
       />
+      {fund.fund_type === "goal" && editOpen && (
+        <GoalEditSheet fund={fund} open={editOpen} onClose={() => setEditOpen(false)} />
+      )}
       <ConfirmDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}

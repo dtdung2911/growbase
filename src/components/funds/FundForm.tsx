@@ -16,6 +16,8 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { CurrencyInput } from "@/components/ui/CurrencyInput"
 import { cn } from "@/lib/utils/cn"
+import { formatVNDCompact } from "@/lib/utils/currency"
+import { GOAL_PRESETS, presetTargetDate } from "@/lib/constants/goalPresets"
 import { useCreateFund } from "@/lib/hooks/useFunds"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import { FUND_TYPE_CONFIG, type FundType } from "@/types/app"
@@ -163,6 +165,25 @@ function FundFormBody({ onClose }: { onClose: () => void }) {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {step === 2 && (
             <>
+              {fundType === "goal" && (
+                <div className="flex flex-wrap gap-2">
+                  {GOAL_PRESETS.map((preset) => (
+                    <button
+                      key={preset.presetId}
+                      type="button"
+                      onClick={() => {
+                        setValue("name", t(`setupV2.goal.${preset.presetId}.name`))
+                        setValue("target_amount", preset.targetAmount)
+                        setValue("target_date", presetTargetDate(preset.targetMonths))
+                      }}
+                      className="min-h-[44px] rounded-full border border-border px-4 text-sm text-foreground transition-colors hover:border-primary"
+                    >
+                      {t(`setupV2.goal.${preset.presetId}.name`)} · {formatVNDCompact(preset.targetAmount)}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <div className="space-y-1.5">
                 <Label htmlFor="fund-name">{t("funds.fundName")}</Label>
                 <Controller

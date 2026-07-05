@@ -27,7 +27,7 @@ export function OnboardingV2Shell({ children }: { children: ReactNode }) {
             style={{ width: `${progress}%` }}
           />
         </div>
-        <p className="mx-auto max-w-lg px-4 pt-3 text-sm text-muted-foreground">
+        <p className="mx-auto max-w-2xl px-4 pt-3 text-sm text-muted-foreground">
           {t("setupV2.nav.stepLabel", {
             current: step + 1,
             total: ONBOARDING_V2_TOTAL_STEPS,
@@ -35,13 +35,13 @@ export function OnboardingV2Shell({ children }: { children: ReactNode }) {
         </p>
       </div>
 
-      <main className="mx-auto w-full max-w-lg flex-1 px-4 pb-28 pt-4">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-28 pt-4">
         {children}
       </main>
 
       {step < ONBOARDING_V2_TOTAL_STEPS - 1 && (
         <footer className="sticky bottom-0 z-10 border-t border-border/40 bg-card shadow-card">
-          <div className="mx-auto flex max-w-lg items-center gap-3 px-4 py-3 pb-[env(safe-area-inset-bottom)]">
+          <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-6">
             {showPrev && (
               <Button
                 type="button"
@@ -74,5 +74,5 @@ export function OnboardingV2Shell({ children }: { children: ReactNode }) {
         </footer>
       )}
     </div>
-  )
+  );
 }

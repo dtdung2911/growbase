@@ -36,48 +36,60 @@ export function IncomeExpenseBar({ income, expense, lastIncome, lastExpense, mon
   const prevLabel = new Date(y, m - 2, 1).toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US", { month: "short" })
   const curLabel = new Date(y, m - 1, 1).toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US", { month: "short" })
 
-  const options = useMemo(() => ({
-    chart: {
-      toolbar: { show: false },
-      fontFamily: "inherit",
-    },
-    colors: [SEMANTIC.success, SEMANTIC.error],
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        borderRadius: 6,
-        columnWidth: "55%",
-      },
-    },
-    dataLabels: { enabled: false },
-    xaxis: {
-      categories: [prevLabel, curLabel],
-      labels: { style: { fontSize: "11px", fontWeight: 600 } },
-      axisBorder: { show: false },
-      axisTicks: { show: false },
-    },
-    yaxis: {
-      labels: {
-        style: { fontSize: "10px" },
-        formatter: (v: number) => `${Math.round(v / 1_000_000)}M`,
-      },
-    },
-    tooltip: { y: { formatter: (v: number) => formatVND(v) } },
-    legend: {
-      show: true,
-      position: "top",
-      horizontalAlign: "right",
-      fontSize: "12px",
-      markers: { width: 8, height: 8, radius: 4 },
-    },
-    grid: {
-      borderColor: "hsl(var(--border))",
-      strokeDashArray: 4,
-      yaxis: { lines: { show: true } },
-      xaxis: { lines: { show: false } },
-    },
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }) as ApexOptions, [locale, prevLabel, curLabel])
+  const options = useMemo(
+    () =>
+      ({
+        chart: {
+          toolbar: { show: false },
+          fontFamily: "inherit",
+          type: "bar",
+          stacked: true,
+          stackType: "100%",
+        },
+        stroke: {
+          width: 2,
+          colors: ["#fff"],
+        },
+        colors: [SEMANTIC.info, SEMANTIC.error],
+        plotOptions: {
+          bar: {
+            horizontal: false,
+            borderRadius: 8,
+            borderRadiusApplication: "around",
+            columnWidth: "20px",
+          },
+        },
+        dataLabels: { enabled: false },
+        xaxis: {
+          categories: [prevLabel, curLabel],
+          labels: { style: { fontSize: "11px", fontWeight: 600 } },
+          axisBorder: { show: false },
+          axisTicks: { show: false },
+        },
+        yaxis: {
+          labels: {
+            style: { fontSize: "10px" },
+            formatter: (v: number) => `${Math.round(v / 1_000_000)}M`,
+          },
+        },
+        tooltip: { y: { formatter: (v: number) => formatVND(v) } },
+        legend: {
+          show: true,
+          position: "top",
+          horizontalAlign: "right",
+          fontSize: "12px",
+          markers: { width: 8, height: 8, radius: 4 },
+        },
+        grid: {
+          borderColor: "hsl(var(--border))",
+          strokeDashArray: 4,
+          yaxis: { lines: { show: true } },
+          xaxis: { lines: { show: false } },
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }) as ApexOptions,
+    [locale, prevLabel, curLabel],
+  );
 
   const series = useMemo(() => [
     { name: t("dashboard.income"), data: [lastIncome, income] },

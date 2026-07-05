@@ -7,6 +7,7 @@ import { useOnboardingV2Store } from "@/lib/stores/onboardingV2Store"
 import { monthlyIncomeSchema } from "@/lib/validations/onboardingV2"
 import { estimateEmergencyTarget } from "@/lib/constants/budgetTemplate"
 import { useTranslation } from "@/lib/i18n/useTranslation"
+import { formatVND } from "@/lib/utils/currency"
 
 export function IncomeStep() {
   const { t } = useTranslation()
@@ -17,7 +18,9 @@ export function IncomeStep() {
   const [touched, setTouched] = useState(false)
 
   const incomeValid = monthlyIncomeSchema.safeParse(monthlyIncome).success
-  const showEmergencyPreview = goal?.presetId === "emergency" && incomeValid
+  // Quỹ khẩn cấp luôn hiển thị khi có thu nhập — editable nếu là goal đã chọn,
+  // read-only tham khảo nếu user chọn goal khác (fund không được tạo từ số này).
+  const isEmergencyGoal = goal?.presetId === "emergency"
 
   return (
     <div className="space-y-4">
@@ -41,21 +44,29 @@ export function IncomeStep() {
         )}
       </div>
 
-      {showEmergencyPreview && goal && (
+      {incomeValid && (
         <div className="space-y-3 rounded-[13px] border border-border/40 bg-card p-4 shadow-card">
           <div>
             <p className="font-semibold text-foreground">{t("setupV2.income.emergencyTitle")}</p>
-            <p className="mt-0.5 text-sm text-muted-foreground">{t("setupV2.income.emergencyDesc")}</p>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              {t(isEmergencyGoal ? "setupV2.income.emergencyDesc" : "setupV2.income.emergencyAutoDesc")}
+            </p>
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="emergency-target">{t("setupV2.income.emergencyEditLabel")}</Label>
-            <CurrencyInput
-              id="emergency-target"
-              // targetAmount null = "auto" — recompute theo income; user sửa → giữ giá trị user
-              value={goal.targetAmount ?? estimateEmergencyTarget(monthlyIncome ?? 0)}
-              onChange={(v) => setGoal({ ...goal, targetAmount: v || null })}
-            />
-          </div>
+          {isEmergencyGoal && goal ? (
+            <div className="space-y-1.5">
+              <Label htmlFor="emergency-target">{t("setupV2.income.emergencyEditLabel")}</Label>
+              <CurrencyInput
+                id="emergency-target"
+                // targetAmount null = "auto" — recompute theo income; user sửa → giữ giá trị user
+                value={goal.targetAmount ?? estimateEmergencyTarget(monthlyIncome ?? 0)}
+                onChange={(v) => setGoal({ ...goal, targetAmount: v || null })}
+              />
+            </div>
+          ) : (
+            <p className="font-mono text-lg font-semibold tabular-nums text-foreground">
+              {formatVND(estimateEmergencyTarget(monthlyIncome ?? 0))}
+            </p>
+          )}
         </div>
       )}
     </div>
