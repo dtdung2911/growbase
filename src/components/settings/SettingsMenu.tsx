@@ -20,6 +20,7 @@ const SETTINGS_ITEMS: SettingsItem[] = [
   { labelKey: "settings.accounts", href: "/settings/accounts", icon: "lucide:wallet" },
   { labelKey: "settings.income", href: "/settings/income", icon: "lucide:trending-up" },
   { labelKey: "settings.household", href: "/settings/household", icon: "lucide:home" },
+  { labelKey: "settings.inviteCompanion", href: "/settings/members", icon: "lucide:user-plus" },
 ]
 
 export function SettingsMenu() {

@@ -117,6 +117,8 @@ Claude (bmad-dev-story workflow)
 - `npx vitest run` → 325/325 pass, 0 regression
 - `npx tsc --noEmit` → chỉ còn 2 lỗi pre-existing ở `src/app/(app)/layout.tsx:82-83` (`SelectQueryError`), đã xác nhận tồn tại giống hệt ở baseline commit trước khi sửa story này (không phải regression)
 - `npx next lint` yêu cầu khởi tạo config ESLint mới (chưa có `.eslintrc` trong repo) — bỏ qua, nhất quán với các story 4.2-4.4 trước đó (không có lint config sẵn để chạy)
+- 2026-07-05 (bug fix): E2E Playwright repro spinner treo ở Tada — POST `/api/onboarding/complete` 200 nhưng component không re-render. Debug log trong component cho thấy chuỗi StrictMode MOUNT→UNMOUNT→MOUNT và không có render nào sau khi mutation resolve. Root cause: `MutationObserver.onUnsubscribe()` (query-core 5.101.0) gỡ observer khỏi mutation đang chạy khi StrictMode unmount, không attach lại khi remount → notify success rơi vào danh sách observer rỗng
+- Sau fix: `npx vitest run` → 378/378 pass, `npx tsc --noEmit` → 0 lỗi, E2E 3 variants (house/infeasible, emergency, travel/feasible) đều reveal + vào dashboard
 
 ### Completion Notes List
 
@@ -126,6 +128,7 @@ Claude (bmad-dev-story workflow)
 - Task 4: `OnboardingV2Shell.tsx` — bọc `<footer>` trong điều kiện `step < ONBOARDING_V2_TOTAL_STEPS - 1`, không đổi logic Back/Next/progress ở các step khác
 - Task 5: Toàn bộ 11 business flow verify bằng code-trace thủ công (không có test file cho component/hook trong repo này — quy ước đã xác nhận từ story 4.2-4.4: `find src -path "*hooks*" -iname "*.test.*"` → rỗng)
 - i18n: xoá `setupV2.tada.placeholder`, thêm 20 key `setupV2.tada.*` vào cả `vi.json`/`en.json`, JSON validate bằng `python3 -c "import json; json.load(...)"` — pass cả 2 file
+- Bug fix 2026-07-05 (user report: Tada kẹt ở "Đang dựng ngân sách 18 dòng..."): chuyển `TadaStep` từ đọc state observer-based (`completeOnboarding.isSuccess/isError/data`) sang `useMutationState` + `mutationKey` (`COMPLETE_ONBOARDING_V2_KEY`) — subscribe thẳng `MutationCache` nên miễn nhiễm việc StrictMode unmount gỡ observer khỏi mutation đang chạy. `mutate()` vẫn fire qua ref-guard như cũ. Chỉ ảnh hưởng dev mode (prod không có StrictMode double-mount) nhưng fix để dev test được flow
 
 ### File List
 
@@ -141,8 +144,8 @@ Claude (bmad-dev-story workflow)
 
 | # | Flow | Method | Result |
 |---|------|--------|--------|
-| 1 | Mount `TadaStep` → gọi API đúng 1 lần, không double-fire do Strict Mode | Manual trace: `fired` ref guard trong `useEffect` empty-deps — set `true` trước khi `mutate()`, lần gọi effect thứ 2 (Strict Mode) bị chặn ở check đầu | Pass |
-| 2 | Pending state hiển thị label theo stage, không phải spinner trơ | Manual trace: `!isSuccess` → `TadaPending` render `t("setupV2.tada.pending.budget")` (stage đầu, do `revealed` rỗng suốt lúc pending — network 1 lần nên không cần sequence trong lúc chờ) kèm spinner phụ trợ | Pass |
+| 1 | Mount `TadaStep` → gọi API đúng 1 lần, không double-fire do Strict Mode | **Automated E2E (Playwright, 2026-07-05)**: đúng 1 POST 200 duy nhất qua cả 3 lần chạy. Lưu ý: manual trace ban đầu Pass nhưng đã bỏ sót bug StrictMode observer-detach làm spinner treo vĩnh viễn — chỉ E2E browser thật mới bắt được | Pass (sau fix) |
+| 2 | Pending state hiển thị label theo stage → reveal 4 cards sau khi API xong | **Automated E2E**: pending "Đang dựng ngân sách 18 dòng..." → REVEALED trong ~1.6s (4 stage × 550ms), screenshot xác nhận đủ 4 cards + CTA | Pass (sau fix) |
 | 3 | `prefers-reduced-motion: reduce` → hiển thị tức thì, không stagger | Manual trace: effect kiểm tra `matchMedia(...).matches` → set toàn bộ `TADA_REVEAL_STAGES` ngay, return sớm trước khi tạo `setTimeout` | Pass |
 | 4 | feasible=true → copy đúng + `font-mono` + `todayRemaining` hiển thị | Manual trace: `feasibility.feasible` true → `t("setupV2.tada.feasibleTitle", {amount})` + card `todayRemaining` dùng `formatVND`, class `font-mono tabular-nums` | Pass |
 | 5 | feasible=false → 2 input hiện, sửa → recompute tại chỗ không gọi lại API | Manual trace: `CurrencyInput`/`Input` set state local `adjustedTargetAmount`/`adjustedMonths` → `calculateFeasibility()` gọi lại thuần client-side trong render, không có lệnh gọi `mutate()` nào trong 2 `onChange` | Pass |
@@ -157,3 +160,4 @@ Claude (bmad-dev-story workflow)
 
 - 2026-07-03: Story created via bmad-create-story workflow.
 - 2026-07-03: Implementation complete (Tasks 1-5), all ACs satisfied, 0 regression, all 11 business flows verified.
+- 2026-07-05: Bug fix (user report) — Tada spinner treo vĩnh viễn ở dev mode dù API 200. Root cause: TanStack Query v5 MutationObserver bị StrictMode unmount gỡ khỏi mutation đang chạy, không re-attach khi remount. Fix: `TadaStep` đọc state qua `useMutationState` + `mutationKey` thay vì observer-based. Verify: E2E Playwright 3 variants (house 40tr infeasible / emergency 100tr / travel 60tr feasible) — full flow Hook→Goal→Income→Tada reveal→Vào Dashboard, revisit `/setup` redirect đúng. 378/378 tests, tsc 0 lỗi.

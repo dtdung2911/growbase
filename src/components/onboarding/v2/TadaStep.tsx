@@ -7,7 +7,12 @@ import { CurrencyInput } from "@/components/ui/CurrencyInput"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useOnboardingV2Store } from "@/lib/stores/onboardingV2Store"
-import { useCompleteOnboardingV2 } from "@/lib/hooks/useCompleteOnboardingV2"
+import { useMutationState } from "@tanstack/react-query"
+import {
+  COMPLETE_ONBOARDING_V2_KEY,
+  useCompleteOnboardingV2,
+  type CompleteOnboardingV2Response,
+} from "@/lib/hooks/useCompleteOnboardingV2"
 import { useFunds, useUpdateFund } from "@/lib/hooks/useFunds"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import { formatVND } from "@/lib/utils/currency"
@@ -30,6 +35,18 @@ export function TadaStep() {
   const completeOnboarding = useCompleteOnboardingV2()
   const fired = useRef(false)
 
+  // Không đọc state từ completeOnboarding (observer-based): StrictMode unmount gỡ
+  // observer khỏi mutation đang chạy và không attach lại khi remount → isSuccess
+  // kẹt false vĩnh viễn (spinner treo). useMutationState subscribe thẳng
+  // MutationCache nên miễn nhiễm với vòng đời observer.
+  const mutationStates = useMutationState({
+    filters: { mutationKey: COMPLETE_ONBOARDING_V2_KEY },
+    select: (m) => m.state,
+  })
+  const mutation = mutationStates[mutationStates.length - 1]
+  const mutationStatus = mutation?.status ?? "idle"
+  const result = mutation?.data as CompleteOnboardingV2Response | undefined
+
   // Deps [goal, monthlyIncome] (không phải []): store rehydrate từ sessionStorage
   // có thể xong SAU lần mount đầu. Với [] effect chỉ chạy 1 lần lúc goal còn null →
   // return sớm → mutation không bao giờ fire → spinner kẹt vĩnh viễn (issue 4).
@@ -43,7 +60,7 @@ export function TadaStep() {
 
   const [revealed, setRevealed] = useState<TadaRevealStage[]>([])
   useEffect(() => {
-    if (!completeOnboarding.isSuccess) return
+    if (mutationStatus !== "success") return
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
     if (reducedMotion) {
       setRevealed([...TADA_REVEAL_STAGES])
@@ -53,15 +70,15 @@ export function TadaStep() {
       setTimeout(() => setRevealed((prev) => [...prev, stage]), (i + 1) * STAGE_DELAY_MS)
     )
     return () => timers.forEach(clearTimeout)
-  }, [completeOnboarding.isSuccess])
+  }, [mutationStatus])
 
   const [adjustedTargetAmount, setAdjustedTargetAmount] = useState<number | null>(null)
   const [adjustedMonths, setAdjustedMonths] = useState<number | null>(null)
 
   if (!goal || monthlyIncome === null) return null
 
-  if (completeOnboarding.isError) {
-    const status = (completeOnboarding.error as Error & { status?: number }).status
+  if (mutationStatus === "error") {
+    const status = (mutation?.error as (Error & { status?: number }) | null)?.status
     if (status === 409) {
       return (
         <TadaMessage
@@ -75,7 +92,10 @@ export function TadaStep() {
       )
     }
     return (
-      <TadaMessage title={t("setupV2.tada.errorTitle")} description={completeOnboarding.error.message}>
+      <TadaMessage
+        title={t("setupV2.tada.errorTitle")}
+        description={mutation?.error instanceof Error ? mutation.error.message : ""}
+      >
         <Button className="min-h-[44px] w-full" onClick={() => completeOnboarding.mutate({ goal, monthlyIncome })}>
           {t("setupV2.tada.retry")}
         </Button>
@@ -83,11 +103,11 @@ export function TadaStep() {
     )
   }
 
-  if (!completeOnboarding.isSuccess) {
+  if (mutationStatus !== "success" || !result) {
     return <TadaPending stage={TADA_REVEAL_STAGES[revealed.length] ?? TADA_REVEAL_STAGES[0]} t={t} />
   }
 
-  const original = completeOnboarding.data
+  const original = result
   const originalTargetAmount = goal.targetAmount ?? estimateEmergencyTarget(monthlyIncome)
   const originalMonths = resolveFeasibilityMonths(
     goal.fundType,

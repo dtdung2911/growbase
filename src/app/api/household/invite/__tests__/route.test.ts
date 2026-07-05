@@ -5,11 +5,16 @@ const mocks = vi.hoisted(() => ({
   withAuth: vi.fn(),
   verifyHouseholdMember: vi.fn(),
   inviteSchema: { safeParse: vi.fn() },
+  supabaseAdmin: { from: vi.fn() },
 }))
 
 vi.mock("@/lib/supabase/auth-check", () => ({
   withAuth: mocks.withAuth,
   verifyHouseholdMember: mocks.verifyHouseholdMember,
+}))
+
+vi.mock("@/lib/supabase/admin", () => ({
+  supabaseAdmin: mocks.supabaseAdmin,
 }))
 
 vi.mock("@/lib/validations/household", () => ({
@@ -23,22 +28,23 @@ const unauth = () =>
 const forbidden = () =>
   NextResponse.json({ data: null, error: "Forbidden" }, { status: 403 })
 
-function makeSupabase(memberResult: unknown, insertResult: unknown) {
+// AD-2: INSERT vào household_invitations dùng supabaseAdmin, guards dùng user-scoped supabase
+function makeSupabase(memberResult: unknown) {
   const memberChain = {
     select: vi.fn(() => memberChain),
     eq: vi.fn(() => memberChain),
     maybeSingle: vi.fn().mockResolvedValue(memberResult),
   }
+  return { from: vi.fn(() => memberChain) }
+}
+
+function makeAdminInsertChain(insertResult: unknown) {
   const insertChain = {
     insert: vi.fn(() => insertChain),
     select: vi.fn(() => insertChain),
     single: vi.fn().mockResolvedValue(insertResult),
   }
-  return {
-    from: vi.fn((table: string) =>
-      table === "household_invitations" ? insertChain : memberChain
-    ),
-  }
+  return insertChain
 }
 
 beforeEach(() => vi.clearAllMocks())
@@ -66,7 +72,7 @@ describe("POST /api/household/invite", () => {
   })
 
   it("returns 400 when body invalid", async () => {
-    const supabase = makeSupabase(null, null)
+    const supabase = makeSupabase(null)
     mocks.withAuth.mockResolvedValue({ user: { id: "u1" }, supabase, error: null })
     mocks.inviteSchema.safeParse.mockReturnValue({
       success: false,
@@ -80,7 +86,7 @@ describe("POST /api/household/invite", () => {
   })
 
   it("calls verifyHouseholdMember with correct args", async () => {
-    const supabase = makeSupabase(null, null)
+    const supabase = makeSupabase(null)
     mocks.withAuth.mockResolvedValue({ user: { id: "u1" }, supabase, error: null })
     mocks.inviteSchema.safeParse.mockReturnValue({
       success: true,
@@ -93,7 +99,7 @@ describe("POST /api/household/invite", () => {
   })
 
   it("returns 403 when user is NOT member of the requested household (AD-6)", async () => {
-    const supabase = makeSupabase(null, null)
+    const supabase = makeSupabase(null)
     mocks.withAuth.mockResolvedValue({ user: { id: "u1" }, supabase, error: null })
     mocks.inviteSchema.safeParse.mockReturnValue({
       success: true,
@@ -109,7 +115,7 @@ describe("POST /api/household/invite", () => {
 
   it("returns 403 when user is member but NOT owner", async () => {
     // member check (not owner) → returns null
-    const supabase = makeSupabase({ data: null, error: null }, null)
+    const supabase = makeSupabase({ data: null, error: null })
     mocks.withAuth.mockResolvedValue({ user: { id: "u1" }, supabase, error: null })
     mocks.inviteSchema.safeParse.mockReturnValue({
       success: true,
@@ -124,9 +130,11 @@ describe("POST /api/household/invite", () => {
     expect(body.error).toBe("Not household owner")
   })
 
-  it("returns invite token + link when owner invites successfully", async () => {
+  it("returns invite token + link when owner invites successfully, using supabaseAdmin for INSERT (AD-2)", async () => {
     const insertResult = { data: { token: "tok-abc" }, error: null }
-    const supabase = makeSupabase({ data: { role: "owner" }, error: null }, insertResult)
+    const supabase = makeSupabase({ data: { role: "owner" }, error: null })
+    const adminInsertChain = makeAdminInsertChain(insertResult)
+    mocks.supabaseAdmin.from.mockReturnValue(adminInsertChain)
     mocks.withAuth.mockResolvedValue({ user: { id: "u1" }, supabase, error: null })
     mocks.inviteSchema.safeParse.mockReturnValue({
       success: true,
@@ -140,5 +148,7 @@ describe("POST /api/household/invite", () => {
     expect(body.error).toBeNull()
     expect(body.data.token).toBe("tok-abc")
     expect(body.data.inviteLink).toContain("/invite/tok-abc")
+    expect(mocks.supabaseAdmin.from).toHaveBeenCalledWith("household_invitations")
+    expect(supabase.from).not.toHaveBeenCalledWith("household_invitations")
   })
 })

@@ -1,5 +1,7 @@
 "use client"
 
+import { Icon } from "@iconify/react"
+import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import type { Invitation } from "@/types/app"
@@ -25,8 +27,13 @@ export function InviteCard({ invitation }: InviteCardProps) {
     locale === "vi" ? "vi-VN" : "en-US"
   )
 
+  const copyLink = () => {
+    navigator.clipboard.writeText(`${window.location.origin}/invite/${invitation.token}`)
+    toast.success(t("settings.members.linkCopied"), { duration: 2000 })
+  }
+
   return (
-    <div className="rounded-[13px] border border-dashed border-border/40 bg-card p-4 shadow-card">
+    <div className="flex items-start justify-between gap-2 rounded-[13px] border border-dashed border-border/40 bg-card p-4 shadow-card">
       <div className="space-y-1">
         <h4 className="text-sm font-semibold">{invitation.display_name}</h4>
         <p className="text-xs text-muted-foreground">{invitation.email}</p>
@@ -42,6 +49,16 @@ export function InviteCard({ invitation }: InviteCardProps) {
           {t("settings.members.expiresAt", { date: expiresDate })}
         </p>
       </div>
+      {invitation.status === "pending" && (
+        <button
+          type="button"
+          onClick={copyLink}
+          aria-label={t("common.copy")}
+          className="flex h-11 w-11 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground"
+        >
+          <Icon icon="lucide:copy" className="h-4 w-4" />
+        </button>
+      )}
     </div>
   )
 }

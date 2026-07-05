@@ -57,7 +57,7 @@ export function InviteMemberForm() {
           label: t("common.copy"),
           onClick: () => navigator.clipboard.writeText(result.inviteLink),
         },
-        duration: 10000,
+        duration: 2000,
       })
       void queryClient.invalidateQueries({ queryKey: keys.members(householdId) })
       void queryClient.invalidateQueries({ queryKey: keys.invitations(householdId) })
@@ -114,7 +114,9 @@ export function InviteMemberForm() {
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="invite-email" className="text-xs">Email</Label>
+        <Label htmlFor="invite-email" className="text-xs">
+          {t("settings.members.emailLabel")}
+        </Label>
         <Input
           id="invite-email"
           type="email"

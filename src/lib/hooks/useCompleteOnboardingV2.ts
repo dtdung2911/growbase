@@ -5,16 +5,19 @@ import { useAppStore } from "@/lib/stores/appStore"
 import type { OnboardingGoal } from "@/lib/validations/onboardingV2"
 import type { FeasibilityResult } from "@/lib/constants/budgetTemplate"
 
-interface CompleteOnboardingV2Response {
+export interface CompleteOnboardingV2Response {
   householdId: string
   feasibility: FeasibilityResult
   todayRemaining: number
 }
 
+export const COMPLETE_ONBOARDING_V2_KEY = ["complete-onboarding-v2"]
+
 export function useCompleteOnboardingV2() {
   const setHouseholdId = useAppStore((s) => s.setHouseholdId)
 
   return useMutation({
+    mutationKey: COMPLETE_ONBOARDING_V2_KEY,
     mutationFn: async (input: {
       goal: OnboardingGoal
       monthlyIncome: number

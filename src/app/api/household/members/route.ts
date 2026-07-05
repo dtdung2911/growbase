@@ -14,7 +14,7 @@ export async function GET() {
       .order("joined_at", { ascending: true }),
     auth.supabase
       .from("household_invitations")
-      .select("id, household_id, email, display_name, role, status, expires_at, created_at")
+      .select("id, household_id, email, display_name, role, token, status, expires_at, created_at")
       .eq("household_id", auth.householdId)
       .eq("status", "pending")
       .order("created_at", { ascending: false }),

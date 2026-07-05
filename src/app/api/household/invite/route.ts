@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { withAuth, verifyHouseholdMember } from "@/lib/supabase/auth-check"
+import { supabaseAdmin } from "@/lib/supabase/admin"
 import { inviteSchema } from "@/lib/validations/household"
 
 export async function POST(request: Request) {
@@ -39,7 +40,8 @@ export async function POST(request: Request) {
     )
   }
 
-  const { data: invitation, error } = await supabase
+  // AD-2: invite token generation là system operation
+  const { data: invitation, error } = await supabaseAdmin
     .from("household_invitations")
     .insert({
       household_id: householdId,

@@ -79,7 +79,7 @@ describe("GET /api/household", () => {
   it("strips household_members from response data", async () => {
     mocks.withAuth.mockResolvedValue({ user: { id: "u1" }, error: null })
     const hh = {
-      id: "hh-1", name: "Nhà Duong", household_type: "couple", currency: "VND",
+      id: "hh-1", name: "Nhà Duong", household_type: "family", currency: "VND",
       onboarding_completed: true,
       household_members: [{ user_id: "u1", role: "owner" }],
     }
