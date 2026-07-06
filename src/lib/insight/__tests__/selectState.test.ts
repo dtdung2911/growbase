@@ -132,7 +132,6 @@ describe("buildInsightDescriptor", () => {
     expect(descriptor.params.goalName).toBe("Quỹ học")
     expect(descriptor.params.yesterdaySpent).toBeTruthy()
     expect(descriptor.params.yesterdayDiff).toBeTruthy()
-    expect(descriptor.params.monthlyContribution).toBeTruthy()
   })
 
   it("maps over-plan-yesterday to insight.overPlanYesterday", () => {
@@ -158,7 +157,6 @@ describe("buildInsightDescriptor", () => {
     expect(descriptor.params.yesterdayPlan).toBe(formatVND(100_000))
     expect(descriptor.params.yesterdayDiff).toBe(formatVND(65_000))
     expect(descriptor.params.goalName).toBe("Quỹ học")
-    expect(descriptor.params.monthlyContribution).toBe(formatVND(3_300_000))
     expect(descriptor.params.remainingToday).toBe(formatVND(calculateDailyRemaining(budgetLines, today)))
   })
 
@@ -173,10 +171,9 @@ describe("buildInsightDescriptor", () => {
     expect(descriptor.params.yesterdayDiff).toBe(formatVND(85_000))
     expect(descriptor.params.remainingToday).toBe(formatVND(calculateDailyRemaining(budgetLines, today)))
     expect(descriptor.params.goalName).toBe("Quỹ học")
-    expect(descriptor.params.monthlyContribution).toBe(formatVND(3_300_000))
   })
 
-  it("returns empty goalName/monthlyContribution when household has no active goal fund", () => {
+  it("uses insight.underPlanYesterdayNoGoal when household has no active goal fund", () => {
     const descriptor = buildInsightDescriptor({
       budgetLines,
       yesterdayTransactions: [{ amount: 35_000, direction: "out", behavior_type: "wasteful" }],
@@ -184,8 +181,8 @@ describe("buildInsightDescriptor", () => {
       activeGoalFund: null,
       today,
     })
+    expect(descriptor.i18nKey).toBe("insight.underPlanYesterdayNoGoal")
     expect(descriptor.params.goalName).toBe("")
-    expect(descriptor.params.monthlyContribution).toBe("")
   })
 
   it("maps no-transactions-yesterday to insight.noTransactionsYesterday", () => {

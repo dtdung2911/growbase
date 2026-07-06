@@ -47,9 +47,6 @@ export function buildInsightDescriptor(input: SelectStateInput): InsightDescript
   const today = input.today ?? new Date()
   const remainingToday = formatVND(calculateDailyRemaining(input.budgetLines, today))
   const goalName = input.activeGoalFund?.name ?? ""
-  const monthlyContribution = input.activeGoalFund?.monthly_contribution
-    ? formatVND(input.activeGoalFund.monthly_contribution)
-    : ""
 
   if (state === "first-day" || state === "no-transactions-yesterday") {
     return { state, i18nKey: `insight.${state === "first-day" ? "firstDay" : "noTransactionsYesterday"}`, params: { remainingToday } }
@@ -61,9 +58,11 @@ export function buildInsightDescriptor(input: SelectStateInput): InsightDescript
   const yesterdayPlan = formatVND(plan)
   const yesterdayDiff = formatVND(Math.abs(spent - plan))
 
+  // Không có quỹ goal/emergency → dùng copy không nhắc goalName, tránh câu thủng lỗ
+  const underPlanKey = input.activeGoalFund ? "underPlanYesterday" : "underPlanYesterdayNoGoal"
   return {
     state,
-    i18nKey: `insight.${state === "under-plan-yesterday" ? "underPlanYesterday" : "overPlanYesterday"}`,
-    params: { remainingToday, yesterdaySpent, yesterdayPlan, yesterdayDiff, goalName, monthlyContribution },
+    i18nKey: `insight.${state === "under-plan-yesterday" ? underPlanKey : "overPlanYesterday"}`,
+    params: { remainingToday, yesterdaySpent, yesterdayPlan, yesterdayDiff, goalName },
   }
 }

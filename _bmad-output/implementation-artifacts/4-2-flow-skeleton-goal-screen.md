@@ -143,7 +143,7 @@ Claude Fable 5 (claude-fable-5) — Claude Code, workflow bmad-dev-story, 03-07-
 |---|------|--------|---------|
 | 1 | `/setup` render shell 4 bước: progress bar, step label "1 / 4", HookStep, footer sticky Bỏ qua + "Đến lượt nhà bạn" | Manual (browser, DOM inspect qua Chrome) | ✅ Pass |
 | 2 | CTA Hook → step 2/4, GoalStep hiện đúng 5 options (🛡️🎓🏠✈️✏️) với số mặc định formatVNDCompact + thời hạn | Manual (browser) | ✅ Pass |
-| 3 | Chưa chọn goal → nút "Tiếp tục" disabled | Manual (browser) | ✅ Pass |
+| 3 | ~~Chưa chọn goal → nút "Tiếp tục" disabled~~ — **[Code review 2026-07-06]** GoalStep nay auto-select "emergency" khi mount, trạng thái "chưa chọn" không còn xảy ra được nữa; "Tiếp tục" luôn enabled ngay khi vào step. AC3 (single-select) vẫn giữ nguyên. | Manual (browser) | ⚠️ Stale — hành vi đã đổi có chủ đích |
 | 4 | Chọn "Quỹ học cho con" → inline editor expand (CurrencyInput "200.000.000 ₫" + months 60), "Tiếp tục" enabled | Manual (browser) | ✅ Pass |
 | 5 | Sửa months = 0 → "Tiếp tục" disabled (goalSchema gate); months = 48 → enabled lại | Manual (browser) | ✅ Pass |
 | 6 | Chọn "Quỹ khẩn cấp" → không có editor, "Tiếp tục" enabled (targetAmount null hợp lệ) | Manual (browser) | ✅ Pass |

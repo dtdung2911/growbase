@@ -34,7 +34,7 @@ export function HookStep() {
         </p>
       </div>
 
-      <DashboardView data={demoData} month={HOOK_DEMO_MONTH} />
+      <DashboardView data={demoData} month={HOOK_DEMO_MONTH} insightToday={HOOK_DEMO_TODAY_REFERENCE} />
     </div>
   )
 }

@@ -21,9 +21,10 @@ function readLastShown(key: string): LastShownNarrative | null {
 
 type DailyInsightBannerProps = {
   data: DashboardData
+  today?: Date
 }
 
-export function DailyInsightBanner({ data }: DailyInsightBannerProps) {
+export function DailyInsightBanner({ data, today }: DailyInsightBannerProps) {
   const { t } = useTranslation()
   const householdId = useAppStore((s) => s.householdId)
   // Câu goal chỉ xuất hiện sau mount: server + first paint luôn là câu mặc định (tránh hydration mismatch)
@@ -52,6 +53,7 @@ export function DailyInsightBanner({ data }: DailyInsightBannerProps) {
       yesterdayTransactions: data.yesterdayTransactions,
       hasAnyTransactionEver: data.hasAnyTransactionEver,
       activeGoalFund: resolveActiveGoalFund(data.funds),
+      today,
     })
 
   return (

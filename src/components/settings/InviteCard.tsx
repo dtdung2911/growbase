@@ -27,9 +27,13 @@ export function InviteCard({ invitation }: InviteCardProps) {
     locale === "vi" ? "vi-VN" : "en-US"
   )
 
-  const copyLink = () => {
-    navigator.clipboard.writeText(`${window.location.origin}/invite/${invitation.token}`)
-    toast.success(t("settings.members.linkCopied"), { duration: 2000 })
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}/invite/${invitation.token}`)
+      toast.success(t("settings.members.linkCopied"), { duration: 2000 })
+    } catch {
+      toast.error(t("settings.members.copyFailed"), { duration: 5000 })
+    }
   }
 
   return (
@@ -49,7 +53,7 @@ export function InviteCard({ invitation }: InviteCardProps) {
           {t("settings.members.expiresAt", { date: expiresDate })}
         </p>
       </div>
-      {invitation.status === "pending" && (
+      {invitation.status === "pending" && invitation.token && (
         <button
           type="button"
           onClick={copyLink}

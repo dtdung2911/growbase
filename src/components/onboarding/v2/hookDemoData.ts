@@ -136,7 +136,10 @@ function buildTopExpenseCategories(juneExpenses: SeedTx[], totalExpense: number)
 function buildWeekdaySpending(juneExpenses: SeedTx[]): WeekdaySpending[] {
   const totals = new Array(7).fill(0) as number[]
   for (const tx of juneExpenses) {
-    const day = new Date(`${tx.month}-${String(tx.day).padStart(2, "0")}`).getDay()
+    // Constructor local, không parse string: new Date("yyyy-mm-dd") là UTC midnight,
+    // .getDay() local sẽ lệch 1 ngày ở timezone âm
+    const [txYear, txMonth] = tx.month.split("-").map(Number)
+    const day = new Date(txYear, txMonth - 1, tx.day).getDay()
     totals[day] += tx.amount
   }
   return totals.map((amount, day) => ({ day, amount }))
@@ -250,6 +253,8 @@ export function buildHookDemoData(t: TFunction, locale: Locale): DashboardData {
     topExpenseCategories: buildTopExpenseCategories(juneExpenses, totalExpense),
     weekdaySpending: buildWeekdaySpending(juneExpenses),
     hasAnyTransactionEver: true,
-    yesterdayTransactions: [],
+    // Demo phải có "hôm qua" dưới kế hoạch — banner khoe insight tích cực,
+    // không phải copy "chưa có ghi chép nào"
+    yesterdayTransactions: [{ amount: 120_000, direction: "out", behavior_type: "variable" }],
   }
 }

@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { cn } from "@/lib/utils/cn"
+import { toYearMonth } from "@/lib/utils/date"
 import { FundOverviewCard } from "@/components/dashboard/FundOverviewCard"
 import { RecentTransactionsList } from "@/components/dashboard/RecentTransactionsList"
 import { IncomeExpenseBar, WeekdayChart, TopExpensesWidget } from "@/components/dashboard/DashboardCharts"
@@ -28,8 +29,20 @@ function trendPct(current: number, prev: number): number | null {
 }
 
 // Component thuần render — dùng chung cho /dashboard thật và demo "nhà Minnie" (story 4.6)
-export function DashboardView({ data, month }: { data: DashboardData; month: string }) {
+// insightToday: demo pin "hôm nay" vào tháng demo; app thật bỏ trống → chỉ hiện
+// insight khi đang xem đúng tháng hiện tại (xem tháng khác thì "còn lại hôm nay" vô nghĩa)
+export function DashboardView({
+  data,
+  month,
+  insightToday,
+}: {
+  data: DashboardData
+  month: string
+  insightToday?: Date
+}) {
   const { t } = useTranslation()
+  const showInsight =
+    data.hasAnyTransactionEver && (insightToday != null || month === toYearMonth(new Date()))
 
   const savings = data.totalIncome - data.totalExpense
   const incomeDelta = trendPct(data.totalIncome, data.lastMonthIncome)
@@ -41,10 +54,11 @@ export function DashboardView({ data, month }: { data: DashboardData; month: str
       <MilestoneCelebration funds={data.funds} />
 
       {/* Daily insight / first-expense CTA */}
-      {data.hasAnyTransactionEver ? <DailyInsightBanner data={data} /> : <FirstExpenseCta />}
+      {showInsight && <DailyInsightBanner data={data} today={insightToday} />}
+      {!data.hasAnyTransactionEver && <FirstExpenseCta />}
 
       {/* Metric tiles */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
         <MetricCard
           label={t("dashboard.income")}
           amount={data.totalIncome}
@@ -71,7 +85,11 @@ export function DashboardView({ data, month }: { data: DashboardData; month: str
           icon="lucide:piggy-bank"
         />
         <MetricCard
-          label={data.netWorth !== null ? t("dashboard.netWorth") : t("dashboard.savingsRate")}
+          label={
+            data.netWorth !== null
+              ? t("dashboard.netWorth")
+              : t("dashboard.savingsRate")
+          }
           amount={data.netWorth !== null ? data.netWorth : data.savingsRate}
           formatAmount={data.netWorth !== null ? formatVND : (n) => `${n}%`}
           trend={data.savingsRate >= 0 ? "up" : "down"}
@@ -80,10 +98,14 @@ export function DashboardView({ data, month }: { data: DashboardData; month: str
       </div>
 
       {/* Income vs Expense bar chart + Spending donut */}
-      <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
+      <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
         <section className="overflow-hidden rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
-          <h2 className="mb-1 text-sm font-semibold">{t("dashboard.incomeVsExpense")}</h2>
-          <p className="mb-3 text-xs text-muted-foreground">{t("dashboard.vsLastMonth")}</p>
+          <h2 className="mb-1 text-sm font-semibold">
+            {t("dashboard.incomeVsExpense")}
+          </h2>
+          <p className="mb-3 text-xs text-muted-foreground">
+            {t("dashboard.vsLastMonth")}
+          </p>
           <IncomeExpenseBar
             income={data.totalIncome}
             expense={data.totalExpense}
@@ -94,7 +116,9 @@ export function DashboardView({ data, month }: { data: DashboardData; month: str
         </section>
 
         <section className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
-          <h2 className="mb-3 text-sm font-semibold">{t("dashboard.spending")}</h2>
+          <h2 className="mb-3 text-sm font-semibold">
+            {t("dashboard.spending")}
+          </h2>
           <SpendingDonut
             data={data.spendingByBehavior}
             formatAmount={formatVND}
@@ -104,9 +128,11 @@ export function DashboardView({ data, month }: { data: DashboardData; month: str
       </div>
 
       {/* Top expense categories + Weekday spending */}
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2">
         <section className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
-          <h2 className="mb-4 text-sm font-semibold">{t("dashboard.topExpenses")}</h2>
+          <h2 className="mb-4 text-sm font-semibold">
+            {t("dashboard.topExpenses")}
+          </h2>
           <TopExpensesWidget
             categories={data.topExpenseCategories}
             totalExpense={data.totalExpense}
@@ -115,7 +141,9 @@ export function DashboardView({ data, month }: { data: DashboardData; month: str
         </section>
 
         <section className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
-          <h2 className="mb-3 text-sm font-semibold">{t("dashboard.weekdaySpending")}</h2>
+          <h2 className="mb-3 text-sm font-semibold">
+            {t("dashboard.weekdaySpending")}
+          </h2>
           <WeekdayChart data={data.weekdaySpending} />
         </section>
       </div>
@@ -123,36 +151,56 @@ export function DashboardView({ data, month }: { data: DashboardData; month: str
       {/* Budget */}
       {data.budgetLines.length > 0 && (
         <section className="overflow-hidden rounded-[13px] border border-border/40 bg-card shadow-card">
-          <h2 className="px-5 pb-3 pt-5 text-sm font-semibold">{t("dashboard.budget")}</h2>
+          <h2 className="px-5 pb-3 pt-5 text-sm font-semibold">
+            {t("dashboard.budget")}
+          </h2>
           {/* Desktop: table */}
           <div className="hidden md:block">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>{t("budget.groupName")}</TableHead>
-                  <TableHead className="text-right">{t("budget.spent")}</TableHead>
-                  <TableHead className="text-right">{t("budget.allocated")}</TableHead>
-                  <TableHead className="w-[70px] text-center">{t("budget.usagePercent")}</TableHead>
+                  <TableHead className="text-right">
+                    {t("budget.spent")}
+                  </TableHead>
+                  <TableHead className="text-right">
+                    {t("budget.allocated")}
+                  </TableHead>
+                  <TableHead className="w-[70px] text-center">
+                    {t("budget.usagePercent")}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {data.budgetLines.map((line: BudgetActualLine) => {
-                  const usage = Math.round(line.usage_pct ?? 0)
+                  const usage = Math.round(line.usage_pct ?? 0);
                   return (
                     <TableRow key={line.cost_type_id}>
-                      <TableCell className="text-sm font-medium">{line.cost_type_name}</TableCell>
-                      <TableCell className="text-right font-mono tabular-nums text-sm">{formatVND(line.actual_amount)}</TableCell>
-                      <TableCell className="text-right font-mono tabular-nums text-sm text-muted-foreground">{formatVND(line.budget_amount)}</TableCell>
+                      <TableCell className="text-sm font-medium">
+                        {line.cost_type_name}
+                      </TableCell>
+                      <TableCell className="text-right font-mono tabular-nums text-sm">
+                        {formatVND(line.actual_amount)}
+                      </TableCell>
+                      <TableCell className="text-right font-mono tabular-nums text-sm text-muted-foreground">
+                        {formatVND(line.budget_amount)}
+                      </TableCell>
                       <TableCell className="text-center">
-                        <span className={cn(
-                          "text-xs font-medium",
-                          usage > 100 ? "text-destructive" : usage > 85 ? "text-warning" : "text-muted-foreground"
-                        )}>
+                        <span
+                          className={cn(
+                            "text-xs font-medium",
+                            usage > 100
+                              ? "text-destructive"
+                              : usage > 85
+                                ? "text-warning"
+                                : "text-muted-foreground",
+                          )}
+                        >
                           {usage}%
                         </span>
                       </TableCell>
                     </TableRow>
-                  )
+                  );
                 })}
               </TableBody>
             </Table>
@@ -162,15 +210,24 @@ export function DashboardView({ data, month }: { data: DashboardData; month: str
             {data.budgetLines.map((line: BudgetActualLine) => (
               <div key={line.cost_type_id}>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold">{line.cost_type_name}</span>
+                  <span className="text-sm font-semibold">
+                    {line.cost_type_name}
+                  </span>
                   <span className="text-xs font-bold text-muted-foreground">
                     {Math.round(line.usage_pct ?? 0)}%
                   </span>
                 </div>
-                <BudgetProgressBar percentage={line.usage_pct ?? 0} className="mt-2" />
+                <BudgetProgressBar
+                  percentage={line.usage_pct ?? 0}
+                  className="mt-2"
+                />
                 <div className="mt-1 flex justify-between text-xs text-muted-foreground">
-                  <span className="font-mono tabular-nums">{formatVND(line.actual_amount)}</span>
-                  <span className="font-mono tabular-nums">{formatVND(line.budget_amount)}</span>
+                  <span className="font-mono tabular-nums">
+                    {formatVND(line.actual_amount)}
+                  </span>
+                  <span className="font-mono tabular-nums">
+                    {formatVND(line.budget_amount)}
+                  </span>
                 </div>
               </div>
             ))}
@@ -192,12 +249,14 @@ export function DashboardView({ data, month }: { data: DashboardData; month: str
 
       {/* Recent transactions */}
       <section>
-        <h2 className="mb-3 text-sm font-semibold">{t("dashboard.recentTx")}</h2>
+        <h2 className="mb-3 text-sm font-semibold">
+          {t("dashboard.recentTx")}
+        </h2>
         <RecentTransactionsList
           transactions={data.recentTransactions}
           emptyMessage={dayZeroEmptyMessage}
         />
       </section>
     </div>
-  )
+  );
 }

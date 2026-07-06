@@ -149,6 +149,9 @@ Tái dùng toàn bộ invite flow V1 (form/card/hooks/routes/RPC). 3 việc mỏ
 | 7 | Label household: 1 thành viên → "Một mình", ≥2 → "Gia đình", không nơi nào bắt khai loại hộ | Manual trace (derive từ members.length; grep không form input nào cho household_type) | ✅ Pass |
 | 8 | i18n vi+en đầy đủ luồng invite (key mới + gap cũ emailLabel/common.copy) | Manual trace + grep key tồn tại cả 2 file, không trùng | ✅ Pass |
 | 9 | Regression toàn cục | Automated: vitest 378/378 (28 files) + tsc 0 lỗi | ✅ Pass |
+| 10 | Review fix: GET `/api/household/members` chỉ trả `token` cho requester là owner; non-owner nhận invitation object không có field `token` | Automated (`members/__tests__/route.test.ts` — 2 case owner/non-owner, assert `toHaveProperty("token")`) | ✅ Pass |
+| 11 | Review fix: label loại household ("Một mình"/"Gia đình") không render trong lúc `useMembers()` đang loading hoặc lỗi — tránh flash sai giá trị | Manual trace (`HouseholdSettingsForm` — row chỉ render khi `!isMembersLoading && membersData`) | ✅ Pass |
+| 12 | Review fix: copy link thất bại (clipboard API reject) → `toast.error` (5s, key `settings.members.copyFailed`), không còn toast success giả | Manual trace (`InviteCard.copyLink` — `await` trong try/catch, success chỉ khi resolve) | ✅ Pass |
 
 ## File List
 
@@ -163,7 +166,10 @@ Tái dùng toàn bộ invite flow V1 (form/card/hooks/routes/RPC). 3 việc mỏ
 - `src/lib/i18n/messages/en.json` — keys tương ứng en
 - `src/app/api/household/__tests__/route.test.ts` — fix fixture enum
 - `src/app/api/household/invite/__tests__/route.test.ts` — rework mock, assert AD-2
+- `src/types/app.ts` — `Invitation.token` optional (review fix)
+- `src/app/api/household/members/__tests__/route.test.ts` — mới, assert token owner-only (review fix)
 
 ## Change Log
 
 - 2026-07-06: Implement toàn bộ story 7.1 — entry invite trong Settings, AD-2 system op cho token generation, household label tự suy, copy button bền trên InviteCard, fix 3 gap baseline (fixture "couple", Email hardcode, common.copy thiếu). 378/378 tests, tsc clean. Status → review.
+- 2026-07-06: Code-review fixes — (1) [High/security] `GET /api/household/members` chỉ trả `token` cho requester role=owner, non-owner nhận invitation đã strip `token`; `Invitation.token` đổi thành optional, `InviteCard` chỉ render nút copy khi `invitation.token` tồn tại. (2) [Med] `HouseholdSettingsForm` ẩn hàng label household trong lúc `useMembers()` loading/lỗi, tránh flash "Một mình" sai cho household nhiều thành viên. (3) [Med] `InviteCard.copyLink` await `navigator.clipboard.writeText` trong try/catch, chỉ toast success khi resolve, thêm `toast.error` + key i18n `settings.members.copyFailed` (vi+en) khi reject. Thêm test `members/__tests__/route.test.ts` (owner thấy token / non-owner không). 381/381 tests, tsc clean. Status không đổi (review).

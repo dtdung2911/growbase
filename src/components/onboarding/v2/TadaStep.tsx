@@ -16,6 +16,7 @@ import {
 import { useFunds, useUpdateFund } from "@/lib/hooks/useFunds"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import { formatVND } from "@/lib/utils/currency"
+import { addMonthsIso } from "@/lib/utils/date"
 import {
   EMERGENCY_FUND_TIMELINE_MONTHS,
   calculateFeasibility,
@@ -31,6 +32,7 @@ export function TadaStep() {
   const router = useRouter()
   const goal = useOnboardingV2Store((s) => s.goal)
   const monthlyIncome = useOnboardingV2Store((s) => s.monthlyIncome)
+  const resetOnboarding = useOnboardingV2Store((s) => s.reset)
 
   const completeOnboarding = useCompleteOnboardingV2()
   const fired = useRef(false)
@@ -94,7 +96,7 @@ export function TadaStep() {
     return (
       <TadaMessage
         title={t("setupV2.tada.errorTitle")}
-        description={mutation?.error instanceof Error ? mutation.error.message : ""}
+        description={t("setupV2.tada.errorDesc")}
       >
         <Button className="min-h-[44px] w-full" onClick={() => completeOnboarding.mutate({ goal, monthlyIncome })}>
           {t("setupV2.tada.retry")}
@@ -139,7 +141,9 @@ export function TadaStep() {
               ? t("setupV2.tada.feasibleTitle", { amount: formatVND(feasibility.monthlyNeeded) })
               : t("setupV2.tada.infeasibleTitle")}
           </p>
-          {!feasibility.feasible && (
+          {/* Gate theo verdict gốc từ server, không theo feasibility live:
+              nếu gate live thì vừa gõ qua ngưỡng khả thi là inputs unmount giữa chừng. */}
+          {!original.feasibility.feasible && (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">{t("setupV2.tada.infeasibleDesc")}</p>
               <div className="space-y-1.5">
@@ -154,7 +158,7 @@ export function TadaStep() {
                   value={months}
                   onChange={(e) => {
                     const digits = e.target.value.replace(/\D/g, "")
-                    setAdjustedMonths(digits ? Number(digits) : 1)
+                    setAdjustedMonths(Number(digits) || 1)
                   }}
                   className="font-mono tabular-nums"
                 />
@@ -180,7 +184,12 @@ export function TadaStep() {
           targetAmount={targetAmount}
           fundType={goal.fundType}
           months={months}
-          onDone={() => router.push("/dashboard")}
+          onDone={() => {
+            // Xóa sessionStorage: user khác đăng nhập cùng tab không được
+            // thừa hưởng goal/income cũ và auto-fire mutation ở TadaStep
+            resetOnboarding()
+            router.push("/dashboard")
+          }}
         />
       )}
     </div>
@@ -202,15 +211,12 @@ function TadaFinishButton({
 }) {
   const { t } = useTranslation()
   const { data: funds } = useFunds()
-  const fund = funds?.[0]
+  const fund = funds?.find((f) => f.fund_type === fundType) ?? funds?.[0]
   const updateFund = useUpdateFund(fund?.id ?? "")
 
   const handleClick = async () => {
     if (wasAdjusted && fund) {
-      const targetDate =
-        fundType === "goal"
-          ? new Date(Date.now() + months * 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
-          : undefined
+      const targetDate = fundType === "goal" ? addMonthsIso(months) : undefined
       await updateFund.mutateAsync({ target_amount: targetAmount, ...(targetDate ? { target_date: targetDate } : {}) })
     }
     onDone()
@@ -255,12 +261,12 @@ function TadaMessage({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 text-center">
+    <div className="flex min-h-[50vh] flex-col items-center justify-center gap-6 text-center">
       <div>
         <p className="font-semibold text-foreground">{title}</p>
         <p className="mt-1 text-sm text-muted-foreground">{description}</p>
       </div>
       {children}
     </div>
-  )
+  );
 }

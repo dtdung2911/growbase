@@ -39,12 +39,10 @@ describe("calculateDailyRemaining", () => {
     expect(calculateDailyRemaining(lines, today)).toBe(0)
   })
 
-  it("returns a negative number when flexible spend exceeds flexible budget (no clamping)", () => {
+  it("clamps to 0 when flexible spend exceeds flexible budget", () => {
     const lines = [line({ cost_type_name: "Ăn uống ngoài", budget_amount: 100_000, actual_amount: 500_000 })]
     const today = new Date(2026, 6, 15)
-    const daysRemaining = 31 - 15 + 1
-    expect(calculateDailyRemaining(lines, today)).toBe(Math.floor((100_000 - 500_000) / daysRemaining))
-    expect(calculateDailyRemaining(lines, today)).toBeLessThan(0)
+    expect(calculateDailyRemaining(lines, today)).toBe(0)
   })
 
   it("divides by exactly 1 day remaining on the last day of the month", () => {

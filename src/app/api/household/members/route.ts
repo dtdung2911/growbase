@@ -34,11 +34,17 @@ export async function GET() {
     )
   }
 
+  const members = membersResult.data ?? []
+  const isOwner = members.some((m) => m.user_id === auth.user.id && m.role === "owner")
+  // token is a bearer credential (accept_invitation RPC doesn't verify invitee email) — owner-only
+  const invitations = (invitationsResult.data ?? []).map((inv) => {
+    if (isOwner) return inv
+    const { token: _token, ...rest } = inv
+    return rest
+  })
+
   return NextResponse.json({
-    data: {
-      members: membersResult.data ?? [],
-      invitations: invitationsResult.data ?? [],
-    },
+    data: { members, invitations },
     error: null,
   })
 }

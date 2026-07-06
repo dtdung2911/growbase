@@ -4,6 +4,7 @@ import { NextResponse } from "next/server"
 import { withAuthUser } from "@/lib/supabase/auth-check"
 import { supabaseAdmin } from "@/lib/supabase/admin"
 import { completeOnboardingV2Schema } from "@/lib/validations/onboardingV2"
+import { addMonthsIso } from "@/lib/utils/date"
 import {
   BUDGET_TEMPLATE,
   EMERGENCY_FUND_MONTHS,
@@ -19,7 +20,7 @@ export async function POST(req: Request) {
   if (auth.error) return auth.error
   const { user } = auth
 
-  const body = await req.json()
+  const body = await req.json().catch(() => null)
   const parsed = completeOnboardingV2Schema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json(
@@ -33,10 +34,7 @@ export async function POST(req: Request) {
   const targetAmount = goal.targetAmount ?? estimateEmergencyTarget(monthlyIncome)
   const months = goal.fundType === "emergency" ? EMERGENCY_FUND_TIMELINE_MONTHS : goal.targetMonths!
 
-  const targetDate =
-    goal.fundType === "goal"
-      ? new Date(Date.now() + goal.targetMonths! * 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
-      : null
+  const targetDate = goal.fundType === "goal" ? addMonthsIso(goal.targetMonths!) : null
   const targetMonthsExpense = goal.fundType === "emergency" ? EMERGENCY_FUND_MONTHS : null
 
   const p_budget_pcts = BUDGET_TEMPLATE.map((b) => ({

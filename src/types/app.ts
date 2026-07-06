@@ -180,7 +180,7 @@ export type Invitation = {
   email: string
   display_name: string
   role: MemberRole
-  token: string
+  token?: string
   status: "pending" | "accepted" | "rejected" | "expired"
   expires_at: string
   created_at: string

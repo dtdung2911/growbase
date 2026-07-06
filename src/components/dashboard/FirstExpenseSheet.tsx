@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { format } from "date-fns"
 import { useQueryClient } from "@tanstack/react-query"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
@@ -45,12 +46,12 @@ export function FirstExpenseSheet({ open, onOpenChange }: FirstExpenseSheetProps
         transaction_type: "expense",
         category_id: category.id,
         account_id: accountId,
-        transaction_date: new Date().toISOString().slice(0, 10),
+        // Ngày local của user, không phải UTC — trước 7h sáng VN toISOString() lùi 1 ngày
+        transaction_date: format(new Date(), "yyyy-MM-dd"),
         is_unusual_income: false,
       },
       {
         onSuccess: () => {
-          void qc.invalidateQueries({ queryKey: keys.dashboard(householdId, month) })
           setAmount(0)
           onOpenChange(false)
           setShowPromise(true)
@@ -80,7 +81,17 @@ export function FirstExpenseSheet({ open, onOpenChange }: FirstExpenseSheetProps
         </SheetContent>
       </Sheet>
 
-      <Dialog open={showPromise} onOpenChange={setShowPromise}>
+      {/* Chỉ invalidate sau khi user đóng dialog: refetch sớm sẽ flip
+          hasAnyTransactionEver và unmount FirstExpenseCta đang giữ dialog này */}
+      <Dialog
+        open={showPromise}
+        onOpenChange={(nextOpen) => {
+          setShowPromise(nextOpen)
+          if (!nextOpen) {
+            void qc.invalidateQueries({ queryKey: keys.dashboard(householdId, month) })
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t("dashboard.firstExpenseCta.saved")}</DialogTitle>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAppStore } from "@/lib/stores/appStore"
 import type { OnboardingGoal } from "@/lib/validations/onboardingV2"
 import type { FeasibilityResult } from "@/lib/constants/budgetTemplate"
@@ -15,6 +15,7 @@ export const COMPLETE_ONBOARDING_V2_KEY = ["complete-onboarding-v2"]
 
 export function useCompleteOnboardingV2() {
   const setHouseholdId = useAppStore((s) => s.setHouseholdId)
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationKey: COMPLETE_ONBOARDING_V2_KEY,
@@ -37,6 +38,8 @@ export function useCompleteOnboardingV2() {
     },
     onSuccess: (data) => {
       setHouseholdId(data.householdId)
+      // Household vừa được tạo — mọi cache trước onboarding đều vô nghĩa
+      queryClient.invalidateQueries()
     },
   })
 }

@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { withAuth } from "@/lib/supabase/auth-check"
-import { monthRange, yesterday } from "@/lib/utils/date"
+import { monthRange, yesterdayVN } from "@/lib/utils/date"
 
 function prevMonth(month: string) {
   const [y, m] = month.split("-").map(Number)
@@ -43,10 +43,19 @@ export async function GET(request: NextRequest) {
     (tx) => tx.transaction_date >= from && tx.transaction_date <= to
   )
 
-  const yesterdayDate = yesterday()
-  const yesterdayTransactions = (allTxs ?? [])
-    .filter((tx) => tx.transaction_date === yesterdayDate && !tx.exclude_from_budget_report)
-    .map((tx) => ({ amount: tx.amount, direction: tx.direction, behavior_type: tx.behavior_type }))
+  // Query riêng cho "hôm qua" (theo giờ VN): allTxs chỉ phủ tháng đang xem + tháng trước,
+  // nên khi user xem tháng khác thì hôm qua thật nằm ngoài cửa sổ đã fetch
+  const { data: yesterdayTxs, error: yErr } = await supabase
+    .from("transactions")
+    .select("amount, direction, behavior_type")
+    .eq("household_id", hid)
+    .eq("transaction_date", yesterdayVN())
+    .eq("exclude_from_budget_report", false)
+
+  if (yErr) {
+    return NextResponse.json({ data: null, error: yErr.message }, { status: 500 })
+  }
+  const yesterdayTransactions = yesterdayTxs ?? []
   const prevTxs = (allTxs ?? []).filter(
     (tx) => tx.transaction_date >= prevFrom && tx.transaction_date <= prevTo
   )
@@ -127,20 +136,20 @@ export async function GET(request: NextRequest) {
   }))
 
   // Budget lines
-  const { data: budgetData } = await supabase.rpc("get_budget_with_actuals", {
+  const { data: budgetData, error: budgetErr } = await supabase.rpc("get_budget_with_actuals", {
     p_household_id: hid,
     p_month: month,
   })
 
   // Has this household ever recorded a transaction (any month) — distinguishes
   // a genuine day-0 household from one simply viewing an empty month
-  const { count: transactionCount } = await supabase
+  const { count: transactionCount, error: countErr } = await supabase
     .from("transactions")
     .select("id", { count: "exact", head: true })
     .eq("household_id", hid)
 
   // Funds
-  const { data: fundsData } = await supabase
+  const { data: fundsData, error: fundsErr } = await supabase
     .from("funds")
     .select("id, name, fund_type, color, target_amount, current_balance, freedom_target_monthly, monthly_contribution, created_at, target_date")
     .eq("household_id", hid)
@@ -148,7 +157,7 @@ export async function GET(request: NextRequest) {
     .order("sort_order")
 
   // Recent transactions
-  const { data: recentTxs } = await supabase
+  const { data: recentTxs, error: recentErr } = await supabase
     .from("transactions")
     .select(`
       id, amount, direction, transaction_date, description, behavior_type,
@@ -162,13 +171,19 @@ export async function GET(request: NextRequest) {
     .limit(10)
 
   // Net worth (latest snapshot — use total_system as best estimate)
-  const { data: nwSnapshot } = await supabase
+  const { data: nwSnapshot, error: nwErr } = await supabase
     .from("net_worth_snapshots")
     .select("total_system, total_recorded")
     .eq("household_id", hid)
     .order("snapshot_month", { ascending: false })
     .limit(1)
     .maybeSingle()
+
+  // Lỗi fetch phải nổ ra 500, không được im lặng biến thành "day-zero" giả
+  const fetchErr = budgetErr ?? countErr ?? fundsErr ?? recentErr ?? nwErr
+  if (fetchErr) {
+    return NextResponse.json({ data: null, error: fetchErr.message }, { status: 500 })
+  }
 
   const netWorth = nwSnapshot
     ? ((nwSnapshot.total_recorded as number) || (nwSnapshot.total_system as number) || null)

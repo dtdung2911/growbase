@@ -45,6 +45,7 @@ export function useCreateTransaction() {
         void qc.invalidateQueries({ queryKey: keys.transactions(householdId, month) })
         void qc.invalidateQueries({ queryKey: keys.budget(householdId, month) })
         void qc.invalidateQueries({ queryKey: keys.accounts(householdId) })
+        void qc.invalidateQueries({ queryKey: keys.dashboard(householdId, month) })
       }
       toast.success("Đã lưu", { duration: 2000 })
     },
