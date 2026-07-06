@@ -73,12 +73,17 @@ describe("monthlyIncomeSchema", () => {
 })
 
 describe("completeOnboardingV2Schema", () => {
-  it("accepts a valid goal + monthlyIncome payload", () => {
-    const result = completeOnboardingV2Schema.safeParse({ goal: validGoal, monthlyIncome: 20_000_000 })
+  it("accepts goals array + monthlyIncome payload", () => {
+    const result = completeOnboardingV2Schema.safeParse({ goals: [validGoal], monthlyIncome: 20_000_000 })
     expect(result.success).toBe(true)
   })
 
-  it("accepts emergency goal with null targetAmount/targetMonths", () => {
+  it("accepts empty goals (chỉ quỹ khẩn cấp implicit)", () => {
+    const result = completeOnboardingV2Schema.safeParse({ goals: [], monthlyIncome: 20_000_000 })
+    expect(result.success).toBe(true)
+  })
+
+  it("rejects emergency fund inside goals array (emergency là implicit server-side)", () => {
     const emergencyGoal = {
       presetId: "emergency",
       fundType: "emergency",
@@ -86,33 +91,38 @@ describe("completeOnboardingV2Schema", () => {
       targetAmount: null,
       targetMonths: null,
     }
-    const result = completeOnboardingV2Schema.safeParse({ goal: emergencyGoal, monthlyIncome: 20_000_000 })
-    expect(result.success).toBe(true)
+    const result = completeOnboardingV2Schema.safeParse({ goals: [emergencyGoal], monthlyIncome: 20_000_000 })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects more than 5 goals", () => {
+    const goals = Array.from({ length: 6 }, () => validGoal)
+    expect(completeOnboardingV2Schema.safeParse({ goals, monthlyIncome: 20_000_000 }).success).toBe(false)
   })
 
   it("rejects income 0 or negative", () => {
-    expect(completeOnboardingV2Schema.safeParse({ goal: validGoal, monthlyIncome: 0 }).success).toBe(false)
-    expect(completeOnboardingV2Schema.safeParse({ goal: validGoal, monthlyIncome: -1 }).success).toBe(false)
+    expect(completeOnboardingV2Schema.safeParse({ goals: [validGoal], monthlyIncome: 0 }).success).toBe(false)
+    expect(completeOnboardingV2Schema.safeParse({ goals: [validGoal], monthlyIncome: -1 }).success).toBe(false)
   })
 
-  it("rejects targetAmount 0", () => {
+  it("rejects a goal with targetAmount 0", () => {
     const result = completeOnboardingV2Schema.safeParse({
-      goal: { ...validGoal, targetAmount: 0 },
+      goals: [{ ...validGoal, targetAmount: 0 }],
       monthlyIncome: 20_000_000,
     })
     expect(result.success).toBe(false)
   })
 
-  it("rejects non-integer targetMonths", () => {
+  it("rejects a goal with non-integer targetMonths", () => {
     const result = completeOnboardingV2Schema.safeParse({
-      goal: { ...validGoal, targetMonths: 5.5 },
+      goals: [{ ...validGoal, targetMonths: 5.5 }],
       monthlyIncome: 20_000_000,
     })
     expect(result.success).toBe(false)
   })
 
-  it("rejects missing goal or monthlyIncome", () => {
+  it("rejects missing goals or monthlyIncome", () => {
     expect(completeOnboardingV2Schema.safeParse({ monthlyIncome: 20_000_000 }).success).toBe(false)
-    expect(completeOnboardingV2Schema.safeParse({ goal: validGoal }).success).toBe(false)
+    expect(completeOnboardingV2Schema.safeParse({ goals: [validGoal] }).success).toBe(false)
   })
 })

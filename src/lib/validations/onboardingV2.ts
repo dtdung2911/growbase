@@ -7,7 +7,11 @@ export const goalSchema = z
     fundType: z.enum(["emergency", "goal"]),
     name: z.string().min(1, "Tên mục tiêu không được để trống"),
     targetAmount: z.number().positive("Số đích phải lớn hơn 0").nullable(),
-    targetMonths: z.number().int("Thời hạn phải là số tháng nguyên").positive("Thời hạn phải lớn hơn 0").nullable(),
+    targetMonths: z
+      .number()
+      .int("Thời hạn phải là số tháng nguyên")
+      .positive("Thời hạn phải lớn hơn 0")
+      .nullable(),
   })
   .refine((g) => g.fundType === "emergency" || (g.targetAmount !== null && g.targetMonths !== null), {
     message: "Mục tiêu cần số đích và thời hạn",
@@ -19,8 +23,14 @@ export const monthlyIncomeSchema = z
   .number({ invalid_type_error: "Bạn hãy nhập thu nhập của cả nhà nhé" })
   .positive("Thu nhập cần lớn hơn 0 — nhập số gần đúng cũng được")
 
+// goals = chỉ mục tiêu thêm; quỹ khẩn cấp là implicit, server luôn prepend (không nằm trong mảng này)
 export const completeOnboardingV2Schema = z.object({
-  goal: goalSchema,
+  goals: z
+    .array(goalSchema)
+    .max(5)
+    .refine((gs) => gs.every((g) => g.fundType === "goal"), {
+      message: "Mục tiêu thêm phải là quỹ mục tiêu",
+    }),
   monthlyIncome: monthlyIncomeSchema,
 })
 

@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils/cn"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-[15px] font-semibold ring-offset-background transition-[background-color,color,box-shadow,transform,filter] duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-black/12 dark:disabled:bg-white/[0.12] hover:brightness-[0.8] hover:-translate-y-px active:brightness-[0.6] active:translate-y-px [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "button-custom inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-[15px] font-semibold ring-offset-background transition-[background-color,color,box-shadow,transform,filter] duration-[350ms] ease-[cubic-bezier(0.4, 0, 0.2, 1)] motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-black/12 dark:disabled:bg-white/[0.12] hover:brightness-[0.8] hover:-translate-y-px active:brightness-[0.6] active:translate-y-px [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -27,8 +27,8 @@ const buttonVariants = cva(
       variant: "default",
       size: "default",
     },
-  }
-)
+  },
+);
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,

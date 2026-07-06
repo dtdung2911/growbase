@@ -22,7 +22,7 @@ export function DashboardClient() {
     return (
       <div className="space-y-6">
         <Skeleton className="h-[62px] rounded-[18px]" />
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
           <SkeletonCard />
           <SkeletonCard />
           <SkeletonCard />
@@ -30,7 +30,7 @@ export function DashboardClient() {
         </div>
         <SkeletonList />
       </div>
-    )
+    );
   }
 
   if (!data) return null

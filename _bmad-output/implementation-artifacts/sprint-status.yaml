@@ -36,7 +36,7 @@
 # - Retrospective appends its action items to action_items; sprint-status surfaces open ones
 
 generated: 02-07-2026
-last_updated: 2026-07-06 (code-review pass complete, 12 stories → done)
+last_updated: 2026-07-06 (Epic 8 — 8-1 review, 8-2 review, 8-3 in-progress)
 project: growbase
 project_key: NOKEY
 tracking_system: file-system
@@ -95,6 +95,13 @@ development_status:
   7-2-meaningful-moment-invite-prompt: backlog
   7-3-second-member-joins: backlog
   epic-7-retrospective: optional
+
+  epic-8: in-progress
+  8-1-multi-goal-schema-rpc-foundation: review
+  8-2-goal-step-two-tier-multi-select: review
+  8-3-tada-reveal-redesign: in-progress
+  8-4-hook-mindset-method-framing-docs: ready-for-dev
+  epic-8-retrospective: optional
 
 # Action items committed during retrospectives (section created by the retrospective workflow)
 action_items:

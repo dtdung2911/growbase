@@ -13,14 +13,9 @@ export function IncomeStep() {
   const { t } = useTranslation()
   const monthlyIncome = useOnboardingV2Store((s) => s.monthlyIncome)
   const setMonthlyIncome = useOnboardingV2Store((s) => s.setMonthlyIncome)
-  const goal = useOnboardingV2Store((s) => s.goal)
-  const setGoal = useOnboardingV2Store((s) => s.setGoal)
   const [touched, setTouched] = useState(false)
 
   const incomeValid = monthlyIncomeSchema.safeParse(monthlyIncome).success
-  // Quỹ khẩn cấp luôn hiển thị khi có thu nhập — editable nếu là goal đã chọn,
-  // read-only tham khảo nếu user chọn goal khác (fund không được tạo từ số này).
-  const isEmergencyGoal = goal?.presetId === "emergency"
 
   return (
     <div className="space-y-4">
@@ -49,24 +44,13 @@ export function IncomeStep() {
           <div>
             <p className="font-semibold text-foreground">{t("setupV2.income.emergencyTitle")}</p>
             <p className="mt-0.5 text-sm text-muted-foreground">
-              {t(isEmergencyGoal ? "setupV2.income.emergencyDesc" : "setupV2.income.emergencyAutoDesc")}
+              {t("setupV2.income.emergencyAutoDesc")}
             </p>
           </div>
-          {isEmergencyGoal && goal ? (
-            <div className="space-y-1.5">
-              <Label htmlFor="emergency-target">{t("setupV2.income.emergencyEditLabel")}</Label>
-              <CurrencyInput
-                id="emergency-target"
-                // targetAmount null = "auto" — recompute theo income; user sửa → giữ giá trị user
-                value={goal.targetAmount ?? estimateEmergencyTarget(monthlyIncome ?? 0)}
-                onChange={(v) => setGoal({ ...goal, targetAmount: v || null })}
-              />
-            </div>
-          ) : (
-            <p className="font-mono text-lg font-semibold tabular-nums text-foreground">
-              {formatVND(estimateEmergencyTarget(monthlyIncome ?? 0))}
-            </p>
-          )}
+          {/* Quỹ khẩn cấp là implicit, target luôn tự tính từ thu nhập (server) — read-only ở đây */}
+          <p className="font-mono text-lg font-semibold tabular-nums text-foreground">
+            {formatVND(estimateEmergencyTarget(monthlyIncome ?? 0))}
+          </p>
         </div>
       )}
     </div>

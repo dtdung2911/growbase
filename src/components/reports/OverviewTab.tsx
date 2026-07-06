@@ -239,20 +239,36 @@ export function OverviewTab({ data }: OverviewTabProps) {
           <TableHeader>
             <TableRow>
               <TableHead>{t("reports.month")}</TableHead>
-              <TableHead className="text-right">{t("reports.totalIncome")}</TableHead>
-              <TableHead className="text-right">{t("reports.totalExpense")}</TableHead>
-              <TableHead className="text-right">{t("reports.expenseRatio")}</TableHead>
-              <TableHead className="text-right">{t("reports.savings")}</TableHead>
-              <TableHead className="text-right">{t("reports.savingsRate")}</TableHead>
+              <TableHead className="text-right">
+                {t("reports.totalIncome")}
+              </TableHead>
+              <TableHead className="text-right">
+                {t("reports.totalExpense")}
+              </TableHead>
+              <TableHead className="text-right">
+                {t("reports.expenseRatio")}
+              </TableHead>
+              <TableHead className="text-right">
+                {t("reports.savings")}
+              </TableHead>
+              <TableHead className="text-right">
+                {t("reports.savingsRate")}
+              </TableHead>
               <TableHead className="text-right">{t("reports.fixed")}</TableHead>
-              <TableHead className="text-right">{t("reports.variable")}</TableHead>
-              <TableHead className="text-right">{t("reports.wasteful")}</TableHead>
+              <TableHead className="text-right">
+                {t("reports.variable")}
+              </TableHead>
+              <TableHead className="text-right">
+                {t("reports.wasteful")}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {data.map((row) => (
               <TableRow key={row.month}>
-                <TableCell className="font-medium">{toMonthLabel(row.month)}</TableCell>
+                <TableCell className="font-medium">
+                  {toMonthLabel(row.month)}
+                </TableCell>
                 <TableCell className="text-right font-mono tabular-nums text-income">
                   {formatVND(row.totalIncome)}
                 </TableCell>
@@ -293,31 +309,64 @@ export function OverviewTab({ data }: OverviewTabProps) {
       </div>
 
       {/* Charts row 1: grouped bar + savings rate area */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
         <div className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
-          <h3 className="mb-0.5 text-sm font-semibold">{t("reports.incomeVsExpense")}</h3>
-          <p className="mb-3 text-xs text-muted-foreground">{t("reports.last6months")}</p>
+          <h3 className="mb-0.5 text-sm font-semibold">
+            {t("reports.incomeVsExpense")}
+          </h3>
+          <p className="mb-3 text-xs text-muted-foreground">
+            {t("reports.last6months")}
+          </p>
           <div className="h-64">
-            <Chart key={`ie-${categories.join(",")}`} type="bar" height="100%" width="100%" options={incomeExpenseOptions} series={incomeExpenseSeries} />
+            <Chart
+              key={`ie-${categories.join(",")}`}
+              type="bar"
+              height="100%"
+              width="100%"
+              options={incomeExpenseOptions}
+              series={incomeExpenseSeries}
+            />
           </div>
         </div>
         <div className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
-          <h3 className="mb-0.5 text-sm font-semibold">{t("reports.savingsRate")}</h3>
-          <p className="mb-3 text-xs text-muted-foreground">{t("reports.trendOverTime")}</p>
+          <h3 className="mb-0.5 text-sm font-semibold">
+            {t("reports.savingsRate")}
+          </h3>
+          <p className="mb-3 text-xs text-muted-foreground">
+            {t("reports.trendOverTime")}
+          </p>
           <div className="h-64">
-            <Chart key={`sr-${categories.join(",")}`} type="area" height="100%" width="100%" options={savingsRateOptions} series={savingsRateSeries} />
+            <Chart
+              key={`sr-${categories.join(",")}`}
+              type="area"
+              height="100%"
+              width="100%"
+              options={savingsRateOptions}
+              series={savingsRateSeries}
+            />
           </div>
         </div>
       </div>
 
       {/* Charts row 2: stacked behavior bar (full width) */}
       <div className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
-        <h3 className="mb-0.5 text-sm font-semibold">{t("reports.expenseBreakdown")}</h3>
-        <p className="mb-3 text-xs text-muted-foreground">{t("reports.byBehaviorType")}</p>
+        <h3 className="mb-0.5 text-sm font-semibold">
+          {t("reports.expenseBreakdown")}
+        </h3>
+        <p className="mb-3 text-xs text-muted-foreground">
+          {t("reports.byBehaviorType")}
+        </p>
         <div className="h-72">
-          <Chart key={`bv-${categories.join(",")}`} type="bar" height="100%" width="100%" options={behaviorOptions} series={behaviorSeries} />
+          <Chart
+            key={`bv-${categories.join(",")}`}
+            type="bar"
+            height="100%"
+            width="100%"
+            options={behaviorOptions}
+            series={behaviorSeries}
+          />
         </div>
       </div>
     </div>
-  )
+  );
 }

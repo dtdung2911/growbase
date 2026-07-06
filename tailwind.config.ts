@@ -32,6 +32,8 @@ const config: Config = {
         faint: "hsl(var(--faint))",
         ink: "hsl(var(--ink))",
         violet: "hsl(var(--violet))",
+        "light-primary": "var(--light-primary)",
+        "light-primary-pressed": "var(--light-primary-pressed)",
         brand: {
           DEFAULT: "#0084DB",
           hover: "#006BB8",
@@ -94,7 +96,8 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
       },
       boxShadow: {
-        "card": "rgba(37, 83, 185, 0.1) 0px 2px 6px",
+        // "card": "rgba(37, 83, 185, 0.1) 0px 2px 6px",
+        "card": "rgba(37, 83, 185, 0.1) 0px 2px 6px 0px",
         "card-hover": "rgba(29, 77, 124, 0.14) 0px 4px 12px",
         "soft-xs": "none",
         "soft-sm": "none",
@@ -106,6 +109,7 @@ const config: Config = {
         "panel-hover": "none",
         "sidebar": "none",
         "topbar": "rgba(29, 77, 124, 0.08) 0px 2px 6px",
+        "button": "rgba(0, 133, 219, 0.3) 0px 4px 12px 0px"
       },
       spacing: {
         "sidebar": "var(--sidebar-width)",

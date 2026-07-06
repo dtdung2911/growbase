@@ -16,12 +16,15 @@ export function FirstExpenseCta() {
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
           <Icon icon="lucide:coffee" className="h-5 w-5" />
         </div>
-        <p className="flex-1 text-sm font-semibold">{t("dashboard.firstExpenseCta.title")}</p>
+        <p className="flex-1 text-sm font-semibold">
+          {t("dashboard.firstExpenseCta.title")}
+        </p>
       </div>
-      <Button className="mt-4 w-full" onClick={() => setOpen(true)}>
+      <Button className="mt-4" onClick={() => setOpen(true)}>
+        <Icon icon="lucide:plus" className="h-6 w-6" />
         {t("dashboard.firstExpenseCta.cta")}
       </Button>
       <FirstExpenseSheet open={open} onOpenChange={setOpen} />
     </div>
-  )
+  );
 }

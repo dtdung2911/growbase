@@ -918,7 +918,7 @@ function PreviewStep({
 function ConfirmStep({ count, total }: { count: number; total: number }) {
   const { t } = useTranslation()
   return (
-    <div className="flex flex-col items-center gap-4 py-8 text-center">
+    <div className="flex flex-col items-center gap-6 py-8 text-center">
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
         <Icon icon="lucide:database-backup" className="h-8 w-8 text-primary" />
       </div>
@@ -929,5 +929,5 @@ function ConfirmStep({ count, total }: { count: number; total: number }) {
         {formatVND(total)}
       </p>
     </div>
-  )
+  );
 }

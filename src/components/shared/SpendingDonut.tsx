@@ -55,7 +55,7 @@ export function SpendingDonut({ data, formatAmount, emptyMessage }: SpendingDonu
         labels,
         colors,
         plotOptions: {
-          pie: { donut: { size: "55%" } },
+          pie: { donut: { size: "82%" } },
         },
         dataLabels: { enabled: false },
         tooltip: {
@@ -64,22 +64,31 @@ export function SpendingDonut({ data, formatAmount, emptyMessage }: SpendingDonu
         },
         legend: {
           show: hasData,
-          position: "right",
+          position: "bottom",
           fontSize: "12px",
           markers: { size: 5, shape: "circle" as const },
           formatter: (
             seriesName: string,
-            opts?: { w: { globals: { series: number[] } }; seriesIndex: number }
+            opts?: {
+              w: { globals: { series: number[] } };
+              seriesIndex: number;
+            },
           ) => {
-            if (!opts) return seriesName
-            const value = opts.w.globals.series[opts.seriesIndex]
-            return `${seriesName} — ${formatAmount(value)}`
+            if (!opts) return seriesName;
+            const value = opts.w.globals.series[opts.seriesIndex];
+            return `${seriesName} — ${formatAmount(value)}`;
           },
         },
         stroke: { width: hasData ? 2 : 0 },
         states: {
-          hover: { filter: { type: hasData ? ("lighten" as const) : ("none" as const) } },
-          active: { filter: { type: hasData ? ("darken" as const) : ("none" as const) } },
+          hover: {
+            filter: {
+              type: hasData ? ("lighten" as const) : ("none" as const),
+            },
+          },
+          active: {
+            filter: { type: hasData ? ("darken" as const) : ("none" as const) },
+          },
         },
         responsive: [
           {
@@ -89,8 +98,8 @@ export function SpendingDonut({ data, formatAmount, emptyMessage }: SpendingDonu
         ],
       }) as ApexOptions,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [hasData, labels, colors, formatAmount]
-  )
+    [hasData, labels, colors, formatAmount],
+  );
 
   return (
     <div className="relative flex items-center">
@@ -99,7 +108,7 @@ export function SpendingDonut({ data, formatAmount, emptyMessage }: SpendingDonu
           {emptyMessage ?? t("common.noData")}
         </div>
       )}
-      <Chart type="donut" height={160} width="100%" options={options} series={series} />
+      <Chart type="donut" width="100%" options={options} series={series} />
     </div>
-  )
+  );
 }

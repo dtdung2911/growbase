@@ -94,8 +94,8 @@ Explore-agent research (this session) confirmed every component used in `Dashboa
 
 **Current `DashboardClient.tsx` (227 lines) full render body, in order** (this is exactly what `DashboardView` must reproduce):
 1. Metric tiles: 4x `<MetricCard>` in `grid grid-cols-2 gap-3 lg:grid-cols-4` — income, expense, savings (computed `data.totalIncome - data.totalExpense`), net worth or savings rate fallback
-2. `grid gap-4 lg:grid-cols-[1fr_340px]`: `IncomeExpenseBar` (needs `month`, confirm exact prop name/shape in `DashboardCharts.tsx` before use) + `SpendingDonut data={data.spendingByBehavior} formatAmount={formatVND}`
-3. `grid gap-4 lg:grid-cols-2`: `TopExpensesWidget categories={data.topExpenseCategories} totalExpense={data.totalExpense}` (only rendered if `topExpenseCategories.length > 0`) + `WeekdayChart data={data.weekdaySpending}`
+2. `grid gap-6 lg:grid-cols-[1fr_340px]`: `IncomeExpenseBar` (needs `month`, confirm exact prop name/shape in `DashboardCharts.tsx` before use) + `SpendingDonut data={data.spendingByBehavior} formatAmount={formatVND}`
+3. `grid gap-6 lg:grid-cols-2`: `TopExpensesWidget categories={data.topExpenseCategories} totalExpense={data.totalExpense}` (only rendered if `topExpenseCategories.length > 0`) + `WeekdayChart data={data.weekdaySpending}`
 4. Budget section (only if `data.budgetLines.length > 0`): desktop `<Table>` + mobile card list using `BudgetProgressBar percentage={line.usage_pct}` per `line` of `data.budgetLines`
 5. Funds grid `sm:grid-cols-2 lg:grid-cols-3` (only if `data.funds.length > 0`): `<FundOverviewCard fund={fund} />` per fund
 6. Recent transactions: `<RecentTransactionsList transactions={data.recentTransactions} />`

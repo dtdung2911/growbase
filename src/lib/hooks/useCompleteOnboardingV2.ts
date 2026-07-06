@@ -5,8 +5,18 @@ import { useAppStore } from "@/lib/stores/appStore"
 import type { OnboardingGoal } from "@/lib/validations/onboardingV2"
 import type { FeasibilityResult } from "@/lib/constants/budgetTemplate"
 
+export interface OnboardingFundResult {
+  name: string
+  fundType: "emergency" | "goal"
+  presetId: string
+  targetAmount: number
+  months: number
+  feasibility: FeasibilityResult
+}
+
 export interface CompleteOnboardingV2Response {
   householdId: string
+  funds: OnboardingFundResult[]
   feasibility: FeasibilityResult
   todayRemaining: number
 }
@@ -20,7 +30,7 @@ export function useCompleteOnboardingV2() {
   return useMutation({
     mutationKey: COMPLETE_ONBOARDING_V2_KEY,
     mutationFn: async (input: {
-      goal: OnboardingGoal
+      goals: OnboardingGoal[]
       monthlyIncome: number
     }): Promise<CompleteOnboardingV2Response> => {
       const res = await fetch("/api/onboarding/complete", {

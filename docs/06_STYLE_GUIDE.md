@@ -294,7 +294,7 @@ Amount small:     text-sm   font-normal    font-mono          — secondary amou
 Micro:    4px   (gap-1)    — icon-to-text inline
 Small:    8px   (gap-2)    — between related items (label-input)
 Medium:   12px  (gap-3)    — between list items
-Base:     16px  (gap-4)    — section padding, card padding on mobile
+Base:     16px  (gap-6)    — section padding, card padding on mobile
 Large:    24px  (gap-6)    — between sections on mobile
 XLarge:   32px  (gap-8)    — between major sections, page top padding
 ```
@@ -328,7 +328,7 @@ Data card:        rounded-[13px] border border-border/40 bg-card shadow-card p-4
 Stat/metric card: rounded-[18px] border border-border/40 bg-card shadow-card p-4
 Hover:            hover:shadow-md transition-shadow — use on clickable cards
 Animation:        card-enter 400ms (triggered automatically by .shadow-card CSS selector in globals.css)
-Spacing:          gap-4 between cards, always on bg-background canvas
+Spacing:          gap-6 between cards, always on bg-background canvas
 ```
 
 `shadow-card` thật sự bao gồm cả border riêng của nó (`border: 1px solid hsl(var(--border))`, full opacity) — xem §2 Depth Model. Class `border border-border/40` trong markup vẫn nên giữ để component tự đứng được nếu sau này `.shadow-card` đổi, nhưng lưu ý 2 khai báo border đang chồng lên nhau; không phải bug cần fix ngay, chỉ cần biết để không ngạc nhiên khi inspect DOM thấy border full-opacity thay vì /40.

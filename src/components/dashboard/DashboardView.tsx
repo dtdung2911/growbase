@@ -157,16 +157,18 @@ export function DashboardView({
           {/* Desktop: table */}
           <div className="hidden md:block">
             <Table>
-              <TableHeader>
+              <TableHeader className="bg-primary-soft">
                 <TableRow>
-                  <TableHead>{t("budget.groupName")}</TableHead>
-                  <TableHead className="text-right">
+                  <TableHead className="text-primary font-bold border-b border-primary">
+                    {t("budget.groupName")}
+                  </TableHead>
+                  <TableHead className="text-right text-primary font-bold border-b border-primary">
                     {t("budget.spent")}
                   </TableHead>
-                  <TableHead className="text-right">
+                  <TableHead className="text-right text-primary font-bold border-b border-primary">
                     {t("budget.allocated")}
                   </TableHead>
-                  <TableHead className="w-[70px] text-center">
+                  <TableHead className="w-[168px] text-center text-primary font-bold border-b border-primary">
                     {t("budget.usagePercent")}
                   </TableHead>
                 </TableRow>
@@ -175,7 +177,17 @@ export function DashboardView({
                 {data.budgetLines.map((line: BudgetActualLine) => {
                   const usage = Math.round(line.usage_pct ?? 0);
                   return (
-                    <TableRow key={line.cost_type_id}>
+                    <TableRow
+                      key={line.cost_type_id}
+                      className={cn(
+                        "",
+                        usage > 100
+                          ? "bg-destructive/10 text-destructive"
+                          : usage > 85
+                            ? "bg-warning/10 text-warning"
+                            : "bg-success/10 text-success",
+                      )}
+                    >
                       <TableCell className="text-sm font-medium">
                         {line.cost_type_name}
                       </TableCell>

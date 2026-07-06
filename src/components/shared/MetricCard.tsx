@@ -32,19 +32,41 @@ export function MetricCard({
     <div
       className={cn(
         "relative overflow-hidden rounded-[18px] p-4 transition-shadow",
-        variant === "default" && "border border-border/40 bg-card shadow-card",
-        variant === "income" && "bg-gradient-to-br from-primary to-primary-hover text-white",
-        variant === "expense" && "bg-gradient-to-br from-primary to-primary-pressed text-white",
-        variant === "primary" && "bg-gradient-to-br from-[#0084DB] to-[#004F8A] text-white",
-        className
+        variant === "default" &&
+          "bg-light-primary border border-border/40 shadow-card",
+        variant === "income" &&
+          "bg-gradient-to-br from-primary to-primary-hover text-white shadow-card",
+        variant === "expense" &&
+          "bg-gradient-to-br from-primary to-primary-pressed text-white shadow-card",
+        variant === "primary" &&
+          "bg-gradient-to-br from-[#0084DB] to-[#004F8A] text-white shadow-card",
+        className,
       )}
     >
       {/* Decorative blob */}
       {variant === "income" && (
-        <img src="/images/card-2.png" alt="" className="pointer-events-none absolute -right-3 -top-1 h-20 w-20 object-contain" aria-hidden="true" />
+        <img
+          src="/images/card-2.png"
+          alt=""
+          className="pointer-events-none absolute -right-3 -top-1 h-20 w-20 object-contain"
+          aria-hidden="true"
+        />
       )}
       {variant === "expense" && (
-        <img src="/images/card-1.png" alt="" className="pointer-events-none absolute -right-3 -top-1 h-20 w-20 object-contain" aria-hidden="true" />
+        <img
+          src="/images/card-1.png"
+          alt=""
+          className="pointer-events-none absolute -right-3 -top-1 h-20 w-20 object-contain"
+          aria-hidden="true"
+        />
+      )}
+      {variant === "default" && (
+        <img
+          src="/images/card-3.png"
+          alt=""
+          className="pointer-events-none absolute -right-3 -top-1 h-20 w-20 object-contain"
+          aria-hidden="true"
+        />
       )}
 
       <div className="relative z-10">
@@ -53,12 +75,15 @@ export function MetricCard({
             <div
               className={cn(
                 "mb-3 grid h-10 w-10 place-items-center rounded-xl",
-                isHighlight ? "bg-white/20" : "bg-primary-soft"
+                isHighlight ? "bg-white/20" : "bg-light-primary-pressed",
               )}
             >
               <Icon
                 icon={icon}
-                className={cn("h-5 w-5", isHighlight ? "text-white" : "text-primary")}
+                className={cn(
+                  "h-5 w-5",
+                  isHighlight ? "text-white" : "text-white",
+                )}
               />
             </div>
           )}
@@ -74,14 +99,15 @@ export function MetricCard({
                     : "bg-white/20 text-white/80"
                   : trendUp
                     ? "bg-success/10 text-success"
-                    : "bg-destructive/10 text-destructive"
+                    : "bg-destructive/10 text-destructive",
               )}
             >
               <Icon
                 icon={trendUp ? "lucide:trending-up" : "lucide:trending-down"}
                 className="h-3 w-3"
               />
-              {trendUp ? "+" : ""}{trendPct}%
+              {trendUp ? "+" : ""}
+              {trendPct}%
             </span>
           )}
         </div>
@@ -94,24 +120,28 @@ export function MetricCard({
           <p
             className={cn(
               "text-xs font-semibold tracking-wide",
-              isHighlight ? "text-white/70" : "text-muted-foreground"
+              isHighlight ? "text-white/70" : "text-muted-foreground",
             )}
           >
             {label}
           </p>
           {trend && trend !== "neutral" && !hasTrendPct && (
             <Icon
-              icon={trend === "up" ? "lucide:trending-up" : "lucide:trending-down"}
+              icon={
+                trend === "up" ? "lucide:trending-up" : "lucide:trending-down"
+              }
               className={cn(
                 "h-3.5 w-3.5",
                 isHighlight
                   ? "text-white/60"
-                  : trend === "up" ? "text-income" : "text-expense"
+                  : trend === "up"
+                    ? "text-income"
+                    : "text-expense",
               )}
             />
           )}
         </div>
       </div>
     </div>
-  )
+  );
 }

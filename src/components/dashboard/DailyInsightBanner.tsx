@@ -9,6 +9,7 @@ import type { GoalNarrativeDescriptor, LastShownNarrative } from "@/lib/insight/
 import { useAppStore } from "@/lib/stores/appStore"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import type { DashboardData } from "@/types/app"
+import ConfettiDuotoneIcon from "@iconify-react/ph/confetti-duotone";
 
 function readLastShown(key: string): LastShownNarrative | null {
   try {
@@ -57,8 +58,18 @@ export function DailyInsightBanner({ data, today }: DailyInsightBannerProps) {
     })
 
   return (
-    <div className="rounded-[18px] border border-border/40 bg-card p-5 shadow-card">
-      <p className="text-sm">{t(descriptor.i18nKey, descriptor.params)}</p>
+    <div className="rounded-[18px] border border-primary/30 bg-primary-soft p-5 ">
+      <p className="text-sm text-primary">
+        <ConfettiDuotoneIcon
+          height="2em"
+          style={{
+            display: "inline-block",
+            verticalAlign: "middle",
+            marginRight: "1em",
+          }}
+        />
+        {t(descriptor.i18nKey, descriptor.params)}
+      </p>
     </div>
-  )
+  );
 }

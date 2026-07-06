@@ -68,7 +68,7 @@ so that the UI feels modern and visually structured.
 - rounded-[15px]  ← change to rounded-[13px]
 - No box-shadow   ← add shadow
 - p-7 on CardContent  ← change to pt-[30px] px-[30px] pb-[24px]
-- Gap-4 on card  ← review if correct
+- gap-6 on card  ← review if correct
 ```
 
 ### CLAUDE.md Card Pattern

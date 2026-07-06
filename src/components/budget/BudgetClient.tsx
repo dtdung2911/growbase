@@ -131,18 +131,31 @@ export function BudgetClient() {
       <PageHeader titleKey="nav.budget" />
       {/* Summary */}
       <div className="rounded-[13px] border border-border/40 bg-card p-4 shadow-card">
-        <div className="grid grid-cols-3 gap-4 text-center">
+        <div className="grid grid-cols-3 gap-6 text-center">
           <div>
-            <p className="text-xs text-muted-foreground">{t("budget.allocated")}</p>
-            <p className="text-lg font-semibold font-mono tabular-nums">{formatVND(totalBudget)}</p>
+            <p className="text-xs text-muted-foreground">
+              {t("budget.allocated")}
+            </p>
+            <p className="text-lg font-semibold font-mono tabular-nums">
+              {formatVND(totalBudget)}
+            </p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">{t("budget.spent")}</p>
-            <p className="text-lg font-semibold font-mono tabular-nums text-expense">{formatVND(totalActual)}</p>
+            <p className="text-lg font-semibold font-mono tabular-nums text-expense">
+              {formatVND(totalActual)}
+            </p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">{t("budget.remaining")}</p>
-            <p className={cn("text-lg font-semibold font-mono tabular-nums", totalRemaining >= 0 ? "text-income" : "text-expense")}>
+            <p className="text-xs text-muted-foreground">
+              {t("budget.remaining")}
+            </p>
+            <p
+              className={cn(
+                "text-lg font-semibold font-mono tabular-nums",
+                totalRemaining >= 0 ? "text-income" : "text-expense",
+              )}
+            >
               {formatVND(Math.abs(totalRemaining))}
             </p>
           </div>
@@ -156,12 +169,22 @@ export function BudgetClient() {
           <TableHeader>
             <TableRow>
               <TableHead>{t("budget.groupName")}</TableHead>
-              <TableHead className="text-center w-[70px]">{t("budget.pct")}</TableHead>
-              <TableHead className="text-right">{t("budget.allocated")}</TableHead>
+              <TableHead className="text-center w-[70px]">
+                {t("budget.pct")}
+              </TableHead>
+              <TableHead className="text-right">
+                {t("budget.allocated")}
+              </TableHead>
               <TableHead className="text-right">{t("budget.spent")}</TableHead>
-              <TableHead className="text-right">{t("budget.remaining")}</TableHead>
-              <TableHead className="text-center w-[70px]">{t("budget.usagePercent")}</TableHead>
-              <TableHead className="text-center w-[100px]">{t("budget.statusLabel")}</TableHead>
+              <TableHead className="text-right">
+                {t("budget.remaining")}
+              </TableHead>
+              <TableHead className="text-center w-[70px]">
+                {t("budget.usagePercent")}
+              </TableHead>
+              <TableHead className="text-center w-[100px]">
+                {t("budget.statusLabel")}
+              </TableHead>
               <TableHead>{t("budget.goal")}</TableHead>
             </TableRow>
           </TableHeader>
@@ -190,7 +213,7 @@ export function BudgetClient() {
         ))}
       </div>
     </div>
-  )
+  );
 }
 
 function CostTypeSection({

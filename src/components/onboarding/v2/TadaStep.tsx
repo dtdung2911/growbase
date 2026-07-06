@@ -17,20 +17,15 @@ import { useFunds, useUpdateFund } from "@/lib/hooks/useFunds"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import { formatVND } from "@/lib/utils/currency"
 import { addMonthsIso } from "@/lib/utils/date"
-import {
-  EMERGENCY_FUND_TIMELINE_MONTHS,
-  calculateFeasibility,
-  estimateEmergencyTarget,
-  type FeasibilityResult,
-} from "@/lib/constants/budgetTemplate"
-import { TADA_REVEAL_STAGES, resolveFeasibilityMonths, type TadaRevealStage } from "@/lib/constants/tadaReveal"
+import { calculateFeasibility, type FeasibilityResult } from "@/lib/constants/budgetTemplate"
+import { TADA_REVEAL_STAGES, type TadaRevealStage } from "@/lib/constants/tadaReveal"
 
 const STAGE_DELAY_MS = 550
 
 export function TadaStep() {
   const { t } = useTranslation()
   const router = useRouter()
-  const goal = useOnboardingV2Store((s) => s.goal)
+  const goals = useOnboardingV2Store((s) => s.goals)
   const monthlyIncome = useOnboardingV2Store((s) => s.monthlyIncome)
   const resetOnboarding = useOnboardingV2Store((s) => s.reset)
 
@@ -49,16 +44,16 @@ export function TadaStep() {
   const mutationStatus = mutation?.status ?? "idle"
   const result = mutation?.data as CompleteOnboardingV2Response | undefined
 
-  // Deps [goal, monthlyIncome] (không phải []): store rehydrate từ sessionStorage
-  // có thể xong SAU lần mount đầu. Với [] effect chỉ chạy 1 lần lúc goal còn null →
+  // Deps [goals, monthlyIncome] (không phải []): store rehydrate từ sessionStorage
+  // có thể xong SAU lần mount đầu. Với [] effect chỉ chạy 1 lần lúc income còn null →
   // return sớm → mutation không bao giờ fire → spinner kẹt vĩnh viễn (issue 4).
-  // fired ref đảm bảo chỉ gọi mutate đúng 1 lần khi goal + income đã sẵn sàng.
+  // fired ref đảm bảo chỉ gọi mutate đúng 1 lần khi income đã sẵn sàng (goals rỗng hợp lệ).
   useEffect(() => {
-    if (fired.current || !goal || monthlyIncome === null) return
+    if (fired.current || monthlyIncome === null) return
     fired.current = true
-    completeOnboarding.mutate({ goal, monthlyIncome })
+    completeOnboarding.mutate({ goals, monthlyIncome })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [goal, monthlyIncome])
+  }, [goals, monthlyIncome])
 
   const [revealed, setRevealed] = useState<TadaRevealStage[]>([])
   useEffect(() => {
@@ -77,7 +72,7 @@ export function TadaStep() {
   const [adjustedTargetAmount, setAdjustedTargetAmount] = useState<number | null>(null)
   const [adjustedMonths, setAdjustedMonths] = useState<number | null>(null)
 
-  if (!goal || monthlyIncome === null) return null
+  if (monthlyIncome === null) return null
 
   if (mutationStatus === "error") {
     const status = (mutation?.error as (Error & { status?: number }) | null)?.status
@@ -98,7 +93,7 @@ export function TadaStep() {
         title={t("setupV2.tada.errorTitle")}
         description={t("setupV2.tada.errorDesc")}
       >
-        <Button className="min-h-[44px] w-full" onClick={() => completeOnboarding.mutate({ goal, monthlyIncome })}>
+        <Button className="min-h-[44px] w-full" onClick={() => completeOnboarding.mutate({ goals, monthlyIncome })}>
           {t("setupV2.tada.retry")}
         </Button>
       </TadaMessage>
@@ -110,14 +105,10 @@ export function TadaStep() {
   }
 
   const original = result
-  const originalTargetAmount = goal.targetAmount ?? estimateEmergencyTarget(monthlyIncome)
-  const originalMonths = resolveFeasibilityMonths(
-    goal.fundType,
-    EMERGENCY_FUND_TIMELINE_MONTHS,
-    goal.targetMonths ?? EMERGENCY_FUND_TIMELINE_MONTHS
-  )
-  const targetAmount = adjustedTargetAmount ?? originalTargetAmount
-  const months = adjustedMonths ?? originalMonths
+  // Nhánh infeasible điều chỉnh quỹ chưa khả thi đầu tiên (fallback quỹ đầu — luôn có emergency).
+  const targetFund = original.funds.find((f) => !f.feasibility.feasible) ?? original.funds[0]
+  const targetAmount = adjustedTargetAmount ?? targetFund.targetAmount
+  const months = adjustedMonths ?? targetFund.months
   const feasibility: FeasibilityResult = original.feasibility.feasible
     ? original.feasibility
     : calculateFeasibility(targetAmount, months, monthlyIncome)
@@ -130,9 +121,10 @@ export function TadaStep() {
         <TadaCard title={t("setupV2.tada.budgetTitle")} description={t("setupV2.tada.budgetDesc")} />
       )}
 
-      {revealed.includes("goal") && (
-        <TadaCard title={t("setupV2.tada.goalTitle")} description={goal.name} />
-      )}
+      {revealed.includes("goal") &&
+        original.funds.map((f) => (
+          <TadaCard key={`${f.fundType}-${f.name}`} title={f.name} description={formatVND(f.targetAmount)} />
+        ))}
 
       {revealed.includes("feasibility") && (
         <div className="space-y-3 rounded-[13px] border border-border/40 bg-card p-4 shadow-card">
@@ -181,8 +173,9 @@ export function TadaStep() {
       {revealed.length === TADA_REVEAL_STAGES.length && (
         <TadaFinishButton
           wasAdjusted={wasAdjusted}
+          fundName={targetFund.name}
+          fundType={targetFund.fundType}
           targetAmount={targetAmount}
-          fundType={goal.fundType}
           months={months}
           onDone={() => {
             // Xóa sessionStorage: user khác đăng nhập cùng tab không được
@@ -198,20 +191,23 @@ export function TadaStep() {
 
 function TadaFinishButton({
   wasAdjusted,
-  targetAmount,
+  fundName,
   fundType,
+  targetAmount,
   months,
   onDone,
 }: {
   wasAdjusted: boolean
-  targetAmount: number
+  fundName: string
   fundType: "emergency" | "goal"
+  targetAmount: number
   months: number
   onDone: () => void
 }) {
   const { t } = useTranslation()
   const { data: funds } = useFunds()
-  const fund = funds?.find((f) => f.fund_type === fundType) ?? funds?.[0]
+  // Match theo name + fund_type: nhiều fund cùng type 'goal' nên fund_type đơn không đủ định danh (AC4)
+  const fund = funds?.find((f) => f.name === fundName && f.fund_type === fundType)
   const updateFund = useUpdateFund(fund?.id ?? "")
 
   const handleClick = async () => {

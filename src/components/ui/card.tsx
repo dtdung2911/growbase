@@ -23,10 +23,10 @@ const CardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex items-start justify-between gap-4 p-7", className)}
+    className={cn("flex items-start justify-between gap-6 p-7", className)}
     {...props}
   />
-))
+));
 CardHeader.displayName = "CardHeader"
 
 const CardTitle = React.forwardRef<

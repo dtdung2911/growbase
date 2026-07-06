@@ -96,7 +96,7 @@ export function IncomeTab({ transactions }: IncomeTabProps) {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-[1fr_minmax(0,380px)]">
+    <div className="grid gap-6 md:grid-cols-[1fr_minmax(0,380px)]">
       <div className="hidden overflow-hidden rounded-[13px] border border-border/40 bg-card shadow-card md:block">
         <Table>
           <TableHeader>
@@ -127,7 +127,9 @@ export function IncomeTab({ transactions }: IncomeTabProps) {
               </TableRow>
             ))}
             <TableRow className="bg-muted/40">
-              <TableCell className="font-medium">{t("reports.totalIncome")}</TableCell>
+              <TableCell className="font-medium">
+                {t("reports.totalIncome")}
+              </TableCell>
               <TableCell className="text-right font-mono tabular-nums font-medium text-income">
                 {formatVND(total)}
               </TableCell>
@@ -155,7 +157,9 @@ export function IncomeTab({ transactions }: IncomeTabProps) {
           </div>
         ))}
         <div className="flex items-center justify-between rounded-[13px] border border-border/40 bg-card px-4 py-3 shadow-card">
-          <span className="text-sm font-medium">{t("reports.totalIncome")}</span>
+          <span className="text-sm font-medium">
+            {t("reports.totalIncome")}
+          </span>
           <span className="text-sm font-medium font-mono tabular-nums text-income">
             {formatVND(total)}
           </span>
@@ -165,9 +169,16 @@ export function IncomeTab({ transactions }: IncomeTabProps) {
       <div className="rounded-[13px] border border-border/40 bg-card p-4 shadow-card">
         <h3 className="mb-2 text-sm font-medium">{t("reports.source")}</h3>
         <div className="h-64">
-          <Chart key={`inc-${topSources.length}`} type="bar" height="100%" width="100%" options={barOptions} series={barSeries} />
+          <Chart
+            key={`inc-${topSources.length}`}
+            type="bar"
+            height="100%"
+            width="100%"
+            options={barOptions}
+            series={barSeries}
+          />
         </div>
       </div>
     </div>
-  )
+  );
 }

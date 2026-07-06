@@ -38,8 +38,8 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 bg-card px-8 py-7 shadow-float rounded-[24px] data-[state=open]:animate-modal-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 motion-reduce:data-[state=open]:animate-none",
-        className
+        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-6 bg-card px-8 py-7 shadow-float rounded-[24px] data-[state=open]:animate-modal-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 motion-reduce:data-[state=open]:animate-none",
+        className,
       )}
       {...props}
     >
@@ -50,7 +50,7 @@ const DialogContent = React.forwardRef<
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
   </DialogPortal>
-))
+));
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
 const DialogHeader = ({
