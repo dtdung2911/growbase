@@ -26,6 +26,9 @@ export function HookStep() {
         <p className="text-sm font-medium text-primary">
           {t("setupV2.hook.banner")}
         </p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {t("setupV2.hook.mindset")}
+        </p>
       </div>
 
       <DashboardView

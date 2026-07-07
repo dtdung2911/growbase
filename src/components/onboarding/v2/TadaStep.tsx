@@ -17,10 +17,28 @@ import { useFunds, useUpdateFund } from "@/lib/hooks/useFunds"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import { formatVND } from "@/lib/utils/currency"
 import { addMonthsIso } from "@/lib/utils/date"
-import { calculateFeasibility, type FeasibilityResult } from "@/lib/constants/budgetTemplate"
+import { cn } from "@/lib/utils/cn"
+import {
+  BUDGET_TEMPLATE,
+  type CostTypeGroupKey,
+  type FeasibilityResult,
+} from "@/lib/constants/budgetTemplate"
 import { TADA_REVEAL_STAGES, type TadaRevealStage } from "@/lib/constants/tadaReveal"
+import { GOAL_PRESET_ICONS } from "./goalPresetIcons"
 
 const STAGE_DELAY_MS = 550
+
+const sumBudgetPct = (groups: readonly CostTypeGroupKey[]) =>
+  BUDGET_TEMPLATE.filter((l) => groups.includes(l.costTypeGroup)).reduce((s, l) => s + l.budgetPct, 0)
+
+// 4 nhóm Conscious Spending Plan. Nhóm linh hoạt gộp variable+wasteful+other để bar phủ đúng 100%;
+// fixed/savings/debt giữ % chuẩn khớp màn Budget.
+const BUDGET_SEGMENTS = [
+  { key: "fixed", pct: sumBudgetPct(["fixed"]), color: "bg-primary" },
+  { key: "variable", pct: sumBudgetPct(["variable", "wasteful", "other"]), color: "bg-info" },
+  { key: "savingsInvestment", pct: sumBudgetPct(["savings_investment"]), color: "bg-success" },
+  { key: "debtRepayment", pct: sumBudgetPct(["debt_repayment"]), color: "bg-warning" },
+] as const
 
 export function TadaStep() {
   const { t } = useTranslation()
@@ -109,22 +127,48 @@ export function TadaStep() {
   const targetFund = original.funds.find((f) => !f.feasibility.feasible) ?? original.funds[0]
   const targetAmount = adjustedTargetAmount ?? targetFund.targetAmount
   const months = adjustedMonths ?? targetFund.months
+
+  // Feasibility phải tính TỔNG mọi fund cùng rút từ available, không chỉ targetFund.
+  // Các fund khác giữ monthlyNeeded gốc; targetFund dùng giá trị đang chỉnh.
+  const otherFundsMonthly = original.funds
+    .filter((f) => f !== targetFund)
+    .reduce((sum, f) => sum + f.feasibility.monthlyNeeded, 0)
+  const adjustedMonthly = otherFundsMonthly + targetAmount / months
   const feasibility: FeasibilityResult = original.feasibility.feasible
     ? original.feasibility
-    : calculateFeasibility(targetAmount, months, monthlyIncome)
+    : {
+        monthlyNeeded: adjustedMonthly,
+        available: original.feasibility.available,
+        feasible: adjustedMonthly <= original.feasibility.available + 1,
+      }
 
   const wasAdjusted = adjustedTargetAmount !== null || adjustedMonths !== null
 
   return (
     <div className="space-y-4">
-      {revealed.includes("budget") && (
-        <TadaCard title={t("setupV2.tada.budgetTitle")} description={t("setupV2.tada.budgetDesc")} />
-      )}
+      {revealed.includes("budget") && <TadaBudgetBar monthlyIncome={monthlyIncome} />}
 
-      {revealed.includes("goal") &&
-        original.funds.map((f) => (
-          <TadaCard key={`${f.fundType}-${f.name}`} title={f.name} description={formatVND(f.targetAmount)} />
-        ))}
+      {revealed.includes("goal") && (
+        <div className="space-y-3">
+          <p className="text-sm font-medium text-foreground">{t("setupV2.tada.goalTitle")}</p>
+          {original.funds.map((f) => (
+            <div
+              key={`${f.fundType}-${f.name}`}
+              className="flex items-center gap-3 rounded-[13px] border border-border/40 bg-card p-4 shadow-card"
+            >
+              <span className="text-2xl" aria-hidden>
+                {GOAL_PRESET_ICONS[f.presetId] ?? GOAL_PRESET_ICONS.custom}
+              </span>
+              <div className="flex-1">
+                <p className="font-semibold text-foreground">{f.name}</p>
+                <p className="font-mono text-sm tabular-nums text-muted-foreground">
+                  {formatVND(f.targetAmount)}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {revealed.includes("feasibility") && (
         <div className="space-y-3 rounded-[13px] border border-border/40 bg-card p-4 shadow-card">
@@ -133,6 +177,7 @@ export function TadaStep() {
               ? t("setupV2.tada.feasibleTitle", { amount: formatVND(feasibility.monthlyNeeded) })
               : t("setupV2.tada.infeasibleTitle")}
           </p>
+          <p className="text-xs text-muted-foreground">{t("setupV2.tada.rationale.mentalAccounting")}</p>
           {/* Gate theo verdict gốc từ server, không theo feasibility live:
               nếu gate live thì vừa gõ qua ngưỡng khả thi là inputs unmount giữa chừng. */}
           {!original.feasibility.feasible && (
@@ -164,10 +209,13 @@ export function TadaStep() {
       )}
 
       {revealed.includes("todayRemaining") && (
-        <TadaCard
-          title={t("setupV2.tada.todayRemainingTitle", { amount: formatVND(original.todayRemaining) })}
-          description={t("setupV2.tada.todayRemainingDesc")}
-        />
+        <div className="space-y-2 rounded-[13px] border border-border/40 bg-card p-4 text-center shadow-card">
+          <p className="text-sm text-muted-foreground">{t("setupV2.tada.todayRemainingLabel")}</p>
+          <p className="animate-in zoom-in-95 font-mono text-4xl font-bold tabular-nums text-foreground duration-300 motion-reduce:animate-none">
+            {formatVND(original.todayRemaining)}
+          </p>
+          <p className="text-sm text-muted-foreground">{t("setupV2.tada.hookCallback")}</p>
+        </div>
       )}
 
       {revealed.length === TADA_REVEAL_STAGES.length && (
@@ -205,7 +253,7 @@ function TadaFinishButton({
   onDone: () => void
 }) {
   const { t } = useTranslation()
-  const { data: funds } = useFunds()
+  const { data: funds, isPending: fundsPending } = useFunds()
   // Match theo name + fund_type: nhiều fund cùng type 'goal' nên fund_type đơn không đủ định danh (AC4)
   const fund = funds?.find((f) => f.name === fundName && f.fund_type === fundType)
   const updateFund = useUpdateFund(fund?.id ?? "")
@@ -222,7 +270,9 @@ function TadaFinishButton({
     <Button
       className="min-h-[44px] w-full"
       onClick={handleClick}
-      disabled={wasAdjusted && (!fund || updateFund.isPending)}
+      // Không chặn vĩnh viễn nếu useFunds lỗi (fund undefined): chỉ chặn khi đang tải/đang lưu.
+      // handleClick tự bỏ qua updateFund khi thiếu fund → user vẫn vào được dashboard.
+      disabled={wasAdjusted && (fundsPending || updateFund.isPending)}
     >
       {t("setupV2.tada.cta")}
     </Button>
@@ -238,11 +288,30 @@ function TadaPending({ stage, t }: { stage: TadaRevealStage; t: (key: string) =>
   )
 }
 
-function TadaCard({ title, description }: { title: string; description: string }) {
+function TadaBudgetBar({ monthlyIncome }: { monthlyIncome: number }) {
+  const { t } = useTranslation()
   return (
-    <div className="space-y-1 rounded-[13px] border border-border/40 bg-card p-4 shadow-card">
-      <p className="font-semibold text-foreground">{title}</p>
-      <p className="text-sm text-muted-foreground">{description}</p>
+    <div className="space-y-3 rounded-[13px] border border-border/40 bg-card p-4 shadow-card">
+      <p className="font-semibold text-foreground">{t("setupV2.tada.budgetTitle")}</p>
+      <div className="flex h-3 w-full overflow-hidden rounded-full">
+        {BUDGET_SEGMENTS.map((s) => (
+          <div key={s.key} className={s.color} style={{ width: `${s.pct}%` }} />
+        ))}
+      </div>
+      <ul className="space-y-1.5">
+        {BUDGET_SEGMENTS.map((s) => (
+          <li key={s.key} className="flex items-center gap-2 text-sm">
+            <span className={cn("h-2.5 w-2.5 shrink-0 rounded-full", s.color)} />
+            <span className="text-muted-foreground">{t(`setupV2.tada.budgetLegend.${s.key}`)}</span>
+            <span className="ml-auto font-mono tabular-nums text-foreground">
+              {s.pct}% ·{" "}
+              {t("setupV2.tada.perMonth", {
+                amount: formatVND(Math.round((monthlyIncome * s.pct) / 100)),
+              })}
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }

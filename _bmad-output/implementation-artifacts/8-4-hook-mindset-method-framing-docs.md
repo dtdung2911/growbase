@@ -1,6 +1,6 @@
 # Story 8.4: Hook mindset + method framing + docs
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -20,21 +20,21 @@ so that tôi tin đây là khoa học chứ không phải tự suy diễn.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Hook mindset copy (AC: 1, 2)
-  - [ ] `HookStep.tsx`: thêm dòng mindset. Tận dụng slot banner/insight hiện có (`setupV2.hook.banner`, `setupV2.hook.insight`) — thêm 1 element nhỏ, không tạo section cồng kềnh.
-  - [ ] Key `setupV2.hook.mindset` — vi: *"Trả cho bản thân trước — nguyên tắc kinh điển từ 'Người giàu có nhất thành Babylon'."* en tương đương ("Pay yourself first — the timeless principle from 'The Richest Man in Babylon'.").
-  - [ ] Style: `text-xs text-muted-foreground` hoặc badge nhẹ, không lấn tiêu đề chính.
-- [ ] Task 2: Audit method framing toàn app (AC: 2)
-  - [ ] Grep toàn `src/` + `docs/` cho "6 lọ", "6 chiếc lọ", "6 jar", "50/30/20", "JARS" — nếu có, xoá/thay. (Kỳ vọng: chưa có — đây là guard phòng ngừa.)
-  - [ ] Đảm bảo mọi copy phương pháp mới (từ 8.2/8.3) chỉ dùng 3 nguồn đã duyệt.
-- [ ] Task 3: Cập nhật `docs/05_UX_SPEC.md` (AC: 3)
-  - [ ] Đọc phần onboarding hiện tại. Cập nhật mô tả flow 4 bước theo redesign: Goal step 2 tầng, Tada 4 stage visual, mindset ở Hook.
-  - [ ] Ghi rõ các screen state mới (emergency foundation card, multi-select counter, stacked budget bar, tada moment).
-- [ ] Task 4: Cập nhật `docs/02_BUSINESS_RULES.md` (AC: 4)
-  - [ ] Thêm/sửa rule onboarding: emergency fund bắt buộc (server luôn tạo, không phụ thuộc lựa chọn user); N goal funds tạo atomic trong RPC.
-  - [ ] Ghi framing phương pháp + 3 nguồn xác thực (để lần sau viết copy không bịa nguồn).
-- [ ] Task 5: Verify (AC: 5)
-  - [ ] `npx tsc --noEmit`; kiểm tra Hook step render vi + en; grep xác nhận 0 "50/30/20"/"6 lọ" trong `src/`.
+- [x] Task 1: Hook mindset copy (AC: 1, 2)
+  - [x] `HookStep.tsx`: thêm dòng mindset. Tận dụng slot banner/insight hiện có (`setupV2.hook.banner`, `setupV2.hook.insight`) — thêm 1 element nhỏ, không tạo section cồng kềnh.
+  - [x] Key `setupV2.hook.mindset` — vi: *"Trả cho bản thân trước — nguyên tắc kinh điển từ 'Người giàu có nhất thành Babylon'."* en tương đương ("Pay yourself first — the timeless principle from 'The Richest Man in Babylon'.").
+  - [x] Style: `text-xs text-muted-foreground` hoặc badge nhẹ, không lấn tiêu đề chính.
+- [x] Task 2: Audit method framing toàn app (AC: 2)
+  - [x] Grep toàn `src/` + `docs/` cho "6 lọ", "6 chiếc lọ", "6 jar", "50/30/20", "JARS" — nếu có, xoá/thay. (Kỳ vọng: chưa có — đây là guard phòng ngừa.)
+  - [x] Đảm bảo mọi copy phương pháp mới (từ 8.2/8.3) chỉ dùng 3 nguồn đã duyệt.
+- [x] Task 3: Cập nhật `docs/05_UX_SPEC.md` (AC: 3)
+  - [x] Đọc phần onboarding hiện tại. Cập nhật mô tả flow 4 bước theo redesign: Goal step 2 tầng, Tada 4 stage visual, mindset ở Hook.
+  - [x] Ghi rõ các screen state mới (emergency foundation card, multi-select counter, stacked budget bar, tada moment).
+- [x] Task 4: Cập nhật `docs/02_BUSINESS_RULES.md` (AC: 4)
+  - [x] Thêm/sửa rule onboarding: emergency fund bắt buộc (server luôn tạo, không phụ thuộc lựa chọn user); N goal funds tạo atomic trong RPC.
+  - [x] Ghi framing phương pháp + 3 nguồn xác thực (để lần sau viết copy không bịa nguồn).
+- [x] Task 5: Verify (AC: 5)
+  - [x] `npx tsc --noEmit`; kiểm tra Hook step render vi + en; grep xác nhận 0 "50/30/20"/"6 lọ" trong `src/`.
 
 ## Dev Notes
 
@@ -65,8 +65,40 @@ so that tôi tin đây là khoa học chứ không phải tự suy diễn.
 
 ### Agent Model Used
 
+claude-opus-4-8 (dev-story workflow)
+
 ### Debug Log References
+
+- `npx tsc --noEmit` → clean (exit 0)
+- `npx vitest run` → 29 files, 383 tests passed
+- i18n parity: vi 759 keys == en 759 keys, 0 missing either side
+- `grep -rniE "6 lọ|6 chiếc lọ|6 jar|50/30/20|50-30-20|JARS" src/ docs/` → chỉ 1 match = dòng guard trong UX_SPEC (dòng cấm), 0 match trong `src/`
 
 ### Completion Notes List
 
+- Task 1 (Hook mindset) + Task 3 (UX_SPEC redesign section) đã có sẵn trong working tree từ đợt redesign 8-3 (HookStep render `setupV2.hook.mindset`, cả vi/en). Verify khớp AC, giữ nguyên.
+- Task 2 (audit framing): grep sạch — không có "6 Lọ"/"50-30-20" trong `src/`. Copy 8.2/8.3 chỉ dùng Clason/Ramit/Thaler.
+- Task 4 (BUSINESS_RULES): thêm mới BR-OB-006 (emergency bắt buộc), BR-OB-007 (multi-goal atomic), BR-OB-008 (framing 3 nguồn). Ground vào thực tế code: `complete_onboarding_v2` (migration 013) RAISE nếu `p_goals[0]` ≠ emergency; API route `/onboarding/complete` luôn dựng emergency `p_goals[0]`.
+- Không tạo file mới, không thêm dependency.
+
+### Testing
+
+| Business flow (AC) | Method | Result |
+|---|---|---|
+| Hook step hiển thị dòng mindset "Trả cho bản thân trước" + nguồn Babylon, i18n vi/en (AC1) | Manual trace: `HookStep.tsx:29` render `t("setupV2.hook.mindset")`; key tồn tại cả `vi.json:663` + `en.json:663` | PASS |
+| Copy framework chỉ dùng 3 nguồn xác thực, 0 "6 Lọ"/"50-30-20" trong app (AC2) | Automated grep `src/` + `docs/` | PASS (0 match trong src) |
+| UX_SPEC document flow 4 bước redesign (AC3) | Manual trace: `docs/05_UX_SPEC.md` section "/setup — Onboarding V2 (redesign, Epic 8)" mô tả Hook→Goal→Income→Tada 4 stage | PASS |
+| BUSINESS_RULES ghi rule emergency bắt buộc + multi-goal + framing (AC4) | Manual trace: BR-OB-006/007/008 mới, khớp `complete_onboarding_v2` migration 013 guard | PASS |
+| i18n đầy đủ, tsc sạch, không hardcode (AC5) | Automated: tsc exit 0 + i18n parity 759==759 | PASS |
+
 ### File List
+
+- `docs/02_BUSINESS_RULES.md` (M) — thêm BR-OB-006/007/008
+- `docs/05_UX_SPEC.md` (M) — thêm section /setup Onboarding V2 redesign
+- `src/components/onboarding/v2/HookStep.tsx` (M) — dòng mindset
+- `src/lib/i18n/messages/vi.json` (M) — key `setupV2.hook.mindset`
+- `src/lib/i18n/messages/en.json` (M) — key `setupV2.hook.mindset`
+
+### Change Log
+
+- 2026-07-07: Implement story 8.4 — Hook mindset copy, method framing audit, docs UX_SPEC + BUSINESS_RULES. Status → review.

@@ -8,61 +8,13 @@ import { useOnboardingV2Store } from "@/lib/stores/onboardingV2Store"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import { formatVNDCompact } from "@/lib/utils/currency"
 import { cn } from "@/lib/utils/cn"
-import ShieldDuotoneIcon from "@iconify-react/stash/shield-duotone";
-import GraduationCapDuotoneIcon from "@iconify-react/stash/graduation-cap-duotone";
-import HouseLineDuotoneIcon from "@iconify-react/ph/house-line-duotone";
-import IslandDuotoneIcon from "@iconify-react/ph/island-duotone";
-import PencilSimpleLineDuotoneIcon from "@iconify-react/ph/pencil-simple-line-duotone";
+import { GOAL_PRESET_ICONS } from "./goalPresetIcons"
 
 const GOAL_PRESETS = [
-  {
-    presetId: "education",
-    emoji: (
-      <GraduationCapDuotoneIcon
-        height="1.8em"
-        style={{ color: "var(--primary-color)" }}
-      />
-    ),
-    fundType: "goal",
-    targetAmount: 200_000_000,
-    targetMonths: 60,
-  },
-  {
-    presetId: "house",
-    emoji: (
-      <HouseLineDuotoneIcon
-        height="1.5em"
-        style={{ color: "var(--primary-color)" }}
-      />
-    ),
-    fundType: "goal",
-    targetAmount: 500_000_000,
-    targetMonths: 36,
-  },
-  {
-    presetId: "travel",
-    emoji: (
-      <IslandDuotoneIcon
-        height="1.8em"
-        style={{ color: "var(--primary-color)" }}
-      />
-    ),
-    fundType: "goal",
-    targetAmount: 30_000_000,
-    targetMonths: 12,
-  },
-  {
-    presetId: "custom",
-    emoji: (
-      <PencilSimpleLineDuotoneIcon
-        height="1.3em"
-        style={{ color: "var(--primary-color)" }}
-      />
-    ),
-    fundType: "goal",
-    targetAmount: null,
-    targetMonths: null,
-  },
+  { presetId: "education", fundType: "goal", targetAmount: 200_000_000, targetMonths: 60 },
+  { presetId: "house", fundType: "goal", targetAmount: 500_000_000, targetMonths: 36 },
+  { presetId: "travel", fundType: "goal", targetAmount: 30_000_000, targetMonths: 12 },
+  { presetId: "custom", fundType: "goal", targetAmount: null, targetMonths: null },
 ] as const;
 
 export function GoalStep() {
@@ -95,7 +47,7 @@ export function GoalStep() {
       <div className="rounded-[13px] border border-primary/30 bg-primary-soft p-4 shadow-card">
         <div className="flex items-start gap-3">
           <span className="text-2xl" aria-hidden>
-            <ShieldDuotoneIcon height="1.6em" style={{ color: "var(--primary-color)" }} />
+            {GOAL_PRESET_ICONS.emergency}
           </span>
           <div className="flex-1 space-y-1.5">
             <div className="flex flex-wrap items-center gap-2">
@@ -141,7 +93,7 @@ export function GoalStep() {
                   className="flex min-h-[44px] w-full items-center gap-3 rounded-[13px] p-4 text-left"
                 >
                   <span className="text-2xl" aria-hidden>
-                    {preset.emoji}
+                    {GOAL_PRESET_ICONS[preset.presetId]}
                   </span>
                   <span className="flex-1">
                     <span className="block font-semibold text-foreground">

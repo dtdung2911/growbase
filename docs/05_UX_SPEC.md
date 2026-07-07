@@ -137,6 +137,48 @@ STEP 7 — Ngân sách
   - CTA: "Hoàn thành" (disabled if total > 100%)
 ```
 
+### SCREEN: /setup — Onboarding V2 (redesign, Epic 8)
+
+```
+Purpose:  Rút gọn wizard cũ còn 4 bước, mở-và-khép "vòng lặp" cảm xúc Hook↔Tada.
+          Framing phương pháp = Conscious Spending Plan (Ramit Sethi); mindset nền
+          = Pay Yourself First (George S. Clason, "Người giàu có nhất thành Babylon").
+Layout:   Full screen, max-w-lg centered. Components: onboarding/v2/*.
+Progress: 4 steps — Hook → Goal → Income → Tada.
+
+STEP 1 — Hook (mở vòng lặp)
+  - Demo dashboard nhà mẫu (hookDemoData): "hôm nay còn lại bao nhiêu" từ
+    calculateTodayRemaining(HOOK_DEMO_MONTHLY_INCOME, ...).
+  - Banner primary-soft + dòng mindset (text-xs muted): "Trả cho bản thân trước —
+    nguyên tắc kinh điển từ 'Người giàu có nhất thành Babylon'."
+  - Mục đích: cho user thấy TRƯỚC con số ví dụ; Tada step (4) sẽ khép lại bằng
+    con số thật của họ.
+
+STEP 2 — Goal (2 tầng)
+  - Tầng nền: Emergency fund card LUÔN hiện, target = 3 tháng chi tiêu tự tính
+    (không phải lựa chọn — server luôn tạo).
+  - Tầng chọn: multi-select preset (education / house / travel / custom) + counter
+    số goal đã chọn. Mỗi preset Duotone icon từ GOAL_PRESET_ICONS (nguồn chung).
+  - Custom preset: nhập tên + target + số tháng.
+
+STEP 3 — Income
+  - Nhập thu nhập hàng tháng của hộ (nguồn cho feasibility + todayRemaining).
+
+STEP 4 — Tada (khép vòng lặp, 4 stage reveal tuần tự, STAGE_DELAY_MS=550)
+  - Stage `budget`: stacked bar ngang chia 4 nhóm cost-type (Cố định / Chi tiêu
+    linh hoạt / Tiết kiệm & đầu tư / Trả nợ), màu semantic + legend % · tiền/tháng.
+  - Stage `goal`: danh sách thẻ fund (emergency đầu tiên + goal đã chọn), icon KHỚP
+    icon đã thấy ở Goal step (GOAL_PRESET_ICONS chung).
+  - Stage `feasibility`: headline plain-language (nhánh feasible/infeasible) + 1 dòng
+    rationale: mental accounting (Richard Thaler, Nobel Kinh tế 2017).
+  - Stage `todayRemaining`: số lớn text-4xl font-mono zoom-in, ngay dưới là câu khép
+    vòng lặp: "Lúc nãy là ví dụ. Đây mới là con số của riêng bạn."
+  - reduced-motion: 4 stage hiện full ngay, không animation.
+
+Ghi chú framing: CHỈ dùng 3 nguồn đã xác thực (Clason / Ramit Sethi / Thaler).
+KHÔNG nhắc "6 Lọ"/"6 Jars"/"50-30-20" ở bất kỳ đâu.
+```
+
 ### SCREEN: /dashboard
 ```
 Purpose:  Monthly financial overview
