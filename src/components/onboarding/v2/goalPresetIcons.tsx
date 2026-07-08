@@ -8,9 +8,9 @@ import PencilSimpleLineDuotoneIcon from "@iconify-react/ph/pencil-simple-line-du
 const iconColor = { color: "var(--primary-color)" }
 
 export const GOAL_PRESET_ICONS: Record<string, ReactNode> = {
-  emergency: <ShieldDuotoneIcon height="1.6em" style={iconColor} />,
-  education: <GraduationCapDuotoneIcon height="1.8em" style={iconColor} />,
-  house: <HouseLineDuotoneIcon height="1.5em" style={iconColor} />,
-  travel: <IslandDuotoneIcon height="1.8em" style={iconColor} />,
-  custom: <PencilSimpleLineDuotoneIcon height="1.3em" style={iconColor} />,
-}
+  emergency: <ShieldDuotoneIcon height="1.6em" />,
+  education: <GraduationCapDuotoneIcon height="1.8em" />,
+  house: <HouseLineDuotoneIcon height="1.5em" />,
+  travel: <IslandDuotoneIcon height="1.8em" />,
+  custom: <PencilSimpleLineDuotoneIcon height="1.3em" />,
+};

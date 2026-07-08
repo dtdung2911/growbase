@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useDashboardData } from "@/lib/hooks/useDashboard"
 import { useTransactionReminder } from "@/lib/hooks/useTransactionReminder"
+import { useRecordActivity } from "@/lib/hooks/useRecordActivity"
 import { SkeletonCard } from "@/components/shared/SkeletonCard"
 import { SkeletonList } from "@/components/shared/SkeletonList"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -16,6 +17,7 @@ export function DashboardClient() {
   const { data, isLoading } = useDashboardData()
   const { showReminder, dismiss } = useTransactionReminder()
   const [quickAddOpen, setQuickAddOpen] = useState(false)
+  useRecordActivity()
   const month = useAppStore((s) => s.currentMonth)
 
   if (isLoading) {

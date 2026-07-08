@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { withAuth } from "@/lib/supabase/auth-check"
-import { monthRange, yesterdayVN } from "@/lib/utils/date"
+import { monthRange, todayVN, yesterdayVN } from "@/lib/utils/date"
 
 function prevMonth(month: string) {
   const [y, m] = month.split("-").map(Number)
@@ -151,7 +151,7 @@ export async function GET(request: NextRequest) {
   // Funds
   const { data: fundsData, error: fundsErr } = await supabase
     .from("funds")
-    .select("id, name, fund_type, color, target_amount, current_balance, freedom_target_monthly, monthly_contribution, created_at, target_date")
+    .select("id, name, fund_type, color, target_amount, current_balance, monthly_contribution, created_at, target_date")
     .eq("household_id", hid)
     .eq("is_active", true)
     .order("sort_order")
@@ -170,6 +170,16 @@ export async function GET(request: NextRequest) {
     .order("transaction_date", { ascending: false })
     .limit(10)
 
+  // Số ngày user hoạt động trong 7 ngày gần nhất (gồm hôm nay). PK (user_id, active_date)
+  // đảm bảo mỗi ngày 1 row → count = COUNT(DISTINCT active_date) (Story 7.2)
+  const activityCutoff = new Date(todayVN() + "T00:00:00Z")
+  activityCutoff.setUTCDate(activityCutoff.getUTCDate() - 6)
+  const { count: activeDaysLast7, error: activityErr } = await supabase
+    .from("member_activity")
+    .select("active_date", { count: "exact", head: true })
+    .eq("user_id", auth.user.id)
+    .gte("active_date", activityCutoff.toISOString().slice(0, 10))
+
   // Net worth (latest snapshot — use total_system as best estimate)
   const { data: nwSnapshot, error: nwErr } = await supabase
     .from("net_worth_snapshots")
@@ -180,7 +190,7 @@ export async function GET(request: NextRequest) {
     .maybeSingle()
 
   // Lỗi fetch phải nổ ra 500, không được im lặng biến thành "day-zero" giả
-  const fetchErr = budgetErr ?? countErr ?? fundsErr ?? recentErr ?? nwErr
+  const fetchErr = budgetErr ?? countErr ?? fundsErr ?? recentErr ?? nwErr ?? activityErr
   if (fetchErr) {
     return NextResponse.json({ data: null, error: fetchErr.message }, { status: 500 })
   }
@@ -205,6 +215,7 @@ export async function GET(request: NextRequest) {
       weekdaySpending,
       hasAnyTransactionEver: (transactionCount ?? 0) > 0,
       yesterdayTransactions,
+      activeDaysLast7: activeDaysLast7 ?? 0,
     },
     error: null,
   })

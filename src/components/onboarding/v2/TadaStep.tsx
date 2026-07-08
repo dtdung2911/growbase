@@ -146,21 +146,25 @@ export function TadaStep() {
 
   return (
     <div className="space-y-4">
-      {revealed.includes("budget") && <TadaBudgetBar monthlyIncome={monthlyIncome} />}
+      {revealed.includes("budget") && (
+        <TadaBudgetBar monthlyIncome={monthlyIncome} />
+      )}
 
       {revealed.includes("goal") && (
         <div className="space-y-3">
-          <p className="text-sm font-medium text-foreground">{t("setupV2.tada.goalTitle")}</p>
+          <p className="text-sm font-medium text-primary">
+            {t("setupV2.tada.goalTitle")}
+          </p>
           {original.funds.map((f) => (
             <div
               key={`${f.fundType}-${f.name}`}
               className="flex items-center gap-3 rounded-[13px] border border-border/40 bg-card p-4 shadow-card"
             >
-              <span className="text-2xl" aria-hidden>
+              <span className="text-2xl text-primary" aria-hidden>
                 {GOAL_PRESET_ICONS[f.presetId] ?? GOAL_PRESET_ICONS.custom}
               </span>
               <div className="flex-1">
-                <p className="font-semibold text-foreground">{f.name}</p>
+                <p className="font-semibold text-primary">{f.name}</p>
                 <p className="font-mono text-sm tabular-nums text-muted-foreground">
                   {formatVND(f.targetAmount)}
                 </p>
@@ -174,34 +178,50 @@ export function TadaStep() {
         <div className="space-y-3 rounded-[13px] border border-border/40 bg-card p-4 shadow-card">
           <p className="font-semibold text-foreground">
             {feasibility.feasible
-              ? t("setupV2.tada.feasibleTitle", { amount: formatVND(feasibility.monthlyNeeded) })
+              ? t("setupV2.tada.feasibleTitle", {
+                  amount: formatVND(feasibility.monthlyNeeded),
+                })
               : t("setupV2.tada.infeasibleTitle")}
           </p>
-          <p className="text-xs text-muted-foreground">{t("setupV2.tada.rationale.mentalAccounting")}</p>
+          <p className="text-xs text-muted-foreground">
+            {t("setupV2.tada.rationale.mentalAccounting")}
+          </p>
           {/* Gate theo verdict gốc từ server, không theo feasibility live:
               nếu gate live thì vừa gõ qua ngưỡng khả thi là inputs unmount giữa chừng. */}
           {!original.feasibility.feasible && (
             <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">{t("setupV2.tada.infeasibleDesc")}</p>
+              <p className="text-sm text-muted-foreground">
+                {t("setupV2.tada.infeasibleDesc")}
+              </p>
               <div className="space-y-1.5">
-                <Label htmlFor="tada-target">{t("setupV2.tada.adjustTargetLabel")}</Label>
-                <CurrencyInput id="tada-target" value={targetAmount} onChange={setAdjustedTargetAmount} />
+                <Label htmlFor="tada-target">
+                  {t("setupV2.tada.adjustTargetLabel")}
+                </Label>
+                <CurrencyInput
+                  id="tada-target"
+                  value={targetAmount}
+                  onChange={setAdjustedTargetAmount}
+                />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="tada-months">{t("setupV2.tada.adjustMonthsLabel")}</Label>
+                <Label htmlFor="tada-months">
+                  {t("setupV2.tada.adjustMonthsLabel")}
+                </Label>
                 <Input
                   id="tada-months"
                   inputMode="numeric"
                   value={months}
                   onChange={(e) => {
-                    const digits = e.target.value.replace(/\D/g, "")
-                    setAdjustedMonths(Number(digits) || 1)
+                    const digits = e.target.value.replace(/\D/g, "");
+                    setAdjustedMonths(Number(digits) || 1);
                   }}
                   className="font-mono tabular-nums"
                 />
               </div>
               <p className="font-mono text-sm tabular-nums text-muted-foreground">
-                {t("setupV2.tada.monthlyNeeded", { amount: formatVND(feasibility.monthlyNeeded) })}
+                {t("setupV2.tada.monthlyNeeded", {
+                  amount: formatVND(feasibility.monthlyNeeded),
+                })}
               </p>
             </div>
           )}
@@ -210,11 +230,15 @@ export function TadaStep() {
 
       {revealed.includes("todayRemaining") && (
         <div className="space-y-2 rounded-[13px] border border-border/40 bg-card p-4 text-center shadow-card">
-          <p className="text-sm text-muted-foreground">{t("setupV2.tada.todayRemainingLabel")}</p>
+          <p className="text-sm text-muted-foreground">
+            {t("setupV2.tada.todayRemainingLabel")}
+          </p>
           <p className="animate-in zoom-in-95 font-mono text-4xl font-bold tabular-nums text-foreground duration-300 motion-reduce:animate-none">
             {formatVND(original.todayRemaining)}
           </p>
-          <p className="text-sm text-muted-foreground">{t("setupV2.tada.hookCallback")}</p>
+          <p className="text-sm text-muted-foreground">
+            {t("setupV2.tada.hookCallback")}
+          </p>
         </div>
       )}
 
@@ -228,13 +252,13 @@ export function TadaStep() {
           onDone={() => {
             // Xóa sessionStorage: user khác đăng nhập cùng tab không được
             // thừa hưởng goal/income cũ và auto-fire mutation ở TadaStep
-            resetOnboarding()
-            router.push("/dashboard")
+            resetOnboarding();
+            router.push("/dashboard");
           }}
         />
       )}
     </div>
-  )
+  );
 }
 
 function TadaFinishButton({

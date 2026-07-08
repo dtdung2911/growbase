@@ -256,5 +256,6 @@ export function buildHookDemoData(t: TFunction, locale: Locale): DashboardData {
     // Demo phải có "hôm qua" dưới kế hoạch — banner khoe insight tích cực,
     // không phải copy "chưa có ghi chép nào"
     yesterdayTransactions: [{ amount: 120_000, direction: "out", behavior_type: "variable" }],
+    activeDaysLast7: 0,
   }
 }

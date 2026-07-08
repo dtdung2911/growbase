@@ -21,6 +21,7 @@ import { IncomeExpenseBar, WeekdayChart, TopExpensesWidget } from "@/components/
 import { FirstExpenseCta } from "@/components/dashboard/FirstExpenseCta"
 import { DailyInsightBanner } from "@/components/dashboard/DailyInsightBanner"
 import { MilestoneCelebration } from "@/components/dashboard/MilestoneCelebrationDialog"
+import { InviteCompanionPrompt } from "@/components/dashboard/InviteCompanionPrompt"
 import type { BudgetActualLine, DashboardData } from "@/types/app"
 
 function trendPct(current: number, prev: number): number | null {
@@ -56,6 +57,7 @@ export function DashboardView({
       {/* Daily insight / first-expense CTA */}
       {showInsight && <DailyInsightBanner data={data} today={insightToday} />}
       {!data.hasAnyTransactionEver && <FirstExpenseCta />}
+      <InviteCompanionPrompt activeDaysLast7={data.activeDaysLast7} />
 
       {/* Metric tiles */}
       <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">

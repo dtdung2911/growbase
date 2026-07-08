@@ -322,6 +322,12 @@ type EventBudgetItemRow = {
   created_at: string
 }
 
+type MemberActivityRow = {
+  household_id: string
+  user_id: string
+  active_date: string
+}
+
 type TableDef<Row, Insert> = {
   Row: Row
   Insert: Insert
@@ -373,6 +379,7 @@ export type Database = {
       budget_baselines: TableDef<BudgetBaselineRow, Partial<BudgetBaselineRow> & { household_id: string; name: string; budget_pct: number }>
       budget_overrides: TableDef<BudgetOverrideRow, Partial<BudgetOverrideRow> & { budget_baseline_id: string; month: string; override_pct: number }>
       net_worth_snapshots: TableDef<NetWorthSnapshotRow, Partial<NetWorthSnapshotRow> & { household_id: string; snapshot_month: string; total_recorded: number; total_system: number; items: Json }>
+      member_activity: TableDef<MemberActivityRow, { household_id: string; user_id: string; active_date?: string }>
       scheduled_payments: TableDef<ScheduledPaymentRow, Partial<ScheduledPaymentRow> & { household_id: string; name: string; amount: number; period: ScheduledPaymentRow["period"]; next_due_date: string }>
       estimated_expenses: TableDef<EstimatedExpenseRow, Partial<EstimatedExpenseRow> & { household_id: string; name: string; estimated_amount: number }>
       income_sources: TableDef<IncomeSourceRow, Partial<IncomeSourceRow> & { household_id: string; source_name: string; monthly_amount: number }>

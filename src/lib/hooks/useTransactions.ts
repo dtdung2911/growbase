@@ -48,6 +48,8 @@ export function useCreateTransaction() {
         void qc.invalidateQueries({ queryKey: keys.dashboard(householdId, month) })
       }
       toast.success("Đã lưu", { duration: 2000 })
+      // Ghi ngày ghi giao dịch cũng tính hoạt động dù không mở dashboard (Story 7.2)
+      void fetch("/api/activity/heartbeat", { method: "POST" })
     },
     onError: (err: Error) => {
       toast.error(err.message, { duration: 5000 })

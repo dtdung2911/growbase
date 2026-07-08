@@ -104,7 +104,7 @@ export function SpendingDonut({ data, formatAmount, emptyMessage }: SpendingDonu
   return (
     <div className="relative flex items-center">
       {!hasData && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm text-muted-foreground z-1">
           {emptyMessage ?? t("common.noData")}
         </div>
       )}

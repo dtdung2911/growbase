@@ -14,11 +14,22 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { CurrencyInput } from "@/components/ui/CurrencyInput"
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
   useCreateIncomeSource,
   useUpdateIncomeSource,
 } from "@/lib/hooks/useIncomeSources"
+import { useMembers } from "@/lib/hooks/useMembers"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import type { IncomeSource } from "@/types/app"
+
+// Radix Select cấm value rỗng → sentinel cho "thu nhập chung / chưa gán".
+const SHARED = "__shared__"
 
 type IncomeSourceFormProps = {
   source?: IncomeSource | null
@@ -35,6 +46,8 @@ export function IncomeSourceForm({
   const isEdit = Boolean(source)
   const createMutation = useCreateIncomeSource()
   const updateMutation = useUpdateIncomeSource()
+  const { data: membersData, isLoading: membersLoading } = useMembers()
+  const members = membersData?.members ?? []
 
   const [sourceName, setSourceName] = useState("")
   const [monthlyAmount, setMonthlyAmount] = useState(0)
@@ -127,13 +140,23 @@ export function IncomeSourceForm({
               <Label htmlFor="inc-member" className="text-xs">
                 {t("settings.income.memberLabel")}
               </Label>
-              <Input
-                id="inc-member"
-                value={memberId}
-                onChange={(e) => setMemberId(e.target.value)}
-                placeholder={t("settings.income.memberPlaceholder")}
-                className="rounded-xl bg-inset text-base"
-              />
+              <Select
+                value={memberId === "" ? SHARED : memberId}
+                onValueChange={(v) => setMemberId(v === SHARED ? "" : v)}
+                disabled={membersLoading}
+              >
+                <SelectTrigger id="inc-member" className="rounded-xl bg-inset">
+                  <SelectValue placeholder={t("settings.income.memberPlaceholder")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={SHARED}>{t("settings.income.shared")}</SelectItem>
+                  {members.map((m) => (
+                    <SelectItem key={m.id} value={m.id}>
+                      {m.display_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 

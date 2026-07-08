@@ -316,6 +316,7 @@ export type DashboardData = {
   weekdaySpending: WeekdaySpending[]
   hasAnyTransactionEver: boolean
   yesterdayTransactions: Pick<TransactionWithJoins, "amount" | "direction" | "behavior_type">[]
+  activeDaysLast7: number
 }
 
 export type InvestmentHolding = {
