@@ -131,6 +131,46 @@ Enforcement: APP (copy review) + i18n string audit
 
 ## BR-CA — Category
 
+### BR-OB-009 Capacity góp quỹ (Money Model v2, 09-07-2026)
+```
+Tổng góp/tháng của MỌI fund = bucket savings_investment (15% thu nhập ròng).
+Không fund nào được gợi ý vượt tổng này. Nhóm "other" thuộc chi linh hoạt,
+KHÔNG tính vào capacity (hết đếm trùng available 19% cũ).
+```
+Nguồn: Conscious Spending Plan (Ramit Sethi) — savings+invest 15-20%.
+
+### BR-OB-010 Thứ tự làm đầy — Hybrid 3 giai đoạn
+```
+GĐ1: 100% capacity → emergency, đến 1 THÁNG chi tiêu thiết yếu
+GĐ2: 70% emergency / 30% goals, đến khi emergency = 3 tháng chi tiêu
+GĐ3: 100% goals (+ nhánh đầu tư cho quỹ dài hạn)
+Emergency target = 3 × chi tiêu thiết yếu tháng (KHÔNG phải income)
+```
+Nguồn: CFPB (spending shock vs income shock), CFP Board/Vanguard/Fidelity (3-6 tháng EXPENSES), Ramsey (sequencing).
+
+### BR-OB-011 Phân bổ nhiều goals
+```
+Tỷ trọng bậc thang theo hạng: 2 quỹ = 70/30; 3 quỹ = 60/30/10.
+Hạng do USER xếp (kéo thả, label màu) — app chỉ advise, không tự đổi hạng.
+KHÔNG waterfall. KHÔNG slider % trong onboarding (default cứng;
+chỉnh chi tiết = trang Funds hậu onboarding).
+```
+
+### BR-OB-012 Hiển thị timeline (voice: sự thật luôn kèm lối thoát)
+```
+Số timeline gây tụt mood KHÔNG BAO GIỜ render một mình — luôn kèm ≥1 lối
+thoát (lãi kép / nắn chặng / đổi hạng). Nắn chặng = OPT-IN 1 chạm,
+chỉ gợi ý khi timeline > 10 năm; user không tap = giữ nguyên full target.
+```
+
+### BR-OB-013 Simulation lãi kép (gợi ý tham khảo)
+```
+3 tầng theo timeline: <2 năm = 5%/năm (tiết kiệm) · 2-5 năm = 6,5%
+(quỹ trái phiếu) · >5 năm = 8% (DCA index/vàng). % cập nhật theo năm T-1.
+LUÔN kèm disclaimer highlight "tham khảo, không phải cam kết".
+Mode gợi ý tham khảo — KHÔNG phải tư vấn đầu tư.
+```
+
 ### BR-CA-001 behavior_type locked to category
 ```
 WHEN transaction is INSERT

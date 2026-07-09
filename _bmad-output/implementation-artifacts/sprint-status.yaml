@@ -109,6 +109,18 @@ development_status:
   9-3-edit-funds-post-onboarding: done
   epic-9-retrospective: optional
 
+  epic-10: backlog
+  10-1-allocation-engine-3-stages: backlog
+  10-2-goalstep-live-suggest: backlog
+  10-3-tada-three-stage-story: backlog
+  epic-10-retrospective: optional
+
+  epic-11: backlog
+  11-1-goal-priority-drag-rank: backlog
+  11-2-compound-sim-milestone-optin: backlog
+  11-3-detailed-plan-screen: backlog
+  epic-11-retrospective: optional
+
 # Action items committed during retrospectives (section created by the retrospective workflow)
 action_items:
   - epic: 3

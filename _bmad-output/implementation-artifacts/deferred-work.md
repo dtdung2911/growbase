@@ -33,3 +33,13 @@
 - **[9-1] Adjust inputs không thể hiển thị rỗng**: clear input → state null → snap về giá trị server, user không thấy adjustment đã revert. UX polish.
 - **[9-2] Ops note deploy-order**: nếu deploy code trước `supabase db push` 017 → onboarding trong cửa sổ skew thành công nhưng `funds.icon = NULL` im lặng. Quy trình: push DB trước deploy.
 - **[9-2/9-3] A11y icon picker labels**: aria-label đang là raw iconify id ("ph:car-duotone") — cần 11 human-readable label keys × 2 locale, làm cùng đợt a11y tổng.
+
+## Sprint 3 — Vận hành Money Model (từ brainstorm 09-07-2026, chưa tạo epic)
+
+- **Khoá budget tháng hiện tại**: không sửa hạn mức trong tháng; vượt mức → gợi ý đổi hạn mức THÁNG SAU.
+- **Reconcile cuối tháng**: đối chiếu kế hoạch vs thực tế → gợi ý chỉnh → nhiều tháng hội tụ mẫu số sát thực.
+- **Daily notification**: "hôm nay bạn có thể tiêu X" hướng về mục tiêu — điểm nổi bật app (JTBD).
+- **Tối ưu nhập liệu**: trở ngại #1 của mô hình — đơn giản hoá nhập chi tiêu tối đa.
+- **Slider tỷ lệ power-user** (trang Funds): chỉnh tỷ trọng bậc thang/70-30 chi tiết hậu onboarding.
+- **Nối investment portfolio**: gợi ý kênh lãi kép → cửa ngõ sang module đầu tư (retention loop).
+- **Review số GĐ2 70/30 + bậc thang** sau khi có data thực (số sản phẩm tự quyết, chưa có nguồn ngoài).

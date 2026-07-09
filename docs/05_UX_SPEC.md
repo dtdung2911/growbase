@@ -139,6 +139,8 @@ STEP 7 — Ngân sách
 
 ### SCREEN: /setup — Onboarding V2 (redesign, Epic 8)
 
+> **(Epic 10/11 — planned, 09-07-2026):** Money Model v2 sẽ đổi màn này — GoalStep thêm gợi ý khả thi live ("góp X/tháng · xong ~[thời điểm]") + kéo thả xếp hạng; Tada thêm 1 dòng kế hoạch 3 giai đoạn + attribution (CSP/Clason/CFPB) + nút "Xem kế hoạch chi tiết"; simulation lãi kép 3 tầng kèm disclaimer. Mô tả dưới đây là HIỆN TRẠNG (Epic 8/9). Chi tiết: sprint-change-proposal-2026-07-09.md + BR-OB-009→013.
+
 ```
 Purpose:  Rút gọn wizard cũ còn 4 bước, mở-và-khép "vòng lặp" cảm xúc Hook↔Tada.
           Framing phương pháp = Conscious Spending Plan (Ramit Sethi); mindset nền
