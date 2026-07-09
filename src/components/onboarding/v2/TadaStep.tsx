@@ -24,7 +24,7 @@ import {
   type FeasibilityResult,
 } from "@/lib/constants/budgetTemplate"
 import { TADA_REVEAL_STAGES, type TadaRevealStage } from "@/lib/constants/tadaReveal"
-import { GOAL_PRESET_ICONS } from "./goalPresetIcons"
+import { PRESET_ICONS } from "./goalPresetIcons";
 
 const STAGE_DELAY_MS = 550
 
@@ -161,7 +161,7 @@ export function TadaStep() {
               className="flex items-center gap-3 rounded-[13px] border border-border/40 bg-card p-4 shadow-card"
             >
               <span className="text-2xl text-primary" aria-hidden>
-                {GOAL_PRESET_ICONS[f.presetId] ?? GOAL_PRESET_ICONS.custom}
+                {PRESET_ICONS[f.presetId] ?? PRESET_ICONS.custom}
               </span>
               <div className="flex-1">
                 <p className="font-semibold text-primary">{f.name}</p>

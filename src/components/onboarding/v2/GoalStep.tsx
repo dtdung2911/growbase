@@ -8,7 +8,7 @@ import { useOnboardingV2Store } from "@/lib/stores/onboardingV2Store"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import { formatVNDCompact } from "@/lib/utils/currency"
 import { cn } from "@/lib/utils/cn"
-import { GOAL_PRESET_ICONS } from "./goalPresetIcons"
+import { PRESET_ICONS } from "./goalPresetIcons";
 
 const GOAL_PRESETS = [
   { presetId: "education", fundType: "goal", targetAmount: 200_000_000, targetMonths: 60 },
@@ -49,7 +49,7 @@ export function GoalStep() {
       <div className="rounded-[13px] border border-primary/90 bg-card p-4 shadow-card">
         <div className="flex items-start gap-3">
           <span className="text-2xl text-primary" aria-hidden>
-            {GOAL_PRESET_ICONS.emergency}
+            {PRESET_ICONS.emergency}
           </span>
           <div className="flex-1 space-y-1.5">
             <div className="flex flex-wrap items-center gap-2">
@@ -111,7 +111,7 @@ export function GoalStep() {
                     )}
                     aria-hidden
                   >
-                    {GOAL_PRESET_ICONS[preset.presetId]}
+                    {PRESET_ICONS[preset.presetId]}
                   </span>
                   <span className="flex-1">
                     <span

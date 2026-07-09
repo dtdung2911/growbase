@@ -30,7 +30,7 @@ so that tôi tin tưởng bức tranh tài chính và biết con số hôm nay c
   - [x] Bar: flex row, mỗi segment `style={{ width: pct% }}`, màu: fixed → `bg-primary`, variable → info `#49c8e6` qua token, savings_investment → success token, debt_repayment → warning token. KIỂM TRA tokens trong `tailwind.config.ts`/`globals.css` trước — dùng class semantic có sẵn, không hex inline.
   - [x] Legend dưới bar: dot màu + tên nhóm + `% · số tiền/tháng` (`formatVND(monthlyIncome * pct/100)`), `font-mono tabular-nums`.
 - [x] Task 2: Goal stage — fund list với icon chung (AC: 2)
-  - [x] Tách icon map ra module chung: `src/components/onboarding/v2/goalPresetIcons.tsx` export `GOAL_PRESET_ICONS: Record<presetId, ReactNode>` — `GoalStep.tsx` refactor dùng map này (xoá JSX icon inline), `TadaStep.tsx` import cùng map.
+  - [x] Tách icon map ra module chung: `src/components/onboarding/v2/goalPresetIcons.tsx` export `PRESET_ICONS: Record<presetId, ReactNode>` — `GoalStep.tsx` refactor dùng map này (xoá JSX icon inline), `TadaStep.tsx` import cùng map.
   - [x] Mỗi fund 1 thẻ nhỏ: icon + tên + target `font-mono` (emergency: "tự tính 3 tháng chi tiêu" nếu target null từ response — đã có sẵn số từ 8.1).
   - [x] Map fund → presetId để lấy icon: response 8.1 trả `fundType`; với goal funds cần `presetId` — nếu 8.1 chưa trả, thêm `presetId` vào response funds (sửa nhỏ route.ts, backward-safe).
 - [x] Task 3: Feasibility rationale (AC: 3)
@@ -86,7 +86,7 @@ claude-opus-4-8
 ### Completion Notes List
 
 - **Budget bar 4 segment** (`TadaBudgetBar`): `BUDGET_TEMPLATE` có 6 cost-type group nhưng spec cần 4 segment. Gộp `variable + wasteful + other` → segment "Chi tiêu linh hoạt" để bar phủ đủ 100%, giữ `fixed`/`savings_investment`/`debt_repayment` đúng % canonical (khớp màn Budget). Tổng: fixed 53 + variable 24 + savings 15 + debt 8 = 100%. Màu semantic qua class (`bg-primary`/`bg-info`/`bg-success`/`bg-warning`), không hex inline.
-- **Icon DRY**: tách `goalPresetIcons.tsx` export `GOAL_PRESET_ICONS`; `GoalStep.tsx` refactor bỏ 5 import icon inline + field `emoji`, `TadaStep.tsx` import cùng map → icon Tada khớp icon user vừa thấy ở GoalStep.
+- **Icon DRY**: tách `goalPresetIcons.tsx` export `PRESET_ICONS`; `GoalStep.tsx` refactor bỏ 5 import icon inline + field `emoji`, `TadaStep.tsx` import cùng map → icon Tada khớp icon user vừa thấy ở GoalStep.
 - **presetId đã có sẵn** trong response 8.1 → KHÔNG cần sửa route.ts (spec Task 2 nói "nếu chưa trả thì thêm" — đã có).
 - **animate-in zoom-in-95**: `tailwindcss-animate` đã có trong `tailwind.config.ts` plugins → dùng luôn thay vì tự viết keyframe `tada-pop`. Kèm `motion-reduce:animate-none`.
 - **Dọn dead code**: xoá `resolveFeasibilityMonths` (+comment) khỏi `tadaReveal.ts` và 3 test tương ứng — không còn tham chiếu repo-wide. Xoá helper `TadaCard` (thay bằng markup trực tiếp), **giữ** `TadaMessage` (còn dùng ở error block).
@@ -96,7 +96,7 @@ claude-opus-4-8
 ### Testing
 
 - **Budget bar sums to 100%** — automated (sanity trace) + manual: fixed 53 + variable 24 + savings 15 + debt 8 = 100; width mỗi segment = pct%, legend hiển thị `{pct}% · {formatVND/tháng}`. PASS.
-- **Goal icons khớp GoalStep** — manual trace: cả hai render từ `GOAL_PRESET_ICONS[presetId]`, fallback `custom`. Không còn JSX icon copy-paste. PASS.
+- **Goal icons khớp GoalStep** — manual trace: cả hai render từ `PRESET_ICONS[presetId]`, fallback `custom`. Không còn JSX icon copy-paste. PASS.
 - **Feasibility branches (feasible/infeasible)** — manual: gate `!original.feasibility.feasible` giữ nguyên, thêm 1 dòng rationale mentalAccounting `text-xs text-muted-foreground` không đổi logic adjust. PASS cả 2 nhánh.
 - **TodayRemaining tada moment** — manual: số `text-4xl font-mono tabular-nums font-bold` + `animate-in zoom-in-95 duration-300`, ngay dưới là hookCallback. PASS.
 - **prefers-reduced-motion** — manual: `motion-reduce:animate-none` trên số lớn; reveal flow (`STAGE_DELAY_MS`) giữ nguyên, reduced-motion hiện full ngay. PASS.

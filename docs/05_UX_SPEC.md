@@ -158,7 +158,7 @@ STEP 2 — Goal (2 tầng)
   - Tầng nền: Emergency fund card LUÔN hiện, target = 3 tháng chi tiêu tự tính
     (không phải lựa chọn — server luôn tạo).
   - Tầng chọn: multi-select preset (education / house / travel / custom) + counter
-    số goal đã chọn. Mỗi preset Duotone icon từ GOAL_PRESET_ICONS (nguồn chung).
+    số goal đã chọn. Mỗi preset Duotone icon từ PRESET_ICONS (nguồn chung).
   - Custom preset: nhập tên + target + số tháng.
 
 STEP 3 — Income
@@ -168,7 +168,7 @@ STEP 4 — Tada (khép vòng lặp, 4 stage reveal tuần tự, STAGE_DELAY_MS=5
   - Stage `budget`: stacked bar ngang chia 4 nhóm cost-type (Cố định / Chi tiêu
     linh hoạt / Tiết kiệm & đầu tư / Trả nợ), màu semantic + legend % · tiền/tháng.
   - Stage `goal`: danh sách thẻ fund (emergency đầu tiên + goal đã chọn), icon KHỚP
-    icon đã thấy ở Goal step (GOAL_PRESET_ICONS chung).
+    icon đã thấy ở Goal step (PRESET_ICONS chung).
   - Stage `feasibility`: headline plain-language (nhánh feasible/infeasible) + 1 dòng
     rationale: mental accounting (Richard Thaler, Nobel Kinh tế 2017).
   - Stage `todayRemaining`: số lớn text-4xl font-mono zoom-in, ngay dưới là câu khép

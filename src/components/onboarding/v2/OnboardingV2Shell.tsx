@@ -7,6 +7,10 @@ import {
   useOnboardingV2Store,
 } from "@/lib/stores/onboardingV2Store"
 import { useTranslation } from "@/lib/i18n/useTranslation"
+import ArrowFatLinesLeftDuotoneIcon from "@iconify-react/ph/arrow-fat-lines-left-duotone";
+import ChevronRightCircleDuotoneIcon from "@iconify-react/si/chevron-right-circle-duotone";
+import ChevronLeftCircleDuotoneIcon from "@iconify-react/si/chevron-left-circle-duotone";
+import CloseCircleDuotoneIcon from "@iconify-react/si/close-circle-duotone";
 
 export function OnboardingV2Shell({ children }: { children: ReactNode }) {
   const { t } = useTranslation()
@@ -49,6 +53,7 @@ export function OnboardingV2Shell({ children }: { children: ReactNode }) {
                 onClick={prev}
                 className="min-h-[44px]"
               >
+                <ChevronLeftCircleDuotoneIcon height="1em" />
                 {t("setupV2.nav.back")}
               </Button>
             )}
@@ -59,6 +64,7 @@ export function OnboardingV2Shell({ children }: { children: ReactNode }) {
                 onClick={next}
                 className="min-h-[44px]"
               >
+                <CloseCircleDuotoneIcon height="12em" />
                 {t("setupV2.nav.skip")}
               </Button>
             )}
@@ -69,6 +75,7 @@ export function OnboardingV2Shell({ children }: { children: ReactNode }) {
               className="ml-auto min-h-[44px] flex-1 sm:flex-none"
             >
               {step === 0 ? t("setupV2.hook.cta") : t("setupV2.nav.next")}
+              <ChevronRightCircleDuotoneIcon height="12em" />
             </Button>
           </div>
         </footer>

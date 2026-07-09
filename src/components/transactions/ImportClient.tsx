@@ -324,7 +324,10 @@ export function ImportClient() {
         )}
 
         {step === 4 && (
-          <ConfirmStep count={selectedRows.length} total={selectedRows.reduce((s, r) => s + r.amount, 0)} />
+          <ConfirmStep
+            count={selectedRows.length}
+            total={selectedRows.reduce((s, r) => s + r.amount, 0)}
+          />
         )}
       </div>
 
@@ -350,12 +353,17 @@ export function ImportClient() {
             onClick={() => setStep(2)}
           >
             {t("import.next")}
+
             <Icon icon="lucide:chevron-right" className="ml-1 h-4 w-4" />
           </Button>
         )}
 
         {step === 2 && (
-          <Button className="min-h-[44px]" disabled={!canMap} onClick={goToPreview}>
+          <Button
+            className="min-h-[44px]"
+            disabled={!canMap}
+            onClick={goToPreview}
+          >
             {t("import.next")}
             <Icon icon="lucide:chevron-right" className="ml-1 h-4 w-4" />
           </Button>
@@ -370,7 +378,11 @@ export function ImportClient() {
             )}
             <Button
               className="min-h-[44px]"
-              disabled={selectedRows.length === 0 || !accountId || missingCategoryCount > 0}
+              disabled={
+                selectedRows.length === 0 ||
+                !accountId ||
+                missingCategoryCount > 0
+              }
               onClick={() => setStep(4)}
             >
               {t("import.next")}
@@ -386,16 +398,17 @@ export function ImportClient() {
             onClick={handleImport}
           >
             {importMutation.isPending && (
-              <Icon icon="lucide:loader-2" className="mr-2 h-4 w-4 animate-spin" />
+              <Icon
+                icon="lucide:loader-2"
+                className="mr-2 h-4 w-4 animate-spin"
+              />
             )}
-            {importMutation.isPending
-              ? t("import.importing")
-              : t("import.cta")}
+            {importMutation.isPending ? t("import.importing") : t("import.cta")}
           </Button>
         )}
       </div>
     </div>
-  )
+  );
 }
 
 function StepsIndicator({ current }: { current: Step }) {
