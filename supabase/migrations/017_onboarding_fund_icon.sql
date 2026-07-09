@@ -112,7 +112,10 @@ BEGIN
 
   -- 6. Funds — emergency (p_goals[0]) trước, rồi các quỹ mục tiêu; cùng transaction (rule 1).
   --    Thu id theo đúng thứ tự p_goals để API map lại từng quỹ.
-  FOR v_item IN SELECT val FROM jsonb_array_elements(p_goals) AS arr(val)
+  FOR v_item IN
+    SELECT val
+    FROM jsonb_array_elements(p_goals) WITH ORDINALITY AS arr(val, ord)
+    ORDER BY ord
   LOOP
     INSERT INTO funds (
       household_id, name, fund_type, target_amount, target_date, target_months_expense, icon

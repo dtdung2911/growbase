@@ -3,6 +3,8 @@ export const keys = {
   transactions: (hid: string, month: string) =>
     ["transactions", hid, month] as const,
   funds: (hid: string) => ["funds", hid] as const,
+  fundDetail: (hid: string, fundId: string) =>
+    ["fundDetail", hid, fundId] as const,
   budget: (hid: string, month: string) => ["budget", hid, month] as const,
   reports: (hid: string, month: string, tab: string) =>
     ["reports", hid, month, tab] as const,

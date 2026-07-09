@@ -105,7 +105,13 @@ export function TadaStep() {
           title={t("setupV2.tada.alreadyOnboardedTitle")}
           description={t("setupV2.tada.alreadyOnboardedDesc")}
         >
-          <Button className="min-h-[44px] w-full" onClick={() => router.push("/dashboard")}>
+          <Button
+            className="min-h-[44px] w-full"
+            onClick={() => {
+              resetOnboarding();
+              router.push("/dashboard");
+            }}
+          >
             {t("setupV2.tada.cta")}
           </Button>
         </TadaMessage>
@@ -141,7 +147,7 @@ export function TadaStep() {
   // API không trả icon: quỹ custom lấy icon user chọn từ goals state (match theo name), preset map từ presetId.
   const iconFor = (f: OnboardingFundResult) =>
     f.presetId === "custom"
-      ? goals.find((g) => g.presetId === "custom" && g.name === f.name)?.icon ?? PRESET_ICON_NAMES.custom
+      ? goals.find((g) => g.presetId === "custom" && g.name.trim() === f.name.trim())?.icon ?? PRESET_ICON_NAMES.custom
       : PRESET_ICON_NAMES[f.presetId] ?? PRESET_ICON_NAMES.custom
 
   // Feasibility phải tính TỔNG mọi fund cùng rút từ available; adjustFund dùng giá trị đang chỉnh.
@@ -233,7 +239,8 @@ export function TadaStep() {
                   value={months}
                   onChange={(e) => {
                     const digits = e.target.value.replace(/\D/g, "");
-                    setAdjustedMonths(digits ? Number(digits) : null);
+                    const n = Number(digits);
+                    setAdjustedMonths(digits ? Math.max(1, n) : null);
                   }}
                   className="font-mono tabular-nums"
                 />
@@ -249,6 +256,11 @@ export function TadaStep() {
                 })}
               </p>
             </div>
+          )}
+          {!original.feasibility.feasible && !adjustFund && (
+            <p className="text-sm text-muted-foreground">
+              {t("setupV2.tada.noAdjustHint")}
+            </p>
           )}
         </div>
       )}

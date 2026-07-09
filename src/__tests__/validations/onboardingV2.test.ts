@@ -127,6 +127,12 @@ describe("completeOnboardingV2Schema", () => {
     expect(result.success).toBe(false)
   })
 
+  it("rejects presetId emergency đội lốt fundType goal (bypass UI)", () => {
+    const pseudoEmergency = { ...validGoal, presetId: "emergency" as const }
+    const result = completeOnboardingV2Schema.safeParse({ goals: [pseudoEmergency], monthlyIncome: 20_000_000 })
+    expect(result.success).toBe(false)
+  })
+
   it("rejects more than 5 goals", () => {
     const goals = Array.from({ length: 6 }, () => validGoal)
     expect(completeOnboardingV2Schema.safeParse({ goals, monthlyIncome: 20_000_000 }).success).toBe(false)

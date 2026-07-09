@@ -26,3 +26,10 @@
 - **[8-2] Custom goal bỏ trống fields → Next disabled không inline message** — UX polish. `src/components/onboarding/v2/GoalStep.tsx`.
 - **[8-3] Mutation cache flash giữa 2 user cùng tab** — `resetOnboarding` không clear MutationCache; logout flow cần clear queryClient. `src/components/onboarding/v2/TadaStep.tsx:57-63`.
 - **[8-3] BUDGET_SEGMENTS không normalize/assert tổng 100%** — costTypeGroup ngoài nhóm liệt kê bị drop im lặng. `src/components/onboarding/v2/TadaStep.tsx`.
+
+## Deferred from: code review Epic 9 (09-07-2026)
+
+- **[9-1] Timezone skew hint vs amount**: days-in-month hint tính client-timezone, `calculateTodayRemaining` chạy server (UTC) → lệch quanh 00:00-07:00 ICT ngày đầu tháng; `addMonthsIso` client vs server cùng skew (off-by-one-day deadline). Pre-existing pattern.
+- **[9-1] Adjust inputs không thể hiển thị rỗng**: clear input → state null → snap về giá trị server, user không thấy adjustment đã revert. UX polish.
+- **[9-2] Ops note deploy-order**: nếu deploy code trước `supabase db push` 017 → onboarding trong cửa sổ skew thành công nhưng `funds.icon = NULL` im lặng. Quy trình: push DB trước deploy.
+- **[9-2/9-3] A11y icon picker labels**: aria-label đang là raw iconify id ("ph:car-duotone") — cần 11 human-readable label keys × 2 locale, làm cùng đợt a11y tổng.

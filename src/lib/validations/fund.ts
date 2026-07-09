@@ -1,16 +1,19 @@
 import { z } from "zod"
 
+// iconify format "collection:name" — keeps legacy lucide values like "lucide:shield" valid
+const iconifyName = z.string().max(120).regex(/^[a-z0-9-]+:[a-z0-9-]+$/)
+
 export const createFundSchema = z.object({
-  name: z.string().min(1, "Tên quỹ không được để trống"),
+  name: z.string().trim().min(1, "Tên quỹ không được để trống"),
   description: z.string().optional(),
   fund_type: z.enum(["emergency", "sinking", "goal", "investment", "freedom"]),
-  icon: z.string().optional(),
+  icon: iconifyName.optional(),
   color: z.string().optional(),
   monthly_contribution: z.number().nonnegative().optional(),
   contribution_day: z.number().min(1).max(28).optional(),
   target_amount: z.number().nonnegative().optional().nullable(),
   target_date: z.string().optional().nullable(),
-  target_months_expense: z.number().min(1).max(24).optional().nullable(),
+  target_months_expense: z.number().int().min(1).max(24).optional().nullable(),
   expected_return_rate: z.number().optional().nullable(),
   priority: z.number().min(1).max(10).optional(),
   per_member: z.boolean().optional(),
@@ -18,15 +21,15 @@ export const createFundSchema = z.object({
 })
 
 export const updateFundSchema = z.object({
-  name: z.string().min(1).optional(),
+  name: z.string().trim().min(1).optional(),
   description: z.string().nullable().optional(),
-  icon: z.string().optional(),
+  icon: iconifyName.optional(),
   color: z.string().optional(),
   monthly_contribution: z.number().nonnegative().optional(),
   contribution_day: z.number().min(1).max(28).optional(),
   target_amount: z.number().nonnegative().nullable().optional(),
   target_date: z.string().nullable().optional(),
-  target_months_expense: z.number().min(1).max(24).nullable().optional(),
+  target_months_expense: z.number().int().min(1).max(24).nullable().optional(),
   expected_return_rate: z.number().nullable().optional(),
   priority: z.number().min(1).max(10).optional(),
   sort_order: z.number().optional(),

@@ -4,7 +4,7 @@ baseline_commit: 98133d26e5d294f5fec53861bc32a23e16df9648
 
 # Story 9.2: Icon quỹ — picker cho quỹ custom + persist mọi quỹ
 
-Status: review
+Status: done
 
 ## Story
 
@@ -94,7 +94,7 @@ Opus 4.8 (1M context) — claude-opus-4-8[1m] (growbase-senior-developer agent)
 - `npx tsc --noEmit` → exit 0, 0 dòng output.
 - `npx vitest run` → 31 test files, 409 tests passed. onboardingV2 validations: 32 tests (+3 icon).
 - i18n parity: vi 763 keys == en 763 keys, diff rỗng cả 2 chiều.
-- Verify icon phosphor tồn tại: chạy check trên `node_modules/@iconify-react/ph/components/<letter>/<name>-duotone.jsx` — `ring-duotone` KHÔNG có, đổi sang `diamond-duotone` (có). `stash:shield-duotone` + `stash:graduation-cap-duotone` verify trong `@iconify-react/stash`.
+- Verify icon phosphor tồn tại: chạy check trên `node_modules/@iconify-react/ph/components/<letter>/<name>-duotone.jsx` — `ring-duotone` KHÔNG có, đổi sang `diamond-duotone` (có). `stash:shield-duotone` verify trong `@iconify-react/stash`; `ph:graduation-cap-duotone` trong `@iconify-react/ph`.
 
 ### Completion Notes List
 
@@ -143,3 +143,14 @@ Cần verify trên browser (runtime iconify fetch, không cover được bằng 
 
 - 09-07-2026: Story created từ Epic 9. Status → ready-for-dev.
 - 09-07-2026: Implement Tasks 1→5. Icon catalog string iconify, picker trong GoalStep custom, persist icon qua route + migration 017, TadaStep render icon custom. tsc sạch, vitest 409 pass, i18n parity 763==763.
+- 09-07-2026 — Code-review fixes: (1) iconFor trim 2 phía; (2) migration 017 funds loop WITH ORDINALITY + ORDER BY ord; (3) Zod goals array refine reject presetId "emergency" + unit test; (4) icon catalog move sang src/lib/constants/fundIcons.ts, goalPresetIcons.tsx re-export (validations + route import từ lib, FundEditSheet compile qua re-export); (5) fix Debug Log typo graduation-cap. tsc sạch, 414 tests pass, i18n parity 766==766.
+
+### Review Findings (code review 09-07-2026)
+
+- [x] [Review][Patch] iconFor match custom goal trim 2 phía (`g.name.trim() === f.name.trim()`) — icon custom không còn rơi về pencil khi name có khoảng trắng [src/components/onboarding/v2/TadaStep.tsx iconFor]
+- [x] [Review][Patch] Migration 017 funds loop thêm `WITH ORDINALITY ... ORDER BY ord` — bảo đảm thứ tự fund_ids[i] ↔ p_goals[i] khớp budget loop [supabase/migrations/017_onboarding_fund_icon.sql]
+- [x] [Review][Patch] Zod goals array refine reject `presetId === "emergency"` → chặn pseudo-emergency shield icon bypass UI; thêm unit test [src/lib/validations/onboardingV2.ts]
+- [x] [Review][Patch] Icon catalog move sang `src/lib/constants/fundIcons.ts` (PRESET_ICON_NAMES, CUSTOM_ICON_CHOICES, ICON_CATALOG); goalPresetIcons.tsx re-export (FundEditSheet + UI imports không vỡ); validations + route import từ lib [src/lib/constants/fundIcons.ts]
+- [x] [Review][Patch] Story doc Debug Log sửa "stash:graduation-cap-duotone" → "ph:graduation-cap-duotone" [9-2 story file]
+- [x] [Review][Defer] Deploy-order skew: route deploy trước `supabase db push` 017 → onboarding thành công nhưng funds.icon = NULL im lặng — deferred, ops note: push DB trước khi deploy code
+- [x] [Review][Defer] aria-label icon picker = raw iconify id ("ph:car-duotone") cho screen reader — deferred, cần 11 human-readable label keys × 2 locale, làm đợt a11y

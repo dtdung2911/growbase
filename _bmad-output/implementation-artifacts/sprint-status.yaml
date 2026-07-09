@@ -103,10 +103,10 @@ development_status:
   8-4-hook-mindset-method-framing-docs: done
   epic-8-retrospective: optional
 
-  epic-9: in-progress
-  9-1-tada-transparent-numbers: review
-  9-2-fund-icon-picker-persist: review
-  9-3-edit-funds-post-onboarding: review
+  epic-9: done
+  9-1-tada-transparent-numbers: done
+  9-2-fund-icon-picker-persist: done
+  9-3-edit-funds-post-onboarding: done
   epic-9-retrospective: optional
 
 # Action items committed during retrospectives (section created by the retrospective workflow)

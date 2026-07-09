@@ -44,8 +44,9 @@ export const FLEXIBLE_COST_TYPE_GROUPS: readonly CostTypeGroupKey[] = ["variable
 
 export const EMERGENCY_FUND_MONTHS = 3
 
-// Preset quỹ khẩn cấp không có targetMonths — mốc "gom đủ trong 1 năm" (ASSUMPTION, story 4.4).
-export const EMERGENCY_FUND_TIMELINE_MONTHS = 12
+// Preset quỹ khẩn cấp không có targetMonths — giãn mốc gom đủ ra 18 tháng (D2 story 9.1):
+// 12 tháng khiến emergency gần như luôn infeasible (cần ~20% income vs available ~19%).
+export const EMERGENCY_FUND_TIMELINE_MONTHS = 18
 
 function sumBudgetPct(groups: readonly CostTypeGroupKey[]): number {
   return BUDGET_TEMPLATE.filter((l) => groups.includes(l.costTypeGroup)).reduce((sum, l) => sum + l.budgetPct, 0)

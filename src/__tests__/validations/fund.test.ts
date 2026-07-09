@@ -166,13 +166,41 @@ describe("updateFundSchema target_months_expense", () => {
     expect(updateFundSchema.safeParse({ target_months_expense: 25 }).success).toBe(false)
   })
 
+  it("rejects non-integer months", () => {
+    expect(updateFundSchema.safeParse({ target_months_expense: 6.5 }).success).toBe(false)
+  })
+
   it("allows null and omission (field is optional)", () => {
     expect(updateFundSchema.safeParse({ target_months_expense: null }).success).toBe(true)
     expect(updateFundSchema.safeParse({}).success).toBe(true)
   })
+})
 
-  it("keeps icon as a free string (no enum whitelist)", () => {
-    expect(updateFundSchema.safeParse({ icon: "lucide:piggy-bank" }).success).toBe(true)
+describe("updateFundSchema icon", () => {
+  it("accepts valid iconify names including legacy lucide", () => {
+    expect(updateFundSchema.safeParse({ icon: "lucide:shield" }).success).toBe(true)
     expect(updateFundSchema.safeParse({ icon: "ph:car-duotone" }).success).toBe(true)
+  })
+
+  it("rejects malformed icon (no collection prefix)", () => {
+    expect(updateFundSchema.safeParse({ icon: "shield" }).success).toBe(false)
+    expect(updateFundSchema.safeParse({ icon: "Lucide:Shield" }).success).toBe(false)
+  })
+
+  it("rejects icon longer than 120 chars", () => {
+    const long = `ph:${"a".repeat(200)}`
+    expect(updateFundSchema.safeParse({ icon: long }).success).toBe(false)
+  })
+})
+
+describe("updateFundSchema name", () => {
+  it("trims surrounding whitespace", () => {
+    const r = updateFundSchema.safeParse({ name: "  Quỹ dự phòng  " })
+    expect(r.success).toBe(true)
+    if (r.success) expect(r.data.name).toBe("Quỹ dự phòng")
+  })
+
+  it("rejects whitespace-only name", () => {
+    expect(updateFundSchema.safeParse({ name: "   " }).success).toBe(false)
   })
 })

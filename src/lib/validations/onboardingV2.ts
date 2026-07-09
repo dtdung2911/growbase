@@ -1,7 +1,5 @@
 import { z } from "zod"
-import { CUSTOM_ICON_CHOICES, PRESET_ICON_NAMES } from "@/components/onboarding/v2/goalPresetIcons"
-
-const ICON_CATALOG = [...Object.values(PRESET_ICON_NAMES), ...CUSTOM_ICON_CHOICES] as [string, ...string[]]
+import { ICON_CATALOG, PRESET_ICON_NAMES } from "@/lib/constants/fundIcons"
 
 // Quỹ khẩn cấp: target/months để null — tự tính "3 × chi tiêu tháng" sau khi có thu nhập (story 4.3/4.4)
 export const goalSchema = z
@@ -43,6 +41,10 @@ export const completeOnboardingV2Schema = z.object({
     .max(5)
     .refine((gs) => gs.every((g) => g.fundType === "goal"), {
       message: "Mục tiêu thêm phải là quỹ mục tiêu",
+    })
+    // presetId "emergency" với fundType "goal" lọt qua check trên → chặn pseudo-emergency (shield icon) qua API
+    .refine((gs) => gs.every((g) => g.presetId !== "emergency"), {
+      message: "Không thể chọn quỹ khẩn cấp làm mục tiêu thêm",
     })
     .refine((gs) => new Set(gs.map(goalKey)).size === gs.length, {
       message: "Không thể chọn trùng mục tiêu",

@@ -4,7 +4,7 @@ baseline_commit: 98133d26e5d294f5fec53861bc32a23e16df9648
 
 # Story 9.1: Tada số liệu minh bạch — per-fund, tổng, giải thích
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -149,3 +149,14 @@ Flow AC1/AC2/AC3 verify logic + i18n binding qua manual trace; render trực qua
 
 - 09-07-2026: Story created từ Epic 9 (change request 5 items) — context engine + điều tra root cause sẵn. Status → ready-for-dev.
 - 09-07-2026: Implement story 9.1 — helper `calculateAggregateFeasibility` share route.ts + TadaStep (dedup [8-1]); per-fund monthly + dòng tổng ở fund list; fix bug label adjust flow (per-fund vs tổng, xoá key orphan `monthlyNeeded`); hint cách tính guilt-free động (% + số ngày). tsc sạch, 406 tests pass, i18n parity 85/85.
+- 09-07-2026 — Code-review fixes: (1) clamp months input `Math.max(1, n)` chống division-by-zero; (2) 409 CTA gọi resetOnboarding() chống leak goals/income cross-user; (3) validate shape RPC result trước destructure (household_id string + fund_ids length === funds.length) → 500 generic thay TypeError thô; (4) localize 500 body qua `names.initFailed`; (5) DECISION D2 — `EMERGENCY_FUND_TIMELINE_MONTHS` 12→18 + `noAdjustHint` message cho dead-end infeasible-không-adjustFund. tsc sạch, 414 tests pass, i18n parity 766==766 (setupV2 87==87).
+
+### Review Findings (code review 09-07-2026)
+
+- [x] [Review][Decision] D2 CHỐT: giãn timeline emergency 12→18 tháng (`EMERGENCY_FUND_TIMELINE_MONTHS = 18` trong budgetTemplate.ts) — giảm áp lực infeasible; VÀ fix dead-end: khi tổng infeasible mà không có goal đơn lẻ infeasible (adjustFund undefined) → render `setupV2.tada.noAdjustHint` giải thích "điều chỉnh sau trong trang Quỹ" thay vì text treo không có input.
+- [x] [Review][Patch] Months input nhận 0 → division by zero: clamp `Math.max(1, n)` khi có digits [src/components/onboarding/v2/TadaStep.tsx onChange tada-months]
+- [x] [Review][Patch] 409 already_onboarded CTA thêm resetOnboarding() trước router.push("/dashboard") — copy pattern finish flow [src/components/onboarding/v2/TadaStep.tsx CTA 409]
+- [x] [Review][Patch] RPC result validate shape trước destructure: household_id phải string, fund_ids phải array length === funds.length; sai → console.error chi tiết + 500 generic [src/app/api/onboarding/complete/route.ts]
+- [x] [Review][Patch] 500 body localize theo locale (`names.initFailed`, map vi/en trong LOCALIZED_NAMES) thay hardcode "Không khởi tạo được" [src/app/api/onboarding/complete/route.ts]
+- [x] [Review][Defer] days-in-month hint tính client-timezone, amount tính server-timezone → lệch quanh 00:00-07:00 ICT ngày 1 — deferred, pre-existing pattern (addMonthsIso cùng skew), cửa sổ hẹp
+- [x] [Review][Defer] Adjust inputs không thể hiển thị rỗng (clear → snap về giá trị server, không có indication) — deferred, UX polish

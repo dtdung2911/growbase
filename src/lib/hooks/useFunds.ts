@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { keys } from "@/lib/queries/queryKeys"
 import { useAppStore } from "@/lib/stores/appStore"
+import { useTranslation } from "@/lib/i18n/useTranslation"
 import type { Fund, FundTransaction } from "@/types/app"
 import type {
   FundContributeInput,
@@ -32,7 +33,7 @@ export function useFundDetail(fundId: string) {
   const householdId = useAppStore((s) => s.householdId)
 
   return useQuery({
-    queryKey: ["fund-detail", householdId ?? "", fundId],
+    queryKey: keys.fundDetail(householdId ?? "", fundId),
     queryFn: async (): Promise<{ fund: Fund; history: FundTransaction[] }> => {
       const res = await fetch(`/api/funds/${fundId}`)
       const json = await res.json()
@@ -75,6 +76,7 @@ export function useCreateFund() {
 
 export function useUpdateFund(fundId: string) {
   const qc = useQueryClient()
+  const { t } = useTranslation()
   const householdId = useAppStore((s) => s.householdId)
   const month = useAppStore((s) => s.currentMonth)
 
@@ -86,16 +88,16 @@ export function useUpdateFund(fundId: string) {
         body: JSON.stringify(input),
       })
       const json = await res.json()
-      if (!res.ok) throw new Error(json.error ?? "Không cập nhật được quỹ")
+      if (!res.ok) throw new Error(json.error ?? t("funds.updateFailed"))
       return json.data as Fund
     },
     onSuccess: () => {
       if (householdId) {
         void qc.invalidateQueries({ queryKey: keys.funds(householdId) })
-        void qc.invalidateQueries({ queryKey: ["fund-detail", householdId, fundId] })
+        void qc.invalidateQueries({ queryKey: keys.fundDetail(householdId, fundId) })
         void qc.invalidateQueries({ queryKey: keys.dashboard(householdId, month) })
       }
-      toast.success("Đã cập nhật", { duration: 2000 })
+      toast.success(t("funds.updateSuccess"), { duration: 2000 })
     },
     onError: (err: Error) => {
       toast.error(err.message, { duration: 5000 })
