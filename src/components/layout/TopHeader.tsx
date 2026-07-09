@@ -8,6 +8,7 @@ import { vi, enUS } from "date-fns/locale"
 import { Button } from "@/components/ui/button"
 import { NotificationDropdown } from "@/components/layout/NotificationDropdown"
 import { useAppStore } from "@/lib/stores/appStore"
+import { HouseholdSwitcher } from "@/components/layout/HouseholdSwitcher"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 
 function capitalizeFirst(str: string): string {
@@ -52,29 +53,32 @@ export function TopHeader() {
     .toUpperCase()
 
   return (
-    <header className="fixed min-w-[calc(100%-var(--sidebar-width))] top-0 z-30 lg:mb-12 lg:mx-auto">
-      <div className="flex items-center justify-between bg-card px-4 py-2 shadow-soft-xs lg:px-5 lg:shadow-topbar header-custom">
-        {/* Month nav */}
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={goPrev}
-            className="h-9 w-9 rounded-full"
-          >
-            <Icon icon="lucide:chevron-left" className="h-5 w-5" />
-          </Button>
-          <span className="min-w-[140px] text-center text-sm font-semibold">
-            {displayLabel}
-          </span>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={goNext}
-            className="h-9 w-9 rounded-full"
-          >
-            <Icon icon="lucide:chevron-right" className="h-5 w-5" />
-          </Button>
+    <header className="fixed min-w-[calc(100%-var(--sidebar-width))] top-0 z-40 lg:mx-auto">
+      <div className="flex items-center justify-between bg-card px-4 py-2 shadow-soft-xs lg:border-b lg:px-5  header-custom">
+        <div className="flex items-center gap-3">
+          <HouseholdSwitcher />
+          {/* Month nav */}
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={goPrev}
+              className="h-9 w-9 rounded-full"
+            >
+              <Icon icon="lucide:chevron-left" className="h-5 w-5" />
+            </Button>
+            <span className="min-w-[140px] text-center text-sm font-semibold">
+              {displayLabel}
+            </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={goNext}
+              className="h-9 w-9 rounded-full"
+            >
+              <Icon icon="lucide:chevron-right" className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
 
         {/* Actions */}
@@ -98,7 +102,11 @@ export function TopHeader() {
               type="button"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:text-foreground"
-              aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              aria-label={
+                theme === "dark"
+                  ? "Switch to light mode"
+                  : "Switch to dark mode"
+              }
             >
               <Icon
                 icon={theme === "dark" ? "lucide:sun" : "lucide:moon"}

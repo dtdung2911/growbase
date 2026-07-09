@@ -1,6 +1,91 @@
 # 06 — STYLE GUIDE
 > GrowBase Design System | Visual Identity & UI Patterns
 > Tham chiếu khi build mọi UI component. Agents đọc file này trước khi viết code frontend.
+> **Nguồn sự thật:** `src/app/globals.css` (CSS variables) + `tailwind.config.ts` (token mapping). File này mô tả đúng những gì 2 file đó đang làm — không phải giá trị lý tưởng/dự định. Nếu phát hiện lệch, sửa code hoặc sửa doc ngay, không để lệch kéo dài.
+
+---
+
+## 0. QUY TẮC BẮT BUỘC — ĐỌC TRƯỚC KHI VIẾT CODE
+
+Rule hóa từ 2 lỗi tái diễn nhiều nhất trong Epic 3 (4/6 story lặp lỗi radius, 2 lần lặp lỗi hardcoded color phá dark mode trong cùng 1 review). Đây không phải gợi ý — là gate bắt buộc trước khi tạo card/surface component mới.
+
+### Rule 1 — Radius: dùng đúng bảng, không đoán
+
+`--radius: 0.9375rem` (15px) → scale thật của `rounded-*`:
+
+| Class | Giá trị thật | Dùng cho |
+|---|---|---|
+| `rounded-sm` | 11px | hiếm dùng |
+| `rounded-md` | **13px** | **Data card** — tương đương `rounded-[13px]`, có thể dùng class chuẩn thay vì arbitrary value |
+| `rounded-lg` | 15px | mặc định input/control |
+| `rounded-xl` | 17px | — |
+| `rounded-2xl` | 19px | **KHÔNG dùng cho card thường** — gần nhưng không khớp bất kỳ radius thiết kế nào |
+| `rounded-[18px]` | 18px (arbitrary) | **Stat/metric card** — không có bậc scale nào khớp 18px, buộc dùng arbitrary value |
+
+```
+❌ BAD
+<div className="rounded-2xl border border-border/40 bg-card shadow-card p-4">
+
+✅ GOOD — data card
+<div className="rounded-[13px] border border-border/40 bg-card shadow-card p-4">
+   (rounded-md cũng ra đúng 13px, dùng được nếu muốn tránh arbitrary value)
+
+✅ GOOD — stat/metric card
+<div className="rounded-[18px] border border-border/40 bg-card shadow-card p-4">
+```
+
+**Ngoại lệ đã xác nhận:** `.login-card` (login page) dùng `rounded-2xl` có chủ đích — layout wide-container khác biệt, không phải lỗi. Không áp rule này cho login page.
+
+### Rule 2 — Không bao giờ hardcode màu
+
+```
+❌ BAD — phá dark mode
+<div className="border border-gray-200 bg-gray-50">
+<div style={{ background: "#e5edf6" }}>
+
+✅ GOOD — semantic token, tự adapt theme
+<div className="border border-border bg-surface">
+```
+
+Trước khi dùng bất kỳ màu nào: kiểm tra đã có semantic token trong `globals.css` (`bg-background`, `bg-card`, `bg-surface`, `bg-elevated`, `bg-inset`, `text-foreground`, `text-muted-foreground`, `text-faint`, `border-border`) chưa. Chỉ hardcode hex khi đó là brand-fixed color không đổi theo theme (xem Rule 3).
+
+### Rule 3 — Shadow token: chỉ dùng token có thật, không bịa giá trị
+
+**Token thật sự render shadow** (định nghĩa trong `tailwind.config.ts`, không bị override):
+```
+shadow-panel        rgba(29, 77, 124, 0.08) 0px 2px 6px
+shadow-card-hover   rgba(29, 77, 124, 0.14) 0px 4px 12px
+shadow-float        0 8px 18px rgba(0, 132, 219, 0.26)
+shadow-topbar       rgba(29, 77, 124, 0.08) 0px 2px 6px
+```
+
+**Token bị override — giá trị thật KHÔNG nằm trong tailwind.config.ts:**
+```
+shadow-card         → định nghĩa lại trong globals.css (xem §2 Depth Model)
+```
+
+**Token chết — set "none" trong tailwind.config.ts, dùng KHÔNG có tác dụng gì:**
+```
+shadow-soft-xs · shadow-soft-sm · shadow-soft · shadow-soft-md · shadow-soft-lg
+shadow-panel-hover · shadow-sidebar
+```
+
+```
+❌ BAD — nghĩ rằng token này tạo shadow 0 8px 24px, thực tế = "none", card không có shadow gì cả
+<div className="shadow-soft-lg">
+
+✅ GOOD — dùng token thật, hoặc verify token trong tailwind.config.ts trước khi dùng
+<div className="shadow-card">
+```
+
+Nếu cần thêm 1 mức shadow mới: sửa `tailwind.config.ts`, xóa token chết liên quan, cập nhật bảng này trong cùng lần sửa — không để token "none" tồn tại song song với token thật cùng tên.
+
+### Rule 4 — Trước khi đánh dấu story/task "done"
+
+- [ ] Không còn `rounded-2xl`/`rounded-3xl` trên card mới, trừ login page.
+- [ ] Không còn hex/rgb hardcode ngoài brand-fixed color (Rule 3, §2).
+- [ ] Không dùng token shadow trong danh sách "chết" ở trên.
+- [ ] Test cả light và dark mode bằng mắt, không chỉ đọc code.
 
 ---
 
@@ -12,7 +97,7 @@ Family finance app cho hộ gia đình Việt Nam trẻ (25-40 tuổi), 2 thu nh
 ### Personality
 - **Professional clarity** — cool blue-gray canvas (`#eef5fb`) with white floating cards, clean surfaces giúp data dễ đọc. Based on Spike Admin Dashboard template
 - **Modern precision** — số liệu tài chính cần chính xác với blue primary accent (`#0084DB`). Blue-tinted shadows tạo cohesive feel
-- **Structured depth** — thông tin phân cấp rõ ràng bằng spacing, blue-tinted shadows, borders, và typography. Cards with `border-border + shadow-panel`
+- **Structured depth** — thông tin phân cấp rõ ràng bằng spacing, blue-tinted shadows, borders, và typography. Cards with `border-border/40 + shadow-card`
 
 ### Signature Element
 **Growth bars** — 3 thanh tăng dần (từ logo mark) là motif xuyên suốt. Xuất hiện trong:
@@ -31,7 +116,7 @@ Family finance app cho hộ gia đình Việt Nam trẻ (25-40 tuổi), 2 thu nh
 Brand Primary:        #0084DB  hsl(204, 100%, 43%)  — buttons, active states, focus rings, links, brand
 Brand Hover:          #006BB8  hsl(205, 100%, 36%)  — hover variant
 Brand Pressed:        #004F8A  hsl(206, 100%, 27%)  — pressed/active state
-Brand Tint:           #EBF5FF  hsl(210, 100%, 96%)  — active nav bg, badge bg, soft highlights
+Brand Tint:           #EBF5FF  hsl(210, 100%, 96%)  — active nav bg, badge bg, soft highlights (= --primary-soft light)
 Dark BG:              #05101A  hsl(209, 68%, 6%)    — dark mode page background
 
 Success:              #49d68d  hsl(149, 62%, 56%)   — income, positive changes
@@ -49,6 +134,8 @@ Violet:               #9b78ff  hsl(256, 100%, 74%)  — accent, savings/investme
 
 ### Semantic Colors — Light (default) & Dark
 
+Nguồn: `src/app/globals.css` `:root` (light) và `.dark` (dark), verify trực tiếp trong file này nếu nghi ngờ — đây là copy chính xác tại thời điểm viết.
+
 **Light theme (default):**
 ```
 Background:
@@ -63,18 +150,19 @@ Border:
   Default:          hsl(212, 45%, 93%)      — light blue-gray (#e5edf6)
 
 Text:
-  Ink:              hsl(218, 30%, 16%)      — headings, darkest (#1d2737)
-  Text:             hsl(218, 24%, 22%)      — body text (#2a3445)
+  Ink:              hsl(218, 30%, 16%)      — headings, darkest (--card-foreground / --ink)
+  Text (foreground):hsl(218, 24%, 22%)      — body text (--foreground, #2a3445)
   Muted:            hsl(215, 15%, 56%)      — secondary text (#7d8b9f)
   Faint:            hsl(215, 17%, 70%)      — tertiary, hints (#a5b1c2)
 ```
 
-**Dark theme:**
+**Dark theme** — *(sửa lại toàn bộ block này trong lần rewrite này — bản cũ ghi `hsl(215,50%,5%)`/`hsl(215,35%,8%)` cho Page/Card, sai hoàn toàn so với `.dark` thật trong globals.css, và tự mâu thuẫn với chính brand palette ở trên):*
 ```
 Background:
-  Page:             hsl(215, 50%, 5%)       — deep blue-gray
-  Card:             hsl(215, 35%, 8%)       — raised surface
-  Surface:          hsl(215, 30%, 8%)       — matches page area
+  Page:             hsl(209, 68%, 6%)       — #05101A, brand dark bg
+  Card:             hsl(209, 45%, 10%)      — raised surface
+  Surface:          hsl(215, 30%, 8%)
+  Surface-2:        hsl(215, 25%, 10%)
   Elevated:         hsl(215, 25%, 12%)      — dropdowns, popovers
   Inset:            hsl(215, 30%, 6%)       — sunken areas
 
@@ -82,44 +170,63 @@ Border:
   Default:          hsl(215, 20%, 16%)      — subtle dividers
 
 Text:
-  Primary:          hsl(210, 20%, 92%)      — off-white
-  Muted:            hsl(215, 15%, 55%)      — secondary
-  Faint:            hsl(215, 12%, 38%)      — tertiary
+  Foreground:       hsl(210, 20%, 92%)      — off-white
+  Muted:             hsl(215, 15%, 55%)     — secondary
+  Faint:             hsl(215, 12%, 38%)     — tertiary
+
+Primary (dark mode dùng primary sáng hơn để đủ contrast trên nền tối):
+  Primary:          hsl(204, 90%, 48%)      — không phải hsl(204,100%,43%) như light theme
+  Primary hover:    hsl(205, 90%, 42%)
+  Primary pressed:  hsl(206, 90%, 34%)
 ```
 
-**Semantic (cả 2 themes):**
+**Semantic colors dark theme cũng đổi nhẹ** (bão hòa/độ sáng giảm để không chói trên nền tối) — không dùng chung 1 giá trị cho cả 2 theme:
 ```
-Income/Success:   #49d68d — green (same both themes)
-Expense/Error:    #ff917d — coral red
-Warning:          #ffbd6f — orange
-Info:             #49c8e6 — cyan
-Violet:           #9b78ff — purple (savings/investment)
+Success dark:  hsl(149, 50%, 42%)   Warning dark: hsl(33, 80%, 55%)
+Error dark:    hsl(9, 70%, 55%)     Info dark:    hsl(191, 60%, 45%)
+Violet dark:   hsl(256, 70%, 60%)
 ```
+→ Đây chính là lý do KHÔNG được hardcode `text-[#49d68d]` — giá trị đúng cho dark mode khác giá trị light mode. Luôn dùng `text-success`, không dùng hex trực tiếp.
 
 ### Depth Model: Blue-tinted Shadows + Borders
 
-Visual system uses **blue-tinted shadows + subtle borders** for depth, matching Spike Admin template.
-
+**Token thật sự có tác dụng** (verify trong `tailwind.config.ts`, không bị override):
 ```
-Cards on page:    shadow-panel + border border-border
-Popovers:         shadow-soft-md
-Sheets/modals:    shadow-soft-lg
-FAB:              shadow-float (blue-tinted: rgba(0, 133, 219, 0.26))
-Hover lift:       shadow-panel-hover (upgrade from shadow-panel)
-Sidebar:          shadow-sidebar (inset borders + offset shadow)
-Topbar:           shadow-topbar (0 8px 24px rgba(29, 77, 124, 0.08))
-Inputs:           bg-background, focus glow ring-primary/20
+shadow-panel         rgba(29, 77, 124, 0.08) 0px 2px 6px    — panel/section (không phải card có border)
+shadow-card-hover    rgba(29, 77, 124, 0.14) 0px 4px 12px   — hover state upgrade
+shadow-float         0 8px 18px rgba(0, 132, 219, 0.26)     — FAB, blue glow
+shadow-topbar        rgba(29, 77, 124, 0.08) 0px 2px 6px    — topbar desktop
 ```
 
-Shadow scale (defined in tailwind.config.ts — blue-tinted rgba(29, 77, 124, ...)):
+**`shadow-card` — token bị override, KHÔNG dùng giá trị trong tailwind.config.ts:**
+
+`tailwind.config.ts` khai báo `boxShadow.card = "rgba(37, 83, 185, 0.1) 0px 2px 6px"`, nhưng giá trị này **không bao giờ áp dụng**. `globals.css` định nghĩa lại `.shadow-card` bằng CSS đặt ngoài mọi `@layer` (unlayered) — theo spec CSS Cascade Layers, CSS unlayered luôn thắng CSS trong layer (kể cả Tailwind's `utilities` layer), bất kể thứ tự khai báo hay specificity. Giá trị thật đang render:
+
+```css
+.shadow-card {
+  border: 1px solid hsl(var(--border));
+  box-shadow:
+    -10px 10px 6px hsl(var(--border) / 10%),
+    0 10px 6px hsl(var(--border) / 3%),
+    0 -1px 6px hsl(var(--border) / 10%);
+}
 ```
-shadow-soft-xs:   0 1px 2px — barely perceptible
-shadow-soft-sm:   0 1px 3px — list items
-shadow-panel:      0 4px 14px — cards (default)
-shadow-soft-md:   0 4px 14px — elevated (hover, dropdowns)
-shadow-soft-lg:   0 8px 24px — sheets, modals
-shadow-panel-hover: 0 12px 20px — card hover state
-shadow-float:     0 8px 18px rgba(0,133,219,0.26) — FAB (blue glow)
+
+Class `.login-card` dùng CSS giống hệt (duplicate) — tech debt đã track ở `_bmad-output/implementation-artifacts/deferred-work.md`, chưa gộp lại.
+
+**Token chết — set `"none"` trong `tailwind.config.ts`, dùng không có tác dụng gì cả:**
+```
+shadow-soft-xs · shadow-soft-sm · shadow-soft · shadow-soft-md · shadow-soft-lg
+shadow-panel-hover · shadow-sidebar
+```
+Những class này vẫn compile hợp lệ (không lỗi TypeScript/build) nên rất dễ dùng nhầm — component sẽ mất shadow hoàn toàn mà không có cảnh báo nào. Nếu thấy 1 card "phẳng lì" không có bóng, kiểm tra ngay có đang dùng 1 trong các token chết này không.
+
+```
+Popovers/dropdowns: dùng shadow-panel hoặc shadow-card, KHÔNG dùng shadow-soft-md (chết)
+Sheets/modals:      dùng shadow-card hoặc shadow-card-hover, KHÔNG dùng shadow-soft-lg (chết)
+FAB:                shadow-float (blue-tinted glow, sống)
+Sidebar:             không có shadow (shadow-sidebar = none, đây là chủ đích — sidebar flush, không nổi)
+Inputs:              bg-background, focus glow ring-primary/20 (không dùng shadow)
 ```
 
 ### Theme Switching
@@ -133,10 +240,10 @@ shadow-float:     0 8px 18px rgba(0,133,219,0.26) — FAB (blue glow)
 ### Color Usage Rules
 
 - **Blue = unified accent** — dùng cho cả brand (logo, growth bars) và interactive UI (buttons, active nav, focus rings, links). Maps to `bg-primary`, `text-primary`, `bg-primary-soft`
-- **Income/Expense** — success green `#49d68d` vs error coral `#ff917d`
+- **Income/Expense** — success green `text-success` vs error coral `text-error` (không hardcode hex — khác giá trị theo theme, xem block Dark theme ở trên)
 - **Soft backgrounds for badges/chips** — `bg-success-soft`, `bg-warning-soft`, `bg-primary-soft` (semantic soft tokens)
-- **Text hierarchy** — ink (headings) → text (body) → muted (secondary) → faint (hints) — cùng cool hue, khác lightness
-- **Cards always have border + shadow** — `border border-border shadow-panel`, hover `shadow-panel-hover`
+- **Text hierarchy** — ink (headings) → text/foreground (body) → muted (secondary) → faint (hints) — cùng cool hue, khác lightness
+- **Cards always have border + shadow** — `border border-border/40 shadow-card` (xem §5 Cards để biết rule radius/border chính xác)
 - **Buttons are pill-shaped** — `rounded-full`, hover elevation `-translate-y-px`
 - **Depth via blue-tinted shadows** — cards/popovers/modals dùng blue-tinted shadows `rgba(29, 77, 124, ...)`, không dùng black-based shadows
 
@@ -187,7 +294,7 @@ Amount small:     text-sm   font-normal    font-mono          — secondary amou
 Micro:    4px   (gap-1)    — icon-to-text inline
 Small:    8px   (gap-2)    — between related items (label-input)
 Medium:   12px  (gap-3)    — between list items
-Base:     16px  (gap-4)    — section padding, card padding on mobile
+Base:     16px  (gap-6)    — section padding, card padding on mobile
 Large:    24px  (gap-6)    — between sections on mobile
 XLarge:   32px  (gap-8)    — between major sections, page top padding
 ```
@@ -215,13 +322,29 @@ No horizontal scroll — ever
 ## 5. COMPONENT PATTERNS
 
 ### Cards
+
 ```
-Container:        bg-card rounded-2xl shadow-soft p-5 lg:p-6
-                  NO border by default — depth via shadow
-Hover:            shadow-soft-md transition-shadow duration-150
-Active/pressed:   scale-[0.98] transition-transform duration-75
-Spacing:          Cards always float on bg-background with gap-4 between them
+Data card:        rounded-[13px] border border-border/40 bg-card shadow-card p-4
+Stat/metric card: rounded-[18px] border border-border/40 bg-card shadow-card p-4
+Hover:            hover:shadow-md transition-shadow — use on clickable cards
+Animation:        card-enter 400ms (triggered automatically by .shadow-card CSS selector in globals.css)
+Spacing:          gap-6 between cards, always on bg-background canvas
 ```
+
+`shadow-card` thật sự bao gồm cả border riêng của nó (`border: 1px solid hsl(var(--border))`, full opacity) — xem §2 Depth Model. Class `border border-border/40` trong markup vẫn nên giữ để component tự đứng được nếu sau này `.shadow-card` đổi, nhưng lưu ý 2 khai báo border đang chồng lên nhau; không phải bug cần fix ngay, chỉ cần biết để không ngạc nhiên khi inspect DOM thấy border full-opacity thay vì /40.
+
+```
+❌ BAD
+<div className="rounded-2xl border border-border shadow-panel p-4">
+
+✅ GOOD — data card
+<div className="rounded-[13px] border border-border/40 bg-card shadow-card p-4">
+
+✅ GOOD — stat/metric card
+<div className="rounded-[18px] border border-border/40 bg-card shadow-card p-4">
+```
+
+**NO:** `rounded-2xl`/`rounded-3xl` (trừ login page, xem §0 Rule 1) · `shadow-panel` cho card có border (dùng cho panel/section không có border riêng) · shadow token trong danh sách "chết" ở §2.
 
 ### Buttons
 ```
@@ -232,18 +355,19 @@ Ghost:            bg-transparent text-secondary hover:bg-accent
 Destructive:      bg-destructive text-destructive-foreground hover:bg-destructive/90
 Disabled:         opacity-50 cursor-not-allowed
 
-All buttons:      rounded-xl font-medium text-sm min-h-[44px] px-4 shadow-soft-xs
-Icon buttons:     min-w-[44px] min-h-[44px] rounded-xl flex items-center justify-center
+All buttons:      rounded-full font-semibold text-sm min-h-[44px] px-5
+                  hover:brightness-[0.8] active:brightness-[0.6]
+Icon buttons:     min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center
 ```
 
 ### Inputs
 ```
-Default:          bg-inset border border-border rounded-xl min-h-[44px] px-3 text-base
-Focus:            border-primary ring-1 ring-primary/30
-Error:            border-rose-500 ring-1 ring-rose-500/30
-Placeholder:      text-muted-foreground
-Label:            text-sm font-medium text-secondary mb-1.5
-Error message:    text-xs text-rose-400 mt-1
+Default:          bg-background border border-border rounded-[18px] h-[44px] px-4 text-base
+Focus:            border-primary ring-2 ring-primary/20 (focus-visible)
+Error:            aria-invalid → border-destructive ring-destructive/20
+Placeholder:      text-faint
+Label:            text-sm font-medium mb-1.5
+Error message:    text-xs text-destructive mt-1
 ```
 
 ### Lists & Items
@@ -257,21 +381,35 @@ Date header:      text-xs font-medium text-muted-foreground uppercase tracking-w
 
 ### Badges & Chips
 ```
-Default:          text-xs px-2.5 py-0.5 rounded-full bg-accent text-secondary-foreground
-Income:           text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500
-Expense:          text-xs px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-500
-Fund type:        text-xs px-2.5 py-0.5 rounded-full bg-primary/10 text-primary
-Status active:    text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500
-Status warning:   text-xs px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-500
+Base:             min-h-[24px] rounded-[16px] text-xs font-semibold leading-none px-2.5 py-0.5
+Pattern:          bg-{color}/10 text-{color} border border-{color}/30  ← tinted + border
+
+Variants (Badge component, src/components/ui/badge.tsx):
+  default:        bg-primary/10 text-primary border border-primary/30
+  info:           bg-info/10 text-info border border-info/30
+  success:        bg-success/10 text-success border border-success/30
+  warning:        bg-warning/10 text-warning border border-warning/30
+  error:          bg-error/10 text-error border border-error/30
+  destructive:    alias của error — cùng class, giữ tên riêng cho tương thích shadcn convention
+  violet:         bg-violet/10 text-violet border border-violet/30
+  secondary:      bg-secondary text-secondary-foreground (no border, neutral)
+                  (--secondary và --muted hiện có cùng giá trị HSL, nhưng dùng đúng class secondary — không đổi thành bg-muted)
+  outline:        border border-border text-foreground (no fill, transparent bg)
+
+Behavior type map:
+  fixed → default · variable → success · wasteful → warning
+  debt_repayment → error · savings_investment → violet
+
+NO: rounded-full · bg-emerald-* · bg-rose-* · bg-amber-* · bg-blue-* (hardcoded)
 ```
 
 ### Progress Bars
 ```
 Track:            h-1.5 rounded-full bg-accent
 Fill:             h-1.5 rounded-full transition-all duration-300
-Safe fill:        bg-emerald-400
-Warning fill:     bg-amber-400
-Danger fill:      bg-rose-400
+Safe fill:        bg-success
+Warning fill:     bg-warning
+Danger fill:      bg-error
 Fund fill:        bg-[fund.color] — each fund has custom color
 
 Thicker variant (fund cards):  h-2 rounded-full
@@ -279,18 +417,19 @@ Thicker variant (fund cards):  h-2 rounded-full
 
 ### Sheets & Modals
 ```
-Sheet (mobile):   fixed inset-x-0 bottom-0 rounded-t-2xl bg-card shadow-soft-lg max-h-[85vh]
+Sheet (mobile):   fixed inset-x-0 bottom-0 rounded-t-2xl bg-card shadow-card max-h-[85vh]
                   Drag handle: w-10 h-1 rounded-full bg-muted mx-auto mt-3
-Dialog:           bg-card rounded-2xl shadow-soft-lg p-6 max-w-md mx-auto
+Dialog:           bg-card rounded-2xl shadow-card p-6 max-w-md mx-auto
 Backdrop:         bg-black/40 backdrop-blur-sm
 ```
+*(sửa `shadow-soft-lg` → `shadow-card`: `shadow-soft-lg` là token chết, không render gì — xem §2)*
 
 ### Navigation — Responsive Drawer Pattern
 
 **Mobile (< 1024px): Bottom Nav**
 ```
-Container:        fixed bottom-0 inset-x-0 h-16 bg-card/95 backdrop-blur-md shadow-soft-md
-                  NO border-t — shadow provides separation
+Container:        fixed bottom-0 inset-x-0 h-16 bg-card/95 backdrop-blur-md border-t border-border
+                  (shadow-soft-md là token chết — dùng border-t để tạo separation thay vì trông chờ shadow)
 Nav item:         flex flex-col items-center justify-center min-h-[44px] gap-0.5
 Active:           text-primary (blue)
 Inactive:         text-muted-foreground
@@ -302,37 +441,50 @@ Page padding:     pb-16 (clear bottom nav)
 
 **Desktop (>= 1024px): Left Drawer (Sidebar)**
 ```
-Container:        fixed left-0 inset-y-0 w-60 bg-card flex flex-col shadow-soft
-                  NO border-r — shadow provides separation
-Header:           p-4 — logo mark + "GrowBase" wordmark
-Nav section:      flex-1 py-2 — nav items stacked vertically
-Footer:           p-4 border-t border-border — user avatar + settings
+Container:        fixed inset-y-0 z-40 w-[272px] bg-card flex flex-col (shadow-sidebar = none, chủ đích)
+                  Flush full-height — NO rounded corners, NO float
+Brand:            px-6 pb-16 pt-16 — 3-bar logo mark + "GrowBase" wordmark
+                  sidebar-nav-brand CSS → border-right on brand area
 
-Nav item:         flex items-center gap-3 px-3 py-2.5 rounded-xl min-h-[44px] text-sm
-Active:           bg-primary-soft text-primary font-medium (notch effect on desktop sidebar)
-                  + w-1.5 h-1.5 rounded-full bg-primary dot indicator (left edge)
-Inactive:         text-muted-foreground hover:bg-accent
-Icon:             w-5 h-5
+Nav:              sidebar-nav CSS class — grouped sections (main, analytics, settings)
+                  pl-5, sections labeled text-[11px] uppercase tracking-wider muted
+                  sidebar-nav-paragraph CSS → border-right on section labels + spacing
 
-Items:
-  Dashboard
-  Giao dich
-  Quy
-  Bao cao
-  Ngan sach
-  Tai san rong
-  Khoan dinh ky
-  ────────────
-  Cai dat
+Nav item:         sidebar-nav-link — pill shape rounded-[999px]
+                  flex items-center gap-3 px-4 py-2.5 min-h-[44px] text-[14px] font-semibold
+                  margin-right: 16px (right gap), text-muted-foreground
+                  sidebar-nav-div[data-active=false] → border-right (normal items)
 
-Page padding:     pl-60 (clear left drawer)
-FAB:              fixed bottom-6 right-6 (no center trick)
+Active (CSS):     sidebar-nav-link[data-active=true] →
+                  extends to right edge (margin-right: 0), rounded-left pill (999px 0 0 999px)
+                  bg: hsl(var(--background)), text: primary, border top+bottom
+                  ::before/::after → curved corner cutouts using box-shadow trick
+
+Hover:            color: primary, background: primary-soft
+
+User card:        mx-5 mb-5 mt-3 — rounded-2xl bg-primary-soft p-3.5
+                  Avatar (h-10 w-10 rounded-full bg-primary) + name + logout icon
+
+Page padding:     pl-[var(--sidebar-width)] (272px)
 ```
 
-**Active dot indicator:** Mỗi nav item active có dot indicator (w-1.5 h-1.5 bg-primary rounded-full) ở left edge, thay thế cho full-width highlight.
-
-**Transition:** Drawer state không animate — instant show/hide via breakpoint. No hamburger menu.
+**Transition:** Drawer state không animate — instant show/hide via lg: breakpoint. No hamburger.
 **Collapsed state:** Không có. Drawer luôn visible trên desktop, luôn bottom nav trên mobile.
+
+**TopHeader** *(verify trực tiếp trong `TopHeader.tsx` — không có `rounded-2xl` float nào trên desktop tại thời điểm viết, khớp với rule dưới đây)*
+```
+Mobile:           bg-card lg:border-b — flat, no rounding
+                  (shadow-soft-xs đang được áp trong code nhưng là token chết — không tạo shadow gì cả,
+                   phần "flat" thực chất chỉ nhờ lg:border-b, không nhờ shadow)
+Desktop:          lg:border-b header-custom (CSS class)
+                  header-custom::before → notch decorator trên left (align với sidebar bottom)
+Height:           72px (--topbar-height CSS var)
+Content left:     month picker ([←] Tháng M/YYYY [→])
+Content right:    theme toggle + language toggle + notification bell + user pill
+User pill:        rounded-xl bg-surface px-2 py-1.5 pr-3.5
+
+NO:               rounded-2xl float style on desktop — TopHeader is flush, NOT floating
+```
 
 ---
 
@@ -398,9 +550,10 @@ Vietnamese Dong:  1.234.567 đ    (dots as thousands separator, đ suffix)
 US Dollar:        $1,234.57      (commas, 2 decimal places)
 
 Amount display:
-  Positive/income:  +1.234.567 đ  text-emerald-400  (hoặc không dấu +)
-  Negative/expense: -1.234.567 đ  text-rose-400
+  Positive/income:  +1.234.567 đ  text-success  (hoặc không dấu +)
+  Negative/expense: -1.234.567 đ  text-error
   Neutral:          1.234.567 đ   text-primary
+All amounts:      font-mono tabular-nums
 ```
 
 ### Date Formatting
@@ -471,7 +624,7 @@ Position:         top-center mobile, bottom-right desktop
 ```
 Mobile:           < 640px   — 1 column, bottom nav, sheets
 Tablet:           640-1024  — 1-2 columns, bottom nav, sheets
-Desktop:          > 1024    — 2 columns, left sidebar (240px), modals/popovers
+Desktop:          > 1024    — 2 columns, left sidebar (272px), modals/popovers
 Max content:      1280px    — centered container
 
 Grid patterns:
@@ -501,13 +654,13 @@ Dùng HSL format cho tất cả colors qua CSS variables. `:root` = light, `.dar
 ### Rules
 
 - KHÔNG hardcode color values — dùng semantic tokens (`bg-background`, `bg-card`, `bg-surface`, `text-foreground`)
-- Exceptions cho hardcoded colors (không đổi theo theme):
+- Exceptions cho hardcoded colors (không đổi theo theme — nhưng ngay cả các exception này nên đi qua token, không viết hex trực tiếp trong component):
 
 ```
-Primary blue:     bg-primary / text-primary     — maps to #0084DB
-Primary soft:     bg-primary-soft               — maps to #e5f3ff (active nav, badge bg)
-Income green:     text-income                   — maps to #49d68d
-Expense coral:    text-expense                  — maps to #ff917d
+Primary blue:     bg-primary / text-primary     — maps to #0084DB light / lighter hsl(204,90%,48%) dark
+Primary soft:     bg-primary-soft               — maps to #EBF5FF light, dark có giá trị riêng (--primary-soft dark = hsl(204,40%,14%))
+Income green:     text-income                   — maps to --success (khác giá trị light/dark, xem §2)
+Expense coral:    text-expense                  — maps to --error (khác giá trị light/dark, xem §2)
 Fund colors:      bg-[fund.color]               — dynamic per fund, fallback #0084DB
 ```
 
@@ -602,7 +755,7 @@ Font size:        min 12px (text-xs), default 14px (text-sm)
 ### Focus Styles
 ```css
 /* Visible focus ring — only show on keyboard navigation */
-/* Uses primary blue accent (--ring maps to primary = #0084DB) */
+/* Uses primary blue accent (--ring maps to primary) */
 :focus-visible {
   outline: none;
   ring: 2px solid hsl(var(--ring));

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Party Session: GrowBase Onboarding Narrative — 2026-07-02</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0084db 0%, #0066a1 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #1d2737;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 133, 219, 0.26);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0084db 0%, #006bb8 100%);
+            color: white;
+            padding: 60px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+
+        .meta {
+            background: #eef5fb;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+            text-align: center;
+        }
+
+        .meta-item {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .meta-label {
+            font-size: 0.9em;
+            color: #7d8b9f;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .meta-value {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #0084db;
+        }
+
+        .personas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 0;
+            padding: 0;
+        }
+
+        .persona {
+            padding: 40px;
+            border-bottom: 1px solid #e5edf6;
+            border-right: 1px solid #e5edf6;
+            transition: all 0.3s ease;
+            animation: slideIn 0.6s ease forwards;
+        }
+
+        .persona:nth-child(1) { animation-delay: 0s; }
+        .persona:nth-child(2) { animation-delay: 0.1s; }
+        .persona:nth-child(3) { animation-delay: 0.2s; }
+        .persona:nth-child(4) { animation-delay: 0.3s; }
+        .persona:nth-child(5) { animation-delay: 0.4s; }
+        .persona:nth-child(6) { animation-delay: 0.5s; }
+        .persona:nth-child(7) { animation-delay: 0.6s; }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .persona:hover {
+            background: #f9fafb;
+            transform: translateY(-5px);
+        }
+
+        .persona-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            display: inline-block;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .persona-icon.icon-1 { animation-delay: 0s; }
+        .persona-icon.icon-2 { animation-delay: 0.2s; }
+        .persona-icon.icon-3 { animation-delay: 0.4s; }
+        .persona-icon.icon-4 { animation-delay: 0.6s; }
+        .persona-icon.icon-5 { animation-delay: 0.8s; }
+        .persona-icon.icon-6 { animation-delay: 1s; }
+        .persona-icon.icon-7 { animation-delay: 1.2s; }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .persona-name {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #1d2737;
+            margin-bottom: 5px;
+        }
+
+        .persona-title {
+            font-size: 0.9em;
+            color: #7d8b9f;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .persona-insight {
+            font-size: 0.95em;
+            line-height: 1.6;
+            color: #2a3445;
+        }
+
+        .highlights {
+            padding: 40px;
+            background: #f9fafb;
+            border-top: 2px solid #e5edf6;
+        }
+
+        .highlights h3 {
+            font-size: 1.3em;
+            color: #0084db;
+            margin-bottom: 20px;
+        }
+
+        .highlight-list {
+            list-style: none;
+        }
+
+        .highlight-list li {
+            padding: 12px 0;
+            padding-left: 30px;
+            position: relative;
+            line-height: 1.6;
+            color: #2a3445;
+            border-bottom: 1px solid #e5edf6;
+        }
+
+        .highlight-list li:last-child {
+            border-bottom: none;
+        }
+
+        .highlight-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #0084db;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .footer {
+            background: #eef5fb;
+            padding: 30px 40px;
+            text-align: center;
+            border-top: 2px solid #e5edf6;
+            font-size: 0.9em;
+            color: #7d8b9f;
+        }
+
+        .next-steps {
+            background: #ebf5ff;
+            border-left: 4px solid #0084db;
+            padding: 20px;
+            margin-top: 15px;
+            border-radius: 8px;
+        }
+
+        .next-steps strong {
+            color: #0084db;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.8em; }
+            .personas { grid-template-columns: 1fr; }
+            .persona {
+                border-right: none;
+                border-bottom: 1px solid #e5edf6;
+            }
+            .meta {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Party Session: GrowBase Onboarding Narrative</h1>
+            <p>Phòng hội thoại — 7 góc nhìn thiết kế chiến lược cho trải nghiệm người dùng</p>
+        </div>
+
+        <div class="meta">
+            <div class="meta-item">
+                <div class="meta-label">📅 Ngày</div>
+                <div class="meta-value">2026-07-02</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">🎯 Chủ đề</div>
+                <div class="meta-value">Onboarding v2</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">👥 Có mặt</div>
+                <div class="meta-value">7 nhân vật</div>
+            </div>
+        </div>
+
+        <div class="personas">
+            <div class="persona">
+                <div class="persona-icon icon-1">📊</div>
+                <div class="persona-name">Mary</div>
+                <div class="persona-title">Business Analyst</div>
+                <div class="persona-insight">
+                    <strong>"Mục tiêu phải đổi hành vi của app."</strong> Mỗi câu hỏi onboarding phải tạo entity thật hoặc bị cắt. Mental model spreadsheet bị bê nguyên sang app làm người dùng mới rối. 38 categories chỉ là ma trận không câu chuyện.
+                </div>
+            </div>
+
+            <div class="persona">
+                <div class="persona-icon icon-2">📋</div>
+                <div class="persona-name">John</div>
+                <div class="persona-title">Product Manager</div>
+                <div class="persona-insight">
+                    <strong>"Bước nào anh dừng lại lâu nhất?"</strong> Chốt khung 4 bước: Hook → Mục tiêu → Thu nhập → Tada. Một mục tiêu duy nhất ở onboarding; thêm sau khi user thấy giá trị. Ship rồi lặp — hypothesis cần test.
+                </div>
+            </div>
+
+            <div class="persona">
+                <div class="persona-icon icon-3">🎨</div>
+                <div class="persona-name">Sally</div>
+                <div class="persona-title">UX Designer</div>
+                <div class="persona-insight">
+                    <strong>"Empty state trống = tội nặng nhất."</strong> Đừng bao giờ hỏi user điều mà hệ thống tự suy hoặc hoãn được. Dashboard ngày 0 phải có CTA rõ ràng: "Ghi khoản chi đầu tiên — 30 giây thôi."
+                </div>
+            </div>
+
+            <div class="persona">
+                <div class="persona-icon icon-4">🏗️</div>
+                <div class="persona-name">Winston</div>
+                <div class="persona-title">System Architect</div>
+                <div class="persona-insight">
+                    <strong>"Insight layer" cho máy sinh narrative.</strong> Schema có dữ liệu đủ; cần tầng tổng hợp số thành câu nói người. Mục tiêu thấm vào insight hàng ngày: "còn 40k *vì* đã để dành cho mục tiêu."
+                </div>
+            </div>
+
+            <div class="persona">
+                <div class="persona-icon icon-5">💻</div>
+                <div class="persona-name">Amelia</div>
+                <div class="persona-title">Senior Engineer</div>
+                <div class="persona-insight">
+                    <strong>"Định nghĩa nhỏ nhất của narrative là gì?"</strong> Một câu chào buổi sáng trên dashboard, đúng một câu, số thật, giọng người thật. Ship trong một sprint, xem user có tự mở app không.
+                </div>
+            </div>
+
+            <div class="persona">
+                <div class="persona-icon icon-6">📖</div>
+                <div class="persona-name">Sophia</div>
+                <div class="persona-title">Master Storyteller</div>
+                <div class="persona-insight">
+                    <strong>"Câu chuyện xương sống là mục tiêu."</strong> App thiếu nhân vật chính: gia đình bạn và giấc mơ của họ. "Bạn muốn gì cho gia đình mình?" — từ đó mọi thứ có nghĩa. Một câu đúng chỗ đổi cả thể loại app.
+                </div>
+            </div>
+
+            <div class="persona">
+                <div class="persona-icon icon-7">⚡</div>
+                <div class="persona-name">Victor</div>
+                <div class="persona-title">Disruptive Innovation Oracle</div>
+                <div class="persona-insight">
+                    <strong>"Đừng giải thích bước — xoá bước đi!"</strong> Onboarding từ "nộp thuế" thành "mở quà": mỗi input nhỏ → app trả ngay giá trị. User không hiểu vì sao setup fund? Có khi vì họ không cần setup ngay.
+                </div>
+            </div>
+        </div>
+
+        <div class="highlights">
+            <h3>🎯 Kết luận chính của phòng</h3>
+            <ul class="highlight-list">
+                <li><strong>Xoá câu "Loại hộ":</strong> User hiểu sai thành "ai ngồi trước máy"; household mặc định 1 thành viên, tự thành "Gia đình" khi mời người thứ hai</li>
+                <li><strong>Hook = Dashboard demo:</strong> JSON read-only client-side, ranh giới demo/thật rõ ràng ("Đây là nhà Minnie. Giờ đến lượt nhà bạn")</li>
+                <li><strong>Mục tiêu = Goal fund thật:</strong> 1 ở onboarding, chọn từ gợi ý có số mặc định, map vào entity thật (đích + thời hạn)</li>
+                <li><strong>Thu nhập = Household income:</strong> 1 con số gộp, không gắn cá nhân; mời vợ/chồng tại khoảnh khắc có nghĩa (sau tuần dùng đều)</li>
+                <li><strong>Tada = Bức tranh:</strong> App tự dựng budget default + goal fund + phán tính khả thi</li>
+                <li><strong>Tiến độ = 2 đường:</strong> Thực tế vs kỳ vọng → máy sinh narrative hàng ngày</li>
+                <li><strong>Ngày 0 không trống:</strong> CTA duy nhất "Ghi khoản chi đầu tiên" + lời hứa "Ngày mai bạn sẽ biết tiêu thế nào"</li>
+                <li><strong>Người thứ hai:</strong> Câu chuyện nâng cấp thành "chuyện chung" — thông báo chung khi đạt mốc mục tiêu</li>
+            </ul>
+
+            <div class="next-steps">
+                <strong>🚀 Bước tiếp:</strong> Implement phiên bản này; test với user thật; cải tiến dựa trên feedback. Rủi ro cần chú ý: demo/thật có thể lẫn lộn → feature-to-test #1.
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>📝 <strong>Party Memlog được lưu.</strong> Lần sau mở party, phòng sẽ nhớ buổi hôm nay — dynamics, grudge, callbacks.</p>
+            <p style="margin-top: 10px; opacity: 0.7;">Generated by BMAD Creative Intelligence Suite — Party Mode | GrowBase Design Thinking Session</p>
+        </div>
+    </div>
+</body>
+</html>

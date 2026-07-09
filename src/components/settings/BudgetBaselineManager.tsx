@@ -102,7 +102,7 @@ export function BudgetBaselineManager() {
         <BudgetTotalBar total={total} />
 
         {systemLines.length > 0 && (
-          <div className="rounded-[15px] border border-border bg-card p-3 shadow-panel">
+          <div className="rounded-[13px] border border-border/40 bg-card p-3 shadow-card">
             <h3 className="mb-2 px-2 text-xs font-semibold uppercase text-muted-foreground">
               {t("settings.budget.systemSection")}
             </h3>
@@ -120,7 +120,7 @@ export function BudgetBaselineManager() {
         )}
 
         {customLines.length > 0 && (
-          <div className="rounded-[15px] border border-border bg-card p-3 shadow-panel">
+          <div className="rounded-[13px] border border-border/40 bg-card p-3 shadow-card">
             <h3 className="mb-2 px-2 text-xs font-semibold uppercase text-muted-foreground">
               {t("settings.budget.customSection")}
             </h3>

@@ -39,22 +39,27 @@ type CostTypeNode = CostType & {
   groups: CategoryGroupWithCategories[]
 }
 
-const BEHAVIOR_BADGE_CLASS: Record<string, string> = {
-  fixed: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  variable: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-  wasteful: "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
-  debt_repayment: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
-  savings_investment: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300",
-  income: "bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300",
-  loan: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
+import type { VariantProps } from "class-variance-authority"
+import type { badgeVariants } from "@/components/ui/badge"
+
+type BadgeVariant = VariantProps<typeof badgeVariants>["variant"]
+
+const BEHAVIOR_BADGE_VARIANT: Record<string, BadgeVariant> = {
+  fixed: "default",
+  variable: "success",
+  wasteful: "warning",
+  debt_repayment: "destructive",
+  savings_investment: "violet",
+  income: "info",
+  loan: "warning",
 }
 
 function BehaviorBadge({ code }: { code: string | null }) {
   const { t } = useTranslation()
   if (!code) return null
-  const cls = BEHAVIOR_BADGE_CLASS[code]
+  const variant = BEHAVIOR_BADGE_VARIANT[code] ?? "secondary"
   return (
-    <Badge variant="secondary" className={cn("text-[10px] font-normal", cls)}>
+    <Badge variant={variant} className="text-[10px] font-normal">
       {t(`behavior.${code}`)}
     </Badge>
   )
@@ -144,7 +149,7 @@ export function CategoriesManager() {
   return (
     <>
       {/* Desktop table */}
-      <div className="hidden rounded-[15px] border border-border bg-card shadow-panel md:block">
+      <div className="hidden overflow-hidden rounded-[13px] border border-border/40 bg-card shadow-card md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -244,7 +249,7 @@ export function CategoriesManager() {
           return (
             <div
               key={ct.id}
-              className="rounded-[15px] border border-border bg-card shadow-panel"
+              className="rounded-[13px] border border-border/40 bg-card shadow-card"
             >
               <div className="flex min-h-[44px] items-center justify-between p-3">
                 <button

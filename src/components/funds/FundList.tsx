@@ -9,18 +9,19 @@ import { WithdrawModal } from "@/components/funds/WithdrawModal"
 import { FundForm } from "@/components/funds/FundForm"
 import { formatVNDCompact } from "@/lib/utils/currency"
 import { useTranslation } from "@/lib/i18n/useTranslation"
+import { FUND_TYPE_CONFIG } from "@/types/app"
 import type { Fund, FundType } from "@/types/app"
 
 type FundListProps = {
   funds: Fund[]
 }
 
-const FUND_GROUPS: { type: FundType; labelKey: string; color: string }[] = [
-  { type: "emergency", labelKey: "funds.groupEmergency", color: "#A32D2D" },
-  { type: "sinking", labelKey: "funds.groupSinking", color: "#854F0B" },
-  { type: "goal", labelKey: "funds.groupGoal", color: "#3B6D11" },
-  { type: "investment", labelKey: "funds.groupInvestment", color: "#3C3489" },
-  { type: "freedom", labelKey: "funds.groupFreedom", color: "#185FA5" },
+const FUND_GROUPS: { type: FundType; labelKey: string }[] = [
+  { type: "emergency", labelKey: "funds.groupEmergency" },
+  { type: "sinking", labelKey: "funds.groupSinking" },
+  { type: "goal", labelKey: "funds.groupGoal" },
+  { type: "investment", labelKey: "funds.groupInvestment" },
+  { type: "freedom", labelKey: "funds.groupFreedom" },
 ]
 
 export function FundList({ funds }: FundListProps) {
@@ -47,7 +48,6 @@ export function FundList({ funds }: FundListProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-ink">{t("funds.totalFunds")}</h1>
         <Button
           variant="outline"
           size="sm"
@@ -76,7 +76,7 @@ export function FundList({ funds }: FundListProps) {
       </div>
 
       {funds.length === 0 ? (
-        <div className="rounded-[15px] border border-border bg-card py-16 text-center shadow-panel">
+        <div className="rounded-[13px] border border-border/40 bg-card py-16 text-center shadow-card">
           <p className="mb-3 text-4xl">🪣</p>
           <p className="font-medium text-ink">{t("funds.emptyTitle")}</p>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -95,7 +95,7 @@ export function FundList({ funds }: FundListProps) {
           <div key={group.type}>
             <p
               className="mb-2 text-xs font-semibold uppercase tracking-widest"
-              style={{ color: group.color }}
+              style={{ color: FUND_TYPE_CONFIG[group.type].color }}
             >
               {t(group.labelKey)}
             </p>
@@ -123,7 +123,7 @@ export function FundList({ funds }: FundListProps) {
       />
       <FundForm open={createOpen} onClose={() => setCreateOpen(false)} />
     </div>
-  )
+  );
 }
 
 function SummaryCard({
@@ -136,7 +136,7 @@ function SummaryCard({
   accent?: boolean
 }) {
   return (
-    <div className="rounded-[15px] border border-border bg-card p-3 text-center shadow-panel">
+    <div className="rounded-[13px] border border-border/40 bg-card p-3 text-center shadow-card">
       <p className="mb-1 text-[11px] text-muted-foreground">{label}</p>
       <p
         className={`font-mono text-base font-semibold tabular-nums ${

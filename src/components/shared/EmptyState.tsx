@@ -17,7 +17,7 @@ export function EmptyState({
   onCta,
 }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 rounded-[15px] border border-border bg-card px-6 py-12 text-center shadow-panel">
+    <div className="flex flex-col items-center justify-center gap-6 rounded-[13px] border border-border/40 bg-card px-6 py-12 text-center shadow-card">
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-soft">
         <Icon icon={icon} className="h-8 w-8 text-primary" />
       </div>
@@ -31,5 +31,5 @@ export function EmptyState({
         </Button>
       )}
     </div>
-  )
+  );
 }

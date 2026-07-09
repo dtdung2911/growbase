@@ -6,6 +6,10 @@ import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
 import { LogoMark } from "@/components/ui/Logo"
 import { useTranslation } from "@/lib/i18n/useTranslation"
+import { BrandLogo } from "@/components/brand/BrandLogo";
+import ChartLineUpDuotoneIcon from "@iconify-react/ph/chart-line-up-duotone";
+import CardholderDuotoneIcon from "@iconify-react/ph/cardholder-duotone";
+import UserCirclePlusDuotoneIcon from "@iconify-react/ph/user-circle-plus-duotone";
 
 export function LoginClient() {
   const supabase = createClient()
@@ -27,25 +31,22 @@ export function LoginClient() {
   }
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center"
-      style={{ background: "var(--login-page-bg)" }}
-    >
+    <div className="min-h-screen flex items-center justify-center border-primary bg-light-primary">
       {/* Mobile (< md) */}
       <div className="md:hidden w-full max-w-sm px-6 py-12 flex flex-col items-center">
-        <MobileLoginContent onGoogleLogin={handleGoogleLogin} loading={loading} />
+        <MobileLoginContent
+          onGoogleLogin={handleGoogleLogin}
+          loading={loading}
+        />
       </div>
 
       {/* Desktop (≥ md) */}
-      <div
-        className="hidden md:grid md:grid-cols-2 w-full max-w-4xl min-h-[560px] rounded-2xl overflow-hidden"
-        style={{ border: "1px solid var(--login-border)" }}
-      >
+      <div className="hidden md:grid md:grid-cols-2 w-full max-w-4xl min-h-[560px] rounded-2xl overflow-hidden login-card shadow-card border-primary">
         <BrandingPanel />
         <FormPanel onGoogleLogin={handleGoogleLogin} loading={loading} />
       </div>
     </div>
-  )
+  );
 }
 
 function MobileLoginContent({
@@ -59,52 +60,27 @@ function MobileLoginContent({
 
   return (
     <>
-      <div className="mb-5">
-        <LogoMark size={56} />
-      </div>
-
-      <div className="text-[26px] font-medium tracking-tight mb-1.5">
-        <span style={{ color: "#0084DB" }}>Grow</span>
-        <span style={{ color: "var(--login-text-primary)" }}>Base</span>
-      </div>
-
-      <p
-        className="text-[11px] text-center mb-8 tracking-[0.2px]"
-        style={{ color: "var(--login-text-muted)" }}
-      >
-        {t("login.tagline")}
-      </p>
-
-      <div className="w-full flex items-center gap-3 mb-4">
-        <div className="flex-1 h-px" style={{ background: "var(--login-border)" }} />
-        <span className="text-[11px]" style={{ color: "var(--login-text-muted)" }}>
-          {t("login.startNow")}
-        </span>
-        <div className="flex-1 h-px" style={{ background: "var(--login-border)" }} />
+      <div className="flex items-center gap-2.5">
+        <img
+          src="/images/card-2.png"
+          alt=""
+          className="pointer-events-none absolute -right-3 top-0 w-28object-contain"
+          aria-hidden="true"
+        />
+        <BrandLogo
+          variant="vertical"
+          imageStyleName={{
+            width: "32rem",
+            marginTop: "12rem",
+            "max-width": "50rem",
+          }}
+        />
       </div>
 
       <GoogleButton onClick={onGoogleLogin} loading={loading} fullWidth />
-
-      <button
-        className="w-full flex items-center gap-3 px-4 py-[13px] rounded-[10px] mt-2.5 mb-7 transition-opacity hover:opacity-80"
-        style={{
-          border: "1px solid var(--login-border)",
-          background: "var(--login-form-bg)",
-        }}
-      >
-        <Icon
-          icon="lucide:mail"
-          className="w-4 h-4 flex-shrink-0"
-          style={{ color: "var(--login-text-muted)" }}
-        />
-        <span className="text-[12px]" style={{ color: "var(--login-text-secondary)" }}>
-          {t("login.emailButton")}
-        </span>
-      </button>
-
       <TermsText />
     </>
-  )
+  );
 }
 
 function BrandingPanel() {
@@ -117,70 +93,49 @@ function BrandingPanel() {
   ]
 
   return (
-    <div
-      className="relative flex flex-col justify-between p-9 overflow-hidden"
-      style={{
-        background: "var(--login-panel-bg)",
-        borderRight: "1px solid var(--login-border)",
-      }}
-    >
-      <DecorativeBars />
-
+    <div className="relative flex flex-col justify-between p-9 overflow-hidden bg-gradient-to-br from-primary to-primary-hover text-white shadow-card shadow-card-hover border-primary">
+      <img
+        src="/images/card-2.png"
+        alt=""
+        className="pointer-events-none absolute -right-3 -top-1 w-28 h-32 object-contain"
+        aria-hidden="true"
+      />
       <div className="relative z-10">
-        <div className="flex items-center gap-2.5 mb-8">
-          <LogoMark size={32} />
-          <div className="text-[19px] font-medium tracking-tight">
-            <span style={{ color: "#0084DB" }}>Grow</span>
-            <span style={{ color: "var(--login-text-primary)" }}>Base</span>
-          </div>
+        <div className="flex items-center gap-2.5">
+          <BrandLogo variant="white" imageClassName="h-14 w-168" />
         </div>
 
-        <p
-          className="text-[15px] font-medium leading-snug mb-2 whitespace-pre-line"
-          style={{ color: "var(--login-text-primary)" }}
-        >
+        <p className="text-[12px]  leading-snug mb-2 whitespace-pre-line">
           {t("login.headline")}
         </p>
-        <p
-          className="text-[12px] leading-relaxed mb-7 whitespace-pre-line"
-          style={{ color: "var(--login-text-secondary)" }}
-        >
-          {t("login.subheadline")}
-        </p>
-
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-8 mt-32">
           {features.map(({ icon, textKey }) => (
             <div key={textKey} className="flex items-center gap-2.5">
-              <div
-                className="w-[26px] h-[26px] rounded-[7px] flex items-center justify-center flex-shrink-0"
-                style={{ background: "rgba(0, 132, 219, 0.12)" }}
-              >
-                <Icon icon={icon} className="w-3.5 h-3.5" style={{ color: "#0084DB" }} />
+              <div className="w-[26px] h-[26px] rounded-[7px] flex items-center justify-center flex-shrink-0 bg-primary/[0.12]">
+                {textKey === "login.feature1" ? (
+                  <ChartLineUpDuotoneIcon height="3em" />
+                ) : textKey === "login.feature2" ? (
+                  <CardholderDuotoneIcon height="3em" />
+                ) : (
+                  textKey === "login.feature3" && (
+                    <UserCirclePlusDuotoneIcon height="3em" />
+                  )
+                )}
               </div>
-              <span className="text-[12px]" style={{ color: "var(--login-text-secondary)" }}>
-                {t(textKey)}
-              </span>
+              <span className="text-[15px]">{t(textKey)}</span>
             </div>
           ))}
         </div>
       </div>
 
       <div className="relative z-10 mt-6">
-        <div
-          className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5"
-          style={{
-            background: "rgba(0, 132, 219, 0.08)",
-            border: "1px solid rgba(0, 132, 219, 0.15)",
-          }}
-        >
-          <div className="w-1.5 h-1.5 rounded-full bg-brand" />
-          <span className="text-[11px]" style={{ color: "var(--login-text-secondary)" }}>
-            {t("login.freeBadge")}
-          </span>
+        <div className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 bg-primary border border-primary">
+          <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+          <span className="text-[11px]">{t("login.freeBadge")}</span>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function FormPanel({
@@ -197,6 +152,7 @@ function FormPanel({
       className="flex flex-col justify-center items-center p-9"
       style={{ background: "var(--login-form-bg)" }}
     >
+      <DecorativeBars />
       <div className="w-full max-w-[260px]">
         <p
           className="text-[16px] font-medium mb-1"
@@ -204,58 +160,19 @@ function FormPanel({
         >
           {t("login.welcomeBack")}
         </p>
-        <p className="text-[12px] mb-7" style={{ color: "var(--login-text-muted)" }}>
+        <p
+          className="text-[12px] mb-7"
+          style={{ color: "var(--login-text-muted)" }}
+        >
           {t("login.signInToContinue")}
         </p>
 
         <GoogleButton onClick={onGoogleLogin} loading={loading} fullWidth />
 
-        <div className="flex items-center gap-2 my-3">
-          <div className="flex-1 h-px" style={{ background: "var(--login-border)" }} />
-          <span className="text-[11px]" style={{ color: "var(--login-text-muted)" }}>
-            {t("login.or")}
-          </span>
-          <div className="flex-1 h-px" style={{ background: "var(--login-border)" }} />
-        </div>
-
-        <div
-          className="flex items-center gap-2 px-3 py-[11px] rounded-[9px] mb-2.5"
-          style={{
-            border: "1px solid var(--login-border)",
-            background: "var(--login-input-bg)",
-          }}
-        >
-          <Icon
-            icon="lucide:mail"
-            className="w-[14px] h-[14px] flex-shrink-0"
-            style={{ color: "var(--login-text-muted)" }}
-          />
-          <span className="text-[12px]" style={{ color: "var(--login-text-muted)" }}>
-            {t("login.emailPlaceholder")}
-          </span>
-        </div>
-
-        <button
-          className="w-full flex items-center justify-center gap-2 px-4 py-[11px] rounded-[9px] mb-5 transition-opacity hover:opacity-80"
-          style={{
-            border: "1px solid var(--login-border)",
-            background: "rgba(0, 132, 219, 0.04)",
-          }}
-        >
-          <span className="text-[13px]" style={{ color: "#0084DB" }}>
-            {t("login.continue")}
-          </span>
-          <Icon
-            icon="lucide:arrow-right"
-            className="w-[14px] h-[14px]"
-            style={{ color: "#0084DB" }}
-          />
-        </button>
-
         <TermsText />
       </div>
     </div>
-  )
+  );
 }
 
 function GoogleButton({
@@ -273,21 +190,25 @@ function GoogleButton({
     <button
       onClick={onClick}
       disabled={loading}
-      className={`${fullWidth ? "w-full" : ""} flex items-center justify-center gap-2.5 px-4 py-[13px] rounded-[10px] transition-opacity hover:opacity-90 active:scale-[0.98] disabled:opacity-60`}
-      style={{ background: "#0084DB" }}
+      className={`${fullWidth ? "w-full" : ""} mt-36 flex items-center justify-center gap-2.5 px-4 py-[13px] rounded-[10px] transition-opacity hover:opacity-90 hover:scale-[0.98] disabled:opacity-60 bg-primary`}
     >
       {loading ? (
-        <Icon icon="lucide:loader-2" className="w-[18px] h-[18px] text-white animate-spin" />
+        <Icon
+          icon="lucide:loader-2"
+          className="w-[18px] h-[18px] text-white animate-spin"
+        />
       ) : (
         <span className="w-[18px] h-[18px] bg-white rounded-[3px] flex items-center justify-center flex-shrink-0">
-          <span className="text-[11px] font-medium leading-none" style={{ color: "#0084DB" }}>
+          <span className="text-[11px] font-medium leading-none text-primary">
             G
           </span>
         </span>
       )}
-      <span className="text-[13px] font-medium text-white">{t("login.googleButton")}</span>
+      <span className="text-[13px] font-medium text-white">
+        {t("login.googleButton")}
+      </span>
     </button>
-  )
+  );
 }
 
 function TermsText() {
@@ -295,43 +216,29 @@ function TermsText() {
 
   return (
     <p
-      className="text-[11px] text-center leading-relaxed"
+      className="text-[12px] text-center leading-relaxed mt-6"
       style={{ color: "var(--login-text-muted)" }}
     >
       {t("login.terms")}{" "}
-      <a href="/terms" style={{ color: "#0084DB" }} className="hover:underline">
+      <a href="/terms" className="text-primary hover:underline">
         {t("login.termsOfService")}
       </a>{" "}
       {t("login.and")}{" "}
-      <a href="/privacy" style={{ color: "#0084DB" }} className="hover:underline">
+      <a href="/privacy" className="text-primary hover:underline">
         {t("login.privacyPolicy")}
       </a>
     </p>
-  )
+  );
 }
 
 function DecorativeBars() {
   return (
-    <svg
-      className="absolute right-[-16px] bottom-[-16px] pointer-events-none"
-      width="180"
-      height="220"
-      viewBox="0 0 180 220"
+    <img
+      src="/brand/icon-mark.svg"
+      alt=""
+      className="pointer-events-none absolute -right-1 -bottom-6  opacity-5 object-contain"
+      style={{ width: "322px" }}
       aria-hidden="true"
-    >
-      <rect x="0" y="120" width="42" height="100" rx="7" fill="#0084DB" opacity="0.06" />
-      <rect x="52" y="76" width="42" height="144" rx="7" fill="#0084DB" opacity="0.06" />
-      <rect x="104" y="20" width="42" height="200" rx="7" fill="#0084DB" opacity="0.08" />
-      <path
-        d="M21 100 L73 58 L125 14"
-        stroke="#0084DB"
-        strokeWidth="2"
-        strokeDasharray="5 4"
-        strokeLinecap="round"
-        fill="none"
-        opacity="0.09"
-      />
-      <circle cx="125" cy="14" r="7" fill="#0084DB" opacity="0.09" />
-    </svg>
-  )
+    />
+  );
 }

@@ -15,6 +15,7 @@ import {
 import { SkeletonList } from "@/components/shared/SkeletonList"
 import { useAppStore } from "@/lib/stores/appStore"
 import { useHousehold } from "@/lib/hooks/useHousehold"
+import { useMembers } from "@/lib/hooks/useMembers"
 import { useUpdateHousehold } from "@/lib/hooks/useHouseholdSettings"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import type { Currency } from "@/types/app"
@@ -23,7 +24,11 @@ export function HouseholdSettingsForm() {
   const { t } = useTranslation()
   const householdId = useAppStore((s) => s.householdId)
   const { data: household, isLoading } = useHousehold(householdId ?? "")
+  const { data: membersData, isLoading: isMembersLoading } = useMembers()
   const updateMutation = useUpdateHousehold()
+
+  // FR18: trạng thái household tự suy từ số thành viên active, không đọc household_type
+  const householdTypeKey = (membersData?.members.length ?? 0) >= 2 ? "family" : "solo"
 
   const [name, setName] = useState("")
   const [currency, setCurrency] = useState<Currency>("VND")
@@ -65,12 +70,14 @@ export function HouseholdSettingsForm() {
         />
       </div>
 
-      <div className="space-y-1.5">
-        <Label className="text-xs">{t("settings.household.typeLabel")}</Label>
-        <p className="text-sm text-muted-foreground">
-          {t(`settings.household.type.${household.household_type}`)}
-        </p>
-      </div>
+      {!isMembersLoading && membersData && (
+        <div className="space-y-1.5">
+          <Label className="text-xs">{t("settings.household.typeLabel")}</Label>
+          <p className="text-sm text-muted-foreground">
+            {t(`settings.household.type.${householdTypeKey}`)}
+          </p>
+        </div>
+      )}
 
       <div className="space-y-1.5">
         <Label htmlFor="hh-currency" className="text-xs">

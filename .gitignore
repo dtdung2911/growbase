@@ -31,3 +31,6 @@ yarn-error.log*
 # editor
 .vscode/
 .idea/
+
+# supabase CLI cache
+supabase/.temp/

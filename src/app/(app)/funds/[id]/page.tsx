@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
 import { Icon } from "@iconify/react"
 import { cn } from "@/lib/utils/cn"
 import { formatVND, formatVNDCompact } from "@/lib/utils/currency"
@@ -11,7 +10,9 @@ import { FUND_TYPE_CONFIG } from "@/types/app"
 import { ContributeModal } from "@/components/funds/ContributeModal"
 import { WithdrawModal } from "@/components/funds/WithdrawModal"
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog"
+import { GoalEditSheet } from "@/components/funds/GoalEditSheet"
 import { SkeletonCard } from "@/components/shared/SkeletonCard"
+import { PageHeader } from "@/components/shared/PageHeader"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Table,
@@ -34,6 +35,7 @@ export default function FundDetailPage({
   const [contributeOpen, setContributeOpen] = useState(false)
   const [withdrawOpen, setWithdrawOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
 
   if (isLoading) {
     return (
@@ -67,17 +69,16 @@ export default function FundDetailPage({
 
   return (
     <div className="mx-auto max-w-2xl space-y-4 p-4 pb-16">
-      {/* Back */}
-      <Link
-        href="/funds"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <Icon icon="lucide:arrow-left" className="h-4 w-4" />
-        {t("common.back")}
-      </Link>
+      <PageHeader
+        titleKey={`!${fund.name}`}
+        breadcrumbs={[
+          { labelKey: "nav.funds", href: "/funds" },
+          { labelKey: `!${fund.name}` },
+        ]}
+      />
 
       {/* Fund header card */}
-      <div className="rounded-[15px] border border-border bg-card p-5 shadow-panel">
+      <div className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
         <div className="flex items-start gap-3 mb-4">
           <div
             className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
@@ -94,6 +95,16 @@ export default function FundDetailPage({
                 ` · ${monthsToTarget} ${t("funds.monthsToTarget")}`}
             </p>
           </div>
+          {fund.fund_type === "goal" && (
+            <button
+              type="button"
+              onClick={() => setEditOpen(true)}
+              aria-label={t("funds.editGoal")}
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
+            >
+              <Icon icon="lucide:pencil" className="h-5 w-5" />
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setDeleteOpen(true)}
@@ -117,7 +128,7 @@ export default function FundDetailPage({
             <>
               <div className="h-2 w-full overflow-hidden rounded-full bg-background">
                 <div
-                  className="h-full rounded-full transition-all"
+                  className="h-full rounded-full [transition:width_300ms_ease]"
                   style={{
                     width: `${Math.min(progress, 100)}%`,
                     backgroundColor: color,
@@ -181,7 +192,7 @@ export default function FundDetailPage({
           ) : (
             <>
               {/* Desktop: table */}
-              <div className="hidden md:block rounded-[15px] border border-border bg-card shadow-panel">
+              <div className="hidden md:block rounded-[13px] border border-border/40 bg-card shadow-card">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -240,7 +251,7 @@ export default function FundDetailPage({
                   return (
                     <div
                       key={tx.id}
-                      className="flex items-center gap-3 rounded-[15px] border border-border bg-card p-3 shadow-panel"
+                      className="flex items-center gap-3 rounded-[13px] border border-border/40 bg-card p-3 shadow-card"
                     >
                       <div
                         className={cn(
@@ -285,7 +296,7 @@ export default function FundDetailPage({
         </TabsContent>
 
         <TabsContent value="info" className="mt-3">
-          <div className="rounded-[15px] border border-border bg-card p-4 shadow-panel space-y-3">
+          <div className="rounded-[13px] border border-border/40 bg-card p-4 shadow-card space-y-3">
             <InfoRow label={t("funds.fundType")} value={t(`funds.type.${fund.fund_type}`)} />
             <InfoRow label={t("funds.monthlyAmount")} value={formatVND(monthly)} mono />
             <InfoRow label={t("funds.contributionDay")} value={`${fund.contribution_day}`} />
@@ -311,6 +322,9 @@ export default function FundDetailPage({
         open={withdrawOpen}
         onClose={() => setWithdrawOpen(false)}
       />
+      {fund.fund_type === "goal" && editOpen && (
+        <GoalEditSheet fund={fund} open={editOpen} onClose={() => setEditOpen(false)} />
+      )}
       <ConfirmDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}

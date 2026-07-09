@@ -1,17 +1,20 @@
 "use client"
 
-import { cn } from "@/lib/utils/cn"
 import { Icon } from "@iconify/react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { formatVND } from "@/lib/utils/currency"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import type { DebtEntry } from "@/types/app"
+import type { VariantProps } from "class-variance-authority"
+import type { badgeVariants } from "@/components/ui/badge"
 
-const STATUS_BADGE_CLASS: Record<string, string> = {
-  active: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
-  paid_off: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-  refinanced: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
+type BadgeVariant = VariantProps<typeof badgeVariants>["variant"]
+
+const STATUS_BADGE_VARIANT: Record<string, BadgeVariant> = {
+  active: "warning",
+  paid_off: "success",
+  refinanced: "info",
 }
 
 type DebtCardProps = {
@@ -23,10 +26,10 @@ type DebtCardProps = {
 export function DebtCard({ debt, onEdit, onPaidOff }: DebtCardProps) {
   const { t } = useTranslation()
   const isActive = debt.status === "active"
-  const statusClass = STATUS_BADGE_CLASS[debt.status]
+  const statusVariant = STATUS_BADGE_VARIANT[debt.status]
 
   return (
-    <div className="rounded-[15px] border border-border bg-card p-7 shadow-panel">
+    <div className="rounded-[13px] border border-border/40 bg-card p-4 shadow-card">
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <h4 className="text-sm font-semibold">{debt.creditor_name}</h4>
@@ -34,11 +37,8 @@ export function DebtCard({ debt, onEdit, onPaidOff }: DebtCardProps) {
             <Badge variant="secondary" className="text-[10px] font-normal">
               {t(`settings.debt.type.${debt.debt_type}`)}
             </Badge>
-            {statusClass && (
-              <Badge
-                variant="secondary"
-                className={cn("text-[10px] font-normal", statusClass)}
-              >
+            {statusVariant && (
+              <Badge variant={statusVariant} className="text-[10px] font-normal">
                 {t(`settings.debt.status.${debt.status}`)}
               </Badge>
             )}
@@ -58,7 +58,7 @@ export function DebtCard({ debt, onEdit, onPaidOff }: DebtCardProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="min-h-[44px] min-w-[44px] text-green-600 hover:text-green-600"
+              className="min-h-[44px] min-w-[44px] text-success hover:text-success"
               onClick={onPaidOff}
             >
               <Icon icon="lucide:check" className="h-3.5 w-3.5" />

@@ -194,3 +194,34 @@ NOTE: tsc --noEmit shows 0 errors in all new/modified files (ImportClient, useIm
   - src/components/shared/SortableTableHead.tsx (created by parallel process: sortKey/activeKey/direction, chevron icons; used by DebtManager)
   Did NOT delete or merge either — needs a decision on which is canonical. DebtManager + my 7 tables use different ones. Recommend consolidating to one.
 ✓ typecheck — npx tsc --noEmit clean on all touched files (only pre-existing unrelated error: xlsx module in src/lib/utils/excel.ts).
+
+## Batch 1 Spike Admin Style Audit
+✓ input.tsx — text-[15px]→text-base (iOS zoom), +motion-reduce:transition-none
+✓ CurrencyInput.tsx — text-[15px]→text-base, +motion-reduce:transition-none
+✓ select.tsx — SelectTrigger text-[15px]→text-base, +motion-reduce:transition-none
+✓ button.tsx — +motion-reduce:transition-none +motion-reduce:hover:translate-y-0
+✓ badge.tsx — +motion-reduce:transition-none
+✓ skeleton.tsx — +motion-reduce:animate-none
+✓ Logo.tsx — fill="#0084DB"→className="fill-primary"
+✓ dialog.tsx — shadow rgba literal→shadow-float
+✓ alert-dialog.tsx — shadow rgba literal→shadow-float
+✓ sheet.tsx — shadow rgba literal→shadow-float, +motion-reduce:transition-none
+✓ DueBadge.tsx — rose-500/amber-500 palette→bg-destructive/text-destructive + bg-warning/text-warning (semantic)
+✓ MetricCard.tsx — gradient hex from-[#0084DB] to-[#006BB8]/[#004F8A]→from-primary to-primary-hover/primary-pressed
+✓ BudgetProgressBar.tsx — track bg-[#e7f0f8]→bg-inset
+— SpendingDonut.tsx UNCHANGED: BEHAVIOR_COLORS hex literals required by ApexCharts JS API (cannot use Tailwind tokens); values match design palette
+— Overlays bg-black/[0.32] + switch thumb bg-white LEFT: named Tailwind utilities, not hex/rgb literals; standard scrim/thumb
+
+## UI Consistency Pass (PageHeader + Budget-style cards)
+✓ Create PageHeader component — src/components/shared/PageHeader.tsx
+✓ Add breadcrumb i18n keys — src/lib/i18n/messages/{vi,en}.json (breadcrumb.home, breadcrumb.settings)
+✓ ScheduledPayments filter → shadcn Tabs — src/components/scheduled-payments/ScheduledPaymentsClient.tsx — removed unused cn import; table container shadow-card→shadow-panel
+✓ Restyle cards/tables to Budget canonical (shadow-panel, border-border, rounded-2xl, overflow-hidden) — dashboard, net-worth, reports/*, settings, shared/MetricCard, funds, transactions/TransactionList
+✓ Add PageHeader to clients — DashboardClient, BudgetClient, ReportsClient, NetWorthClient, InvestmentClient, EventBudgetClient, ScheduledPaymentsClient
+✓ Add PageHeader to pages — transactions, funds, settings + all settings sub-pages (with breadcrumbs), funds/[id] (dynamic title + breadcrumb), transactions/import
+✓ tsc clean (only 2 pre-existing layout.tsx Supabase-relation errors remain, not touched)
+
+Deviations:
+- funds/[id]/page.tsx: replaced "Back" link with PageHeader breadcrumb (Funds > fund name); removed now-unused Link import
+- transactions/import: PageHeader replaces back-button header; router/useRouter retained (still used for post-import redirect)
+- InvestmentClient/EventBudgetClient: card radius left as rounded-[15px] (not in Task 2 file list; only PageHeader added)

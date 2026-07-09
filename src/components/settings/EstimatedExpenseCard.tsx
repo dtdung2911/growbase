@@ -1,17 +1,20 @@
 "use client"
 
-import { cn } from "@/lib/utils/cn"
 import { Icon } from "@iconify/react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { formatVND } from "@/lib/utils/currency"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import type { EstimatedExpense, EstimatedExpenseStatus } from "@/types/app"
+import type { VariantProps } from "class-variance-authority"
+import type { badgeVariants } from "@/components/ui/badge"
 
-const STATUS_BADGE_CLASS: Record<EstimatedExpenseStatus, string> = {
-  planned: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  completed: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-  cancelled: "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400",
+type BadgeVariant = VariantProps<typeof badgeVariants>["variant"]
+
+const STATUS_BADGE_VARIANT: Record<EstimatedExpenseStatus, BadgeVariant> = {
+  planned: "default",
+  completed: "success",
+  cancelled: "secondary",
 }
 
 type EstimatedExpenseCardProps = {
@@ -22,18 +25,15 @@ type EstimatedExpenseCardProps = {
 
 export function EstimatedExpenseCard({ expense, onEdit, onDelete }: EstimatedExpenseCardProps) {
   const { t, locale } = useTranslation()
-  const statusClass = STATUS_BADGE_CLASS[expense.status]
+  const statusVariant = STATUS_BADGE_VARIANT[expense.status]
 
   return (
-    <div className="rounded-[15px] border border-border bg-card p-4 shadow-panel">
+    <div className="rounded-[13px] border border-border/40 bg-card p-4 shadow-card">
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <h4 className="text-sm font-semibold">{expense.name}</h4>
           <div className="flex flex-wrap gap-1.5">
-            <Badge
-              variant="secondary"
-              className={cn("text-[10px] font-normal", statusClass)}
-            >
+            <Badge variant={statusVariant} className="text-[10px] font-normal">
               {t(`settings.estimated.${expense.status}`)}
             </Badge>
             {expense.linked_fund_id && (

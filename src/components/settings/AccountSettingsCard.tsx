@@ -21,7 +21,7 @@ export function AccountSettingsCard({
   const { t } = useTranslation()
 
   return (
-    <div className={cn("rounded-[15px] border border-border bg-card p-4 shadow-panel", !account.is_active && "opacity-50")}>
+    <div className={cn("rounded-[13px] border border-border/40 bg-card p-4 shadow-card", !account.is_active && "opacity-50")}>
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-3">
           {account.color && (

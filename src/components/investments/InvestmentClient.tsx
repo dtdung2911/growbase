@@ -10,6 +10,7 @@ import {
   useInvestmentPurchases,
 } from "@/lib/hooks/useInvestments"
 import { useTranslation } from "@/lib/i18n/useTranslation"
+import { PageHeader } from "@/components/shared/PageHeader"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { SkeletonList } from "@/components/shared/SkeletonList"
@@ -95,9 +96,7 @@ export function InvestmentClient() {
 
   return (
     <div className="p-4 pb-16">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-lg font-semibold">{t("investment.title")}</h1>
-      </div>
+      <PageHeader titleKey="nav.investments" />
 
       <Tabs defaultValue="holdings">
         <TabsList className="w-full">
@@ -132,7 +131,7 @@ export function InvestmentClient() {
           ) : (
             <>
               {/* Desktop table */}
-              <div className="hidden rounded-[15px] border border-border bg-card shadow-panel md:block">
+              <div className="hidden rounded-[13px] border border-border/40 bg-card shadow-card md:block">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -225,7 +224,7 @@ export function InvestmentClient() {
                       key={h.id}
                       type="button"
                       onClick={() => openEditHolding(h)}
-                      className="w-full rounded-[15px] border border-border bg-card p-4 text-left shadow-panel"
+                      className="w-full rounded-[13px] border border-border/40 bg-card p-4 text-left shadow-card"
                     >
                       <div className="mb-3 flex items-center justify-between">
                         <span className="text-base font-semibold">{h.stock_code}</span>
@@ -278,7 +277,7 @@ export function InvestmentClient() {
           ) : (
             <>
               {/* Desktop table */}
-              <div className="hidden rounded-[15px] border border-border bg-card shadow-panel md:block">
+              <div className="hidden rounded-[13px] border border-border/40 bg-card shadow-card md:block">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -310,7 +309,7 @@ export function InvestmentClient() {
                 {dcaPlans.map((p) => (
                   <div
                     key={p.id}
-                    className="flex items-center justify-between rounded-[15px] border border-border bg-card p-4 shadow-panel"
+                    className="flex items-center justify-between rounded-[13px] border border-border/40 bg-card p-4 shadow-card"
                   >
                     <div>
                       <p className="text-base font-semibold">{p.stock_code}</p>
@@ -371,7 +370,7 @@ export function InvestmentClient() {
           ) : (
             <>
               {/* Desktop table */}
-              <div className="hidden rounded-[15px] border border-border bg-card shadow-panel md:block">
+              <div className="hidden rounded-[13px] border border-border/40 bg-card shadow-card md:block">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -439,7 +438,7 @@ export function InvestmentClient() {
                 {purchases.map((p) => (
                   <div
                     key={p.id}
-                    className="rounded-[15px] border border-border bg-card p-4 shadow-panel"
+                    className="rounded-[13px] border border-border/40 bg-card p-4 shadow-card"
                   >
                     <div className="mb-3 flex items-center justify-between">
                       <span className="text-base font-semibold">

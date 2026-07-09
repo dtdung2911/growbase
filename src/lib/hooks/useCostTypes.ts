@@ -30,6 +30,7 @@ export function useCostTypes() {
       if (!res.ok) throw new Error(json.error ?? "Không tải được loại chi phí")
       return json.data ?? []
     },
+    staleTime: 24 * 60 * 60_000,
     enabled: Boolean(householdId),
   })
 }

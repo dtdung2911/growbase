@@ -1,0 +1,131 @@
+# Sprint Status — GrowBase
+# generated: 02-07-2026
+# project: growbase
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: "_bmad-output/implementation-artifacts"
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created, ready for development
+#   - in-progress: Developer actively working on implementation
+#   - review: Implementation complete, ready for review
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# Action Item Status:
+#   - open: Committed during a retrospective, not yet addressed
+#   - in-progress: Actively being worked on
+#   - done: Completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Mark epic as 'in-progress' when starting work on its first story
+# - Developer typically creates next story ONLY after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then Dev runs code-review (fresh context, ideally different LLM)
+# - Retrospective appends its action items to action_items; sprint-status surfaces open ones
+
+generated: 02-07-2026
+last_updated: 2026-07-07 (Story 7-3 review)
+project: growbase
+project_key: NOKEY
+tracking_system: file-system
+story_location: "_bmad-output/implementation-artifacts"
+
+development_status:
+  epic-1: done
+  1-1-standardize-auth-household-api-routes: done
+  1-2-household-membership-double-guard: done
+  epic-1-retrospective: optional
+
+  epic-2: done
+  2-1-design-token-system-global-css: done
+  2-2-standardize-card-component: done
+  2-3-standardize-button-component: done
+  2-4-standardize-input-form-component: done
+  2-5-standardize-badge-table-animation: done
+  epic-2-retrospective: optional
+
+  epic-3: done
+  3-1-dark-mode-system: done
+  3-2-page-header-banner: done
+  3-3-dashboard-shared-components: done
+  3-4-transaction-budget-screens: done
+  3-5-fund-investment-modal-components: done
+  3-6-onboarding-login-layout: done
+  epic-3-retrospective: done
+
+  epic-4: done
+  4-1-reset-test-data-seed: done
+  4-2-flow-skeleton-goal-screen: done
+  4-3-income-screen: done
+  4-4-tada-api-initialize: done
+  4-5-tada-ui-reveal: done
+  4-6-hook-demo-nha-minh: done
+  4-7-remove-old-wizard-verify: done
+  epic-4-retrospective: optional
+
+  epic-5: done
+  5-1-insight-engine-formula-v1: done
+  5-2-day-zero-dashboard: done
+  5-3-first-expense-cta-promise: done
+  5-4-daily-insight-greeting: done
+  5-5-insight-behavior-feedback: done
+  epic-5-retrospective: optional
+
+  epic-6: in-progress
+  6-1-expected-line-narrative-engine: done
+  6-2-goal-progress-card: done
+  6-3-milestone-celebration: done
+  6-4-goals-crud: done
+  epic-6-retrospective: optional
+
+  epic-7: in-progress
+  7-1-invite-settings-household-label: done
+  7-2-meaningful-moment-invite-prompt: review
+  7-3-second-member-joins: review
+  epic-7-retrospective: optional
+
+  epic-8: in-progress
+  8-1-multi-goal-schema-rpc-foundation: review
+  8-2-goal-step-two-tier-multi-select: review
+  8-3-tada-reveal-redesign: review
+  8-4-hook-mindset-method-framing-docs: review
+  epic-8-retrospective: optional
+
+# Action items committed during retrospectives (section created by the retrospective workflow)
+action_items:
+  - epic: 3
+    action: "Viết lại docs/06_STYLE_GUIDE.md theo đúng hiện trạng thực tế + bổ sung rule chặt chẽ, cụ thể cho dev agent (khi nào dùng radius nào, dark-mode token nào) để chặn lỗi lặp lại (rounded-2xl sai chuẩn xuất hiện ở 4/6 stories; hardcoded gray phá dark mode xuất hiện 2 lần trong 1 review)"
+    owner: "DzungDuong"
+    status: done
+    note: "Rewrite hoàn tất 02-07-2026. Phát hiện thêm bug ngoài dự kiến: toàn bộ shadow-soft-xs/sm/soft/soft-md/soft-lg/panel-hover/sidebar là token chết (=none trong tailwind.config.ts); shadow-card trong tailwind.config.ts bị globals.css override (unlayered CSS thắng layered). Đã document đúng hiện trạng + thêm §0 rule bắt buộc (radius table, no-hardcode-color, shadow token whitelist, pre-done checklist)."
+  - epic: 3
+    action: "Thêm section 'Testing' bắt buộc vào story workflow (bmad-dev-story) — Agent phải tự liệt kê và tự verify các luồng nghiệp vụ liên quan trước khi đánh dấu done, không chỉ dựa vào 'zero TypeScript errors'"
+    owner: "DzungDuong"
+    status: done
+    note: "02-07-2026. Sửa .claude/skills/bmad-dev-story/SKILL.md: Step 6 thêm action bắt buộc liệt kê + verify từng business flow (automated test hoặc manual trace), ghi vào story file dưới Dev Agent Record → '### Testing' subsection; HALT nếu flow không verify được. Step 9 DoD + HALT condition mới: reject nếu thiếu/rỗng '### Testing' hoặc chỉ ghi build/typecheck status. checklist.md thêm dòng 'Business Flow Verification' tương ứng."
+  - epic: 3
+    action: "Thêm khối tóm tắt bắt buộc 'TL;DR cho DzungDuong' (3-5 dòng: rủi ro cao nhất + điểm cần xác nhận tay) ở cuối mỗi story/review output để giảm review fatigue"
+    owner: "DzungDuong"
+    status: done
+    note: "02-07-2026. bmad-dev-story/SKILL.md Step 10: thêm critical block bắt buộc TL;DR ngay sau accomplishments summary, trước phần hỏi giải thích/next steps, lấy rủi ro manual-verify trực tiếp từ '### Testing' subsection (action item #2). bmad-code-review/steps/step-04-present.md: thêm mục 6.5 TL;DR bắt buộc, áp dụng cả 2 nhánh (có findings và 'Clean review shortcut' zero-findings), đặt trước mục 7 Next steps."
+  - epic: 3
+    action: "Deploy Epic 3 (UI standardization) lên production — hiện vẫn ở local/staging"
+    owner: "DzungDuong"
+    status: open
+  - epic: 3
+    action: "Giải quyết 3 item trong deferred-work.md: shadow-panel cleanup audit, xác nhận docs mô tả UI khớp code thực tế, xác nhận AC4 TopHeader style (rounded-2xl float vs flat) với maintainer"
+    owner: "DzungDuong"
+    status: done
+    note: "02-07-2026. Cả 3 item resolved trong deferred-work.md. (1) TopHeader AC4: verify TopHeader.tsx trực tiếp, flush/flat khớp docs, không có rounded-2xl float. (2) shadow-panel: audit 4 call site thật (popover/dropdown-menu/select), đều đúng pattern floating-overlay, không phải Cards — rule cũ 'NO: shadow-panel' bị scope sai, đã sửa lại chính xác hơn trong STYLE_GUIDE.md §5. (3) UI details verify khớp code (sidebar-nav-link[data-active], header-custom::before, card-enter, --sidebar-width/--topbar-height) — thêm phát hiện phụ: Badge variant table thiếu 'outline', secondary dùng nhầm bg-muted thay vì bg-secondary, padding sai — đã sửa trong STYLE_GUIDE.md."

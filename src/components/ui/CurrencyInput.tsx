@@ -12,6 +12,7 @@ interface CurrencyInputProps {
   disabled?: boolean
   className?: string
   id?: string
+  autoFocus?: boolean
 }
 
 function formatDisplay(value: number, currency: "VND" | "USD") {
@@ -34,6 +35,7 @@ export function CurrencyInput({
   disabled,
   className,
   id,
+  autoFocus,
 }: CurrencyInputProps) {
   const [focused, setFocused] = React.useState(false)
 
@@ -50,6 +52,7 @@ export function CurrencyInput({
       inputMode="numeric"
       disabled={disabled}
       placeholder={placeholder}
+      autoFocus={autoFocus}
       value={display}
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
@@ -58,7 +61,7 @@ export function CurrencyInput({
         onChange(digits ? Number(digits) : 0)
       }}
       className={cn(
-        "flex min-h-[48px] w-full rounded-lg border border-input bg-background px-4 py-2.5 text-[15px] ring-offset-background transition-all duration-200 placeholder:text-faint focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50",
+        "flex h-[44px] w-full rounded-[18px] border border-border bg-background px-4 py-2.5 text-base font-mono tabular-nums ring-offset-background transition-[border-color,box-shadow] duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none placeholder:text-faint focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50",
         className
       )}
     />

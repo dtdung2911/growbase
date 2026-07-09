@@ -120,19 +120,25 @@ export function SpendingTab({ transactions, categoryGroups }: SpendingTabProps) 
     setExpandedType((prev) => (prev === bt ? null : bt))
 
   return (
-    <div className="grid gap-4 md:grid-cols-[minmax(0,320px)_1fr]">
-      <div className="rounded-[15px] border border-border bg-card p-4 shadow-panel">
+    <div className="grid gap-6 md:grid-cols-[minmax(0,320px)_1fr]">
+      <div className="rounded-[13px] border border-border/40 bg-card p-4 shadow-card">
         <SpendingDonut data={donutData} formatAmount={formatVND} />
       </div>
 
-      <div className="hidden rounded-[15px] border border-border bg-card shadow-panel overflow-hidden md:block">
+      <div className="hidden overflow-hidden rounded-[13px] border border-border/40 bg-card shadow-card md:block">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>{t("reports.costType")}</TableHead>
-              <TableHead className="text-right">{t("reports.amount")}</TableHead>
-              <TableHead className="text-right">{t("reports.pctOfExpense")}</TableHead>
-              <TableHead className="text-right">{t("reports.pctOfIncome")}</TableHead>
+              <TableHead className="text-right">
+                {t("reports.amount")}
+              </TableHead>
+              <TableHead className="text-right">
+                {t("reports.pctOfExpense")}
+              </TableHead>
+              <TableHead className="text-right">
+                {t("reports.pctOfIncome")}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -146,13 +152,19 @@ export function SpendingTab({ transactions, categoryGroups }: SpendingTabProps) 
               />
             ))}
             <TableRow className="bg-muted/40">
-              <TableCell className="font-medium">{t("reports.totalExpense")}</TableCell>
+              <TableCell className="font-medium">
+                {t("reports.totalExpense")}
+              </TableCell>
               <TableCell className="text-right font-mono tabular-nums font-medium text-expense">
                 {formatVND(totalExpense)}
               </TableCell>
-              <TableCell className="text-right text-muted-foreground">100%</TableCell>
+              <TableCell className="text-right text-muted-foreground">
+                100%
+              </TableCell>
               <TableCell className="text-right font-mono tabular-nums text-muted-foreground">
-                {totalIncome > 0 ? `${Math.round((totalExpense / totalIncome) * 100)}%` : "—"}
+                {totalIncome > 0
+                  ? `${Math.round((totalExpense / totalIncome) * 100)}%`
+                  : "—"}
               </TableCell>
             </TableRow>
           </TableBody>
@@ -163,7 +175,7 @@ export function SpendingTab({ transactions, categoryGroups }: SpendingTabProps) 
         {groups.map((g) => (
           <div
             key={g.behaviorType}
-            className="rounded-[15px] border border-border bg-card shadow-panel overflow-hidden"
+            className="overflow-hidden rounded-[13px] border border-border/40 bg-card shadow-card"
           >
             <button
               type="button"
@@ -175,11 +187,13 @@ export function SpendingTab({ transactions, categoryGroups }: SpendingTabProps) 
                   icon="lucide:chevron-right"
                   className={cn(
                     "h-3.5 w-3.5 text-muted-foreground transition-transform",
-                    expandedType === g.behaviorType && "rotate-90"
+                    expandedType === g.behaviorType && "rotate-90",
                   )}
                 />
                 <div className="text-left">
-                  <p className="text-sm font-medium">{t(`behavior.${g.behaviorType}`)}</p>
+                  <p className="text-sm font-medium">
+                    {t(`behavior.${g.behaviorType}`)}
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     {t("reports.ofExpense", { pct: g.percentage })}
                   </p>
@@ -204,10 +218,16 @@ export function SpendingTab({ transactions, categoryGroups }: SpendingTabProps) 
                     key={d.groupName}
                     className="flex items-center justify-between py-1.5 text-xs"
                   >
-                    <span className="text-muted-foreground truncate mr-2">{d.groupName}</span>
+                    <span className="text-muted-foreground truncate mr-2">
+                      {d.groupName}
+                    </span>
                     <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-muted-foreground">{d.percentage}%</span>
-                      <span className="font-mono tabular-nums">{formatVND(d.total)}</span>
+                      <span className="text-muted-foreground">
+                        {d.percentage}%
+                      </span>
+                      <span className="font-mono tabular-nums">
+                        {formatVND(d.total)}
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -217,7 +237,7 @@ export function SpendingTab({ transactions, categoryGroups }: SpendingTabProps) 
         ))}
       </div>
     </div>
-  )
+  );
 }
 
 type SpendingRowsProps = {

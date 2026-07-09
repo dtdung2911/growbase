@@ -105,11 +105,11 @@ function Shell({ children }: { children: React.ReactNode }) {
   return (
     <main className="flex min-h-dvh items-center justify-center px-4">
       <Card className="w-full max-w-sm">
-        <CardContent className="flex flex-col items-center gap-4 pt-8 text-center">
+        <CardContent className="flex flex-col items-center gap-6 pt-8 text-center">
           <BrandLogo variant="mark" imageClassName="h-14 w-14" />
           {children}
         </CardContent>
       </Card>
     </main>
-  )
+  );
 }

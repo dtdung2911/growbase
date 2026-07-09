@@ -5,6 +5,8 @@ import { Icon } from "@iconify/react"
 import { cn } from "@/lib/utils/cn"
 import { formatVNDCompact } from "@/lib/utils/currency"
 import { useTranslation } from "@/lib/i18n/useTranslation"
+import { computeGoalProgress, goalProgressInputFromFund } from "@/lib/insight/goalProgress"
+import { GoalDualProgress } from "@/components/funds/GoalDualProgress"
 import { FUND_TYPE_CONFIG } from "@/types/app"
 import type { Fund } from "@/types/app"
 
@@ -26,10 +28,13 @@ export function FundOverviewCard({ fund }: FundOverviewCardProps) {
   const isUrgent =
     fund.fund_type === "emergency" && progress !== null && progress < 50
 
+  const goalProgress =
+    fund.fund_type === "goal" ? computeGoalProgress(goalProgressInputFromFund(fund)) : null
+
   return (
     <Link
       href={`/funds/${fund.id}`}
-      className="block rounded-[15px] border border-border bg-card p-3 shadow-panel hover:shadow-panel-hover transition-shadow"
+      className="block rounded-[13px] border border-border/40 bg-card p-3 shadow-card transition-shadow duration-200 hover:shadow-md motion-reduce:transition-none"
     >
       <div className="flex items-center gap-2.5">
         <div
@@ -53,10 +58,11 @@ export function FundOverviewCard({ fund }: FundOverviewCardProps) {
           />
         )}
       </div>
-      {progress !== null && (
+      {goalProgress && <GoalDualProgress fund={fund} progress={goalProgress} />}
+      {!goalProgress && progress !== null && (
         <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full rounded-full transition-all"
+            className="h-full rounded-full [transition:width_300ms_ease]"
             style={{
               width: `${progress}%`,
               backgroundColor: color,

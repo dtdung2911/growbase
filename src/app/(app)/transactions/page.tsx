@@ -11,6 +11,7 @@ import { QuickAddSheet } from "@/components/transactions/QuickAddSheet"
 import { EmptyState } from "@/components/shared/EmptyState"
 import { SkeletonList } from "@/components/shared/SkeletonList"
 import { Button } from "@/components/ui/button"
+import { PageHeader } from "@/components/shared/PageHeader"
 
 export default function TransactionsPage() {
   const householdId = useAppStore((s) => s.householdId)
@@ -21,7 +22,7 @@ export default function TransactionsPage() {
   if (!householdId) return null
 
   const headerActions = (
-    <div className="flex items-center gap-2">
+    <>
       <Button asChild variant="outline" size="sm" className="min-h-[44px] gap-1.5">
         <Link href="/transactions/import">
           <Icon icon="lucide:file-up" className="h-4 w-4" />
@@ -32,16 +33,13 @@ export default function TransactionsPage() {
         <Icon icon="lucide:plus" className="h-4 w-4" />
         {t("tx.addTransaction")}
       </Button>
-    </div>
+    </>
   )
 
   if (isLoading) {
     return (
       <div className="p-4">
-        <div className="mb-4 flex items-center justify-between">
-          <h1 className="text-lg font-semibold">{t("nav.transactions")}</h1>
-          {headerActions}
-        </div>
+        <PageHeader titleKey="nav.transactions" actions={headerActions} />
         <SkeletonList count={8} />
       </div>
     )
@@ -50,10 +48,7 @@ export default function TransactionsPage() {
   if (!transactions || transactions.length === 0) {
     return (
       <div className="p-4">
-        <div className="mb-4 flex items-center justify-between">
-          <h1 className="text-lg font-semibold">{t("nav.transactions")}</h1>
-          {headerActions}
-        </div>
+        <PageHeader titleKey="nav.transactions" actions={headerActions} />
         <EmptyState
           icon="lucide:arrow-left-right"
           title={t("tx.emptyTitle")}
@@ -68,10 +63,7 @@ export default function TransactionsPage() {
 
   return (
     <div className="p-4">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-lg font-semibold">{t("nav.transactions")}</h1>
-        {headerActions}
-      </div>
+      <PageHeader titleKey="nav.transactions" actions={headerActions} />
       <TransactionList transactions={transactions} />
       <QuickAddSheet open={quickAddOpen} onOpenChange={setQuickAddOpen} />
     </div>

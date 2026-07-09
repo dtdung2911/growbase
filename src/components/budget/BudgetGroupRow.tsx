@@ -21,7 +21,7 @@ export function BudgetGroupRow({ line }: BudgetGroupRowProps) {
   const goalText = BUDGET_TEMPLATE.find((tpl) => tpl.name === line.cost_type_name)?.goalText
 
   return (
-    <div className="rounded-[15px] border border-border bg-card shadow-panel">
+    <div className="rounded-[13px] border border-border/40 bg-card shadow-card">
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}

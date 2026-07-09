@@ -20,6 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import type { BudgetActualLine } from "@/types/app"
+import { BRAND, SEMANTIC } from "@/lib/design-tokens"
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false })
 
@@ -79,8 +80,8 @@ export function BudgetVsActualTab({ budgetLines }: BudgetVsActualTabProps) {
 
   const chartOptions: ApexOptions = useMemo(
     () => ({
-      chart: { type: "bar", toolbar: { show: false }, fontFamily: "inherit", stacked: false },
-      colors: ["#0084DB", "#ff917d"],
+      chart: { toolbar: { show: false }, fontFamily: "inherit", stacked: false },
+      colors: [BRAND.primary, SEMANTIC.error],
       plotOptions: { bar: { horizontal: false, borderRadius: 3, columnWidth: "60%" } },
       dataLabels: { enabled: false },
       xaxis: {
@@ -120,7 +121,7 @@ export function BudgetVsActualTab({ budgetLines }: BudgetVsActualTabProps) {
 
   return (
     <div className="space-y-4">
-      <div className="hidden rounded-[15px] border border-border bg-card shadow-panel overflow-hidden md:block">
+      <div className="hidden overflow-hidden rounded-[13px] border border-border/40 bg-card shadow-card md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -152,7 +153,7 @@ export function BudgetVsActualTab({ budgetLines }: BudgetVsActualTabProps) {
               return (
                 <div
                   key={line.cost_type_id}
-                  className="rounded-[15px] border border-border bg-card p-4 shadow-panel space-y-1"
+                  className="rounded-[13px] border border-border/40 bg-card p-4 shadow-card space-y-1"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">{line.cost_type_name}</span>
@@ -177,7 +178,7 @@ export function BudgetVsActualTab({ budgetLines }: BudgetVsActualTabProps) {
         ))}
       </div>
 
-      <div className="rounded-[15px] border border-border bg-card p-4 shadow-panel">
+      <div className="rounded-[13px] border border-border/40 bg-card p-4 shadow-card">
         <h3 className="mb-2 text-sm font-medium">{t("reports.budgetVsActual")}</h3>
         <div className="h-72">
           <Chart type="bar" height="100%" width="100%" options={chartOptions} series={chartSeries} />

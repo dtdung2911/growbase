@@ -22,52 +22,6 @@ export type Household = {
   onboarding_completed: boolean
 }
 
-export type WizardStep = 1 | 2 | 3 | 4 | 5 | 6 | 7
-
-export type IncomeDraft = {
-  id: string
-  sourceName: string
-  monthlyAmount: number
-  memberId?: string | null
-}
-
-export type AccountDraft = {
-  id: string
-  name: string
-  bankName?: string
-  accountType: AccountType
-  ownerName?: string
-  isCreditCard: boolean
-}
-
-export type DebtDraft = {
-  id: string
-  creditorName: string
-  debtType: DebtType
-  totalAmount: number
-  remainingAmount?: number
-  monthlyPayment: number
-  expectedEndDate?: string
-  memberId?: string | null
-}
-
-export type BudgetPctDraft = {
-  name: string
-  budgetPct: number
-  linkedCategoryGroupNames: string[]
-  isAutoCalculated?: boolean
-}
-
-export type WizardData = {
-  householdId: string | null
-  householdType: HouseholdType | null
-  currency: Currency
-  incomes: IncomeDraft[]
-  accounts: AccountDraft[]
-  debts: DebtDraft[]
-  budgetPcts: BudgetPctDraft[]
-}
-
 // S2: Transaction domain types
 export type TransactionDirection = "in" | "out"
 export type TransactionType =
@@ -160,6 +114,7 @@ export type Fund = {
   per_member: boolean
   amount_per_member: number | null
   sort_order: number
+  created_at: string
 }
 
 export type FundTransaction = {
@@ -225,7 +180,7 @@ export type Invitation = {
   email: string
   display_name: string
   role: MemberRole
-  token: string
+  token?: string
   status: "pending" | "accepted" | "rejected" | "expired"
   expires_at: string
   created_at: string
@@ -334,14 +289,34 @@ export type SpendingByBehavior = {
   percentage: number
 }
 
+export type TopExpenseCategory = {
+  name: string
+  icon: string | null
+  amount: number
+  pct: number
+}
+
+export type WeekdaySpending = {
+  day: number // 0=Sun..6=Sat
+  amount: number
+}
+
 export type DashboardData = {
   totalIncome: number
   totalExpense: number
   savingsRate: number
+  lastMonthIncome: number
+  lastMonthExpense: number
+  netWorth: number | null
   spendingByBehavior: SpendingByBehavior[]
   budgetLines: BudgetActualLine[]
   funds: Fund[]
   recentTransactions: TransactionWithJoins[]
+  topExpenseCategories: TopExpenseCategory[]
+  weekdaySpending: WeekdaySpending[]
+  hasAnyTransactionEver: boolean
+  yesterdayTransactions: Pick<TransactionWithJoins, "amount" | "direction" | "behavior_type">[]
+  activeDaysLast7: number
 }
 
 export type InvestmentHolding = {

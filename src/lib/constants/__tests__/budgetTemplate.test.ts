@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest"
-import { BUDGET_TEMPLATE } from "@/lib/constants/budgetTemplate"
+import {
+  BUDGET_TEMPLATE,
+  SPENDING_COST_TYPE_GROUPS,
+  estimateEmergencyTarget,
+  calculateFeasibility,
+  calculateTodayRemaining,
+} from "@/lib/constants/budgetTemplate"
 
 describe("BUDGET_TEMPLATE", () => {
   it("contains exactly 18 lines", () => {
@@ -78,5 +84,79 @@ describe("BUDGET_TEMPLATE", () => {
         "Phương tiện xe cơ phát sinh",
       ])
     })
+  })
+})
+
+describe("estimateEmergencyTarget", () => {
+  it("= 3 × income × tổng pct chi tiêu (fixed+variable+wasteful+debt_repayment = 81%)", () => {
+    // 3 × 20tr × 0.81 = 48.6tr — đã là bội 100k
+    expect(estimateEmergencyTarget(20_000_000)).toBe(48_600_000)
+  })
+
+  it("làm tròn xuống bội 100.000đ", () => {
+    // 3 × 10.137.000 × 0.81 = 24.632.910 → 24.600.000
+    expect(estimateEmergencyTarget(10_137_000)).toBe(24_600_000)
+  })
+
+  it("income 0 → 0", () => {
+    expect(estimateEmergencyTarget(0)).toBe(0)
+  })
+
+  it("pct chi tiêu derive từ BUDGET_TEMPLATE, không hardcode", () => {
+    const spendingPct = BUDGET_TEMPLATE.filter((l) =>
+      SPENDING_COST_TYPE_GROUPS.includes(l.costTypeGroup)
+    ).reduce((sum, l) => sum + l.budgetPct, 0)
+    expect(spendingPct).toBe(81)
+  })
+})
+
+describe("calculateFeasibility", () => {
+  // income 20tr, chi tiêu 81% = 16.2tr → available = 3.8tr
+  it("feasible khi monthlyNeeded <= available", () => {
+    const result = calculateFeasibility(45_600_000, 12, 20_000_000)
+    expect(result.available).toBeCloseTo(3_800_000)
+    expect(result.monthlyNeeded).toBe(3_800_000)
+    expect(result.feasible).toBe(true)
+  })
+
+  it("không feasible khi monthlyNeeded > available", () => {
+    const result = calculateFeasibility(100_000_000, 12, 20_000_000)
+    expect(result.feasible).toBe(false)
+  })
+
+  it("số tháng lẻ tính đúng phép chia", () => {
+    const result = calculateFeasibility(10_000_000, 3, 20_000_000)
+    expect(result.monthlyNeeded).toBeCloseTo(10_000_000 / 3)
+  })
+
+  it("target 0 → monthlyNeeded 0, luôn feasible", () => {
+    const result = calculateFeasibility(0, 12, 20_000_000)
+    expect(result.monthlyNeeded).toBe(0)
+    expect(result.feasible).toBe(true)
+  })
+})
+
+describe("calculateTodayRemaining", () => {
+  const flexiblePct = BUDGET_TEMPLATE.filter((l) => ["variable", "wasteful"].includes(l.costTypeGroup)).reduce(
+    (sum, l) => sum + l.budgetPct,
+    0
+  )
+
+  it("chia đều theo số ngày trong tháng", () => {
+    const jan2026 = new Date(2026, 0, 15) // 31 ngày
+    const income = 20_000_000
+    const expected = Math.floor((income * (flexiblePct / 100)) / 31)
+    expect(calculateTodayRemaining(income, jan2026)).toBe(expected)
+  })
+
+  it("tháng 28 ngày (Feb 2026, không nhuận) tính khác tháng 31 ngày", () => {
+    const income = 20_000_000
+    const feb2026 = new Date(2026, 1, 10)
+    const jan2026 = new Date(2026, 0, 10)
+    expect(calculateTodayRemaining(income, feb2026)).toBeGreaterThan(calculateTodayRemaining(income, jan2026))
+  })
+
+  it("income 0 → 0", () => {
+    expect(calculateTodayRemaining(0, new Date(2026, 0, 15))).toBe(0)
   })
 })

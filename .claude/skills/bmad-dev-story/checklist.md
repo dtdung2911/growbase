@@ -46,6 +46,7 @@ validation-rules:
 - [ ] **Regression Prevention:** ALL existing tests pass (no regressions introduced)
 - [ ] **Code Quality:** Linting and static checks pass when configured in project
 - [ ] **Test Framework Compliance:** Tests use project's testing frameworks and patterns from Dev Notes
+- [ ] **Business Flow Verification:** Story file contains a non-empty "### Testing" subsection (under Dev Agent Record) listing every business/user-facing flow touched by this story's ACs, the verification method (automated test or manual trace), and the result. "Zero TypeScript errors" / "build passes" alone is a FAIL for this item.
 
 ## 📝 Documentation & Tracking
 

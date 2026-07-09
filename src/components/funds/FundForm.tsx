@@ -16,9 +16,12 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { CurrencyInput } from "@/components/ui/CurrencyInput"
 import { cn } from "@/lib/utils/cn"
+import { formatVNDCompact } from "@/lib/utils/currency"
+import { GOAL_PRESETS, presetTargetDate } from "@/lib/constants/goalPresets"
 import { useCreateFund } from "@/lib/hooks/useFunds"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import { FUND_TYPE_CONFIG, type FundType } from "@/types/app"
+import ChevronRightCircleDuotoneIcon from "@iconify-react/si/chevron-right-circle-duotone";
 import {
   createFundSchema,
   type CreateFundInput,
@@ -131,19 +134,23 @@ function FundFormBody({ onClose }: { onClose: () => void }) {
       {step === 1 && (
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {FUND_TYPE_ORDER.map((type) => {
-            const config = FUND_TYPE_CONFIG[type]
+            const config = FUND_TYPE_CONFIG[type];
             return (
               <button
                 key={type}
                 type="button"
                 onClick={() => selectType(type)}
-                className="flex min-h-[44px] items-center gap-3 rounded-[15px] border border-border bg-card p-3 text-left transition-colors hover:border-primary"
+                className="flex min-h-[44px] items-center gap-3 rounded-[13px] border border-border/40 bg-card p-3 text-left transition-colors hover:border-primary"
               >
                 <div
                   className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
                   style={{ backgroundColor: config.bgColor }}
                 >
-                  <Icon icon={config.icon} className="h-5 w-5" style={{ color: config.color }} />
+                  <Icon
+                    icon={config.icon}
+                    className="h-5 w-5"
+                    style={{ color: config.color }}
+                  />
                 </div>
                 <div className="min-w-0">
                   <p className="font-medium text-ink">
@@ -154,7 +161,7 @@ function FundFormBody({ onClose }: { onClose: () => void }) {
                   </p>
                 </div>
               </button>
-            )
+            );
           })}
         </div>
       )}
@@ -163,6 +170,32 @@ function FundFormBody({ onClose }: { onClose: () => void }) {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {step === 2 && (
             <>
+              {fundType === "goal" && (
+                <div className="flex flex-wrap gap-2">
+                  {GOAL_PRESETS.map((preset) => (
+                    <button
+                      key={preset.presetId}
+                      type="button"
+                      onClick={() => {
+                        setValue(
+                          "name",
+                          t(`setupV2.goal.${preset.presetId}.name`),
+                        );
+                        setValue("target_amount", preset.targetAmount);
+                        setValue(
+                          "target_date",
+                          presetTargetDate(preset.targetMonths),
+                        );
+                      }}
+                      className="min-h-[44px] rounded-full border border-border px-4 text-sm text-foreground transition-colors hover:border-primary"
+                    >
+                      {t(`setupV2.goal.${preset.presetId}.name`)} ·{" "}
+                      {formatVNDCompact(preset.targetAmount)}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <div className="space-y-1.5">
                 <Label htmlFor="fund-name">{t("funds.fundName")}</Label>
                 <Controller
@@ -238,6 +271,7 @@ function FundFormBody({ onClose }: { onClose: () => void }) {
                 className="min-h-[44px] w-full"
               >
                 {t("funds.next")}
+                <ChevronRightCircleDuotoneIcon height="12em" />
               </Button>
             </>
           )}
@@ -261,7 +295,7 @@ function FundFormBody({ onClose }: { onClose: () => void }) {
                               "min-h-[44px] rounded-lg border text-sm font-medium transition-colors",
                               field.value === m
                                 ? "border-primary bg-primary-tint text-primary"
-                                : "border-border bg-muted text-muted-foreground"
+                                : "border-border bg-muted text-muted-foreground",
                             )}
                           >
                             {m}
@@ -328,7 +362,9 @@ function FundFormBody({ onClose }: { onClose: () => void }) {
                         value={field.value ?? ""}
                         onChange={(e) =>
                           field.onChange(
-                            e.target.value === "" ? null : Number(e.target.value)
+                            e.target.value === ""
+                              ? null
+                              : Number(e.target.value),
                           )
                         }
                         className="min-h-[44px] text-base"
@@ -378,7 +414,10 @@ function FundFormBody({ onClose }: { onClose: () => void }) {
                 className="min-h-[44px] w-full"
               >
                 {createFund.isPending && (
-                  <Icon icon="lucide:loader-2" className="h-4 w-4 animate-spin" />
+                  <Icon
+                    icon="lucide:loader-2"
+                    className="h-4 w-4 animate-spin"
+                  />
                 )}
                 {t("funds.createFund")}
               </Button>
@@ -387,5 +426,5 @@ function FundFormBody({ onClose }: { onClose: () => void }) {
         </form>
       )}
     </>
-  )
+  );
 }

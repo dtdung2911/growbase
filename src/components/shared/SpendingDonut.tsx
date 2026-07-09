@@ -1,101 +1,114 @@
 "use client"
 
 import dynamic from "next/dynamic"
+import { useMemo } from "react"
 import type { ApexOptions } from "apexcharts"
 import type { SpendingByBehavior } from "@/types/app"
 import { useTranslation } from "@/lib/i18n/useTranslation"
+import { BRAND, SEMANTIC } from "@/lib/design-tokens"
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false })
 
 type SpendingDonutProps = {
   data: SpendingByBehavior[]
   formatAmount: (n: number) => string
+  emptyMessage?: string
 }
 
 const BEHAVIOR_COLORS: Record<string, string> = {
-  fixed: "#49d68d",
-  variable: "#0084DB",
-  wasteful: "#ff917d",
-  debt_repayment: "#ffbd6f",
-  savings_investment: "#9b78ff",
+  fixed: SEMANTIC.success,
+  variable: BRAND.primary,
+  wasteful: SEMANTIC.error,
+  debt_repayment: SEMANTIC.warning,
+  savings_investment: SEMANTIC.violet,
 }
 
-export function SpendingDonut({ data, formatAmount }: SpendingDonutProps) {
+export function SpendingDonut({ data, formatAmount, emptyMessage }: SpendingDonutProps) {
   const { t } = useTranslation()
 
-  if (data.length === 0) {
-    return (
-      <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">
-        {t("common.noData")}
-      </div>
-    )
-  }
+  const hasData = data.length > 0
 
-  const series = data.map((entry) => entry.total)
-  const labels = data.map((entry) => t(`behavior.${entry.behavior_type}`))
-  const colors = data.map(
-    (entry) => BEHAVIOR_COLORS[entry.behavior_type] ?? "#94A3B8"
+  // Always keep Chart mounted to avoid unmount/resize race condition with ApexCharts
+  const series = useMemo(
+    () => (hasData ? data.map((e) => e.total) : [1]),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [hasData, data]
+  )
+  const labels = useMemo(
+    () => (hasData ? data.map((e) => t(`behavior.${e.behavior_type}`)) : [""]),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [hasData, data, t]
+  )
+  const colors = useMemo(
+    () =>
+      hasData
+        ? data.map((e) => BEHAVIOR_COLORS[e.behavior_type] ?? SEMANTIC.info)
+        : ["hsl(var(--border))"],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [hasData, data]
   )
 
-  const options: ApexOptions = {
-    chart: {
-      type: "donut",
-      fontFamily: "inherit",
-    },
-    labels,
-    colors,
-    plotOptions: {
-      pie: {
-        donut: {
-          size: "55%",
+  const options = useMemo(
+    () =>
+      ({
+        chart: { fontFamily: "inherit", animations: { enabled: hasData } },
+        labels,
+        colors,
+        plotOptions: {
+          pie: { donut: { size: "82%" } },
         },
-      },
-    },
-    dataLabels: {
-      enabled: false,
-    },
-    tooltip: {
-      y: {
-        formatter: (v: number) => formatAmount(v),
-      },
-    },
-    legend: {
-      position: "right",
-      fontSize: "12px",
-      markers: {
-        size: 5,
-        shape: "circle",
-      },
-      formatter: (seriesName: string, opts?: { w: { globals: { series: number[] } }; seriesIndex: number }) => {
-        if (!opts) return seriesName
-        const value = opts.w.globals.series[opts.seriesIndex]
-        return `${seriesName} — ${formatAmount(value)}`
-      },
-    },
-    stroke: {
-      width: 2,
-    },
-    responsive: [
-      {
-        breakpoint: 480,
-        options: {
-          legend: {
-            position: "bottom",
+        dataLabels: { enabled: false },
+        tooltip: {
+          enabled: hasData,
+          y: { formatter: (v: number) => formatAmount(v) },
+        },
+        legend: {
+          show: hasData,
+          position: "bottom",
+          fontSize: "12px",
+          markers: { size: 5, shape: "circle" as const },
+          formatter: (
+            seriesName: string,
+            opts?: {
+              w: { globals: { series: number[] } };
+              seriesIndex: number;
+            },
+          ) => {
+            if (!opts) return seriesName;
+            const value = opts.w.globals.series[opts.seriesIndex];
+            return `${seriesName} — ${formatAmount(value)}`;
           },
         },
-      },
-    ],
-  }
+        stroke: { width: hasData ? 2 : 0 },
+        states: {
+          hover: {
+            filter: {
+              type: hasData ? ("lighten" as const) : ("none" as const),
+            },
+          },
+          active: {
+            filter: { type: hasData ? ("darken" as const) : ("none" as const) },
+          },
+        },
+        responsive: [
+          {
+            breakpoint: 480,
+            options: { legend: { position: "bottom" } },
+          },
+        ],
+      }) as ApexOptions,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [hasData, labels, colors, formatAmount],
+  );
 
   return (
-    <div className="flex items-center">
-      <Chart
-        type="donut"
-        height={160}
-        width="100%"
-        options={options}
-        series={series}
-      />
+    <div className="relative flex items-center">
+      {!hasData && (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm text-muted-foreground z-1">
+          {emptyMessage ?? t("common.noData")}
+        </div>
+      )}
+      <Chart type="donut" width="100%" options={options} series={series} />
     </div>
-  )
+  );
 }

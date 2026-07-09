@@ -4,6 +4,8 @@ import { Icon } from "@iconify/react"
 import { cn } from "@/lib/utils/cn"
 import { formatVNDCompact } from "@/lib/utils/currency"
 import { useTranslation } from "@/lib/i18n/useTranslation"
+import { computeGoalProgress, goalProgressInputFromFund } from "@/lib/insight/goalProgress"
+import { GoalDualProgress } from "@/components/funds/GoalDualProgress"
 import { FUND_TYPE_CONFIG } from "@/types/app"
 import type { Fund } from "@/types/app"
 
@@ -28,6 +30,8 @@ export function FundCard({ fund, onContribute, onWithdraw }: FundCardProps) {
 
   const isUrgent = fund.fund_type === "emergency" && progress !== null && progress < 50
   const isFreedom = fund.fund_type === "freedom" && fund.reset_monthly
+  const goalProgress =
+    fund.fund_type === "goal" ? computeGoalProgress(goalProgressInputFromFund(fund)) : null
 
   const freedomCap = fund.amount_per_member ?? monthly
   const freedomProgress =
@@ -36,7 +40,7 @@ export function FundCard({ fund, onContribute, onWithdraw }: FundCardProps) {
       : null
 
   return (
-    <div className="mb-2 rounded-[15px] border border-border bg-card p-4 shadow-panel">
+    <div className="mb-2 rounded-[13px] border border-border/40 bg-card p-4 shadow-card">
       <div className="flex items-start gap-3">
         <div
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
@@ -69,11 +73,13 @@ export function FundCard({ fund, onContribute, onWithdraw }: FundCardProps) {
             </div>
           </div>
 
-          {progress !== null && (
+          {goalProgress && <GoalDualProgress fund={fund} progress={goalProgress} />}
+
+          {!goalProgress && progress !== null && (
             <div className="mt-2 space-y-1">
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                 <div
-                  className="h-full rounded-full transition-all"
+                  className="h-full rounded-full [transition:width_300ms_ease]"
                   style={{ width: `${Math.min(progress, 100)}%`, backgroundColor: color }}
                 />
               </div>
@@ -100,7 +106,7 @@ export function FundCard({ fund, onContribute, onWithdraw }: FundCardProps) {
             <div className="mt-2 space-y-1">
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                 <div
-                  className="h-full rounded-full transition-all"
+                  className="h-full rounded-full [transition:width_300ms_ease]"
                   style={{ width: `${freedomProgress}%`, backgroundColor: color }}
                 />
               </div>

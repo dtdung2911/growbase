@@ -10,12 +10,17 @@ import { IncomeSourceCard } from "@/components/settings/IncomeSourceCard"
 import { IncomeSourceForm } from "@/components/settings/IncomeSourceForm"
 import { IncomeHistoryItem } from "@/components/settings/IncomeHistoryItem"
 import { useIncomeSources } from "@/lib/hooks/useIncomeSources"
+import { useMembers } from "@/lib/hooks/useMembers"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import type { IncomeSource } from "@/types/app"
 
 export function IncomeManager() {
   const { t } = useTranslation()
   const { data, isLoading } = useIncomeSources()
+  const { data: membersData } = useMembers()
+  const memberNameById = new Map(
+    (membersData?.members ?? []).map((m) => [m.id, m.display_name])
+  )
 
   const [showForm, setShowForm] = useState(false)
   const [editingSource, setEditingSource] = useState<IncomeSource | null>(null)
@@ -73,6 +78,7 @@ export function IncomeManager() {
               <IncomeSourceCard
                 key={s.id}
                 source={s}
+                ownerName={s.member_id ? memberNameById.get(s.member_id) : undefined}
                 onEdit={() => {
                   setEditingSource(s)
                   setShowForm(true)

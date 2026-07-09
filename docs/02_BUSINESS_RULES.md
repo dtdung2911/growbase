@@ -96,6 +96,37 @@ THEN redirect → /dashboard
 Enforcement: APP (wizard completion handler)
 ```
 
+### BR-OB-006 Emergency fund bắt buộc (Onboarding V2)
+```
+WHEN onboarding V2 (Goal step) render
+THEN emergency fund LUÔN được tạo (bắt buộc, KHÔNG phải lựa chọn user)
+  - Target = estimateEmergencyTarget(monthlyIncome), EMERGENCY_FUND_MONTHS tháng chi tiêu
+  - Server (API /onboarding/complete) tự dựng p_goals[0] = emergency, không phụ thuộc UI
+  - RPC complete_onboarding_v2 RAISE nếu p_goals rỗng hoặc p_goals[0].fund_type <> 'emergency'
+Enforcement: DB (migration 013 guard) + APP (route dựng emergency)
+```
+
+### BR-OB-007 Multi-goal atomic (Onboarding V2)
+```
+WHEN user chọn N goal preset (education/house/travel/custom) ở Goal step
+THEN tất cả funds (emergency + N goal) được tạo trong CÙNG 1 transaction
+  - Qua RPC complete_onboarding_v2(p_goals jsonb[]) — emergency [0], goal [1..N]
+  - Fail 1 phần → rollback toàn bộ (rule 1: fund ops atomic RPC only)
+Enforcement: DB (complete_onboarding_v2 single transaction)
+```
+
+### BR-OB-008 Framing phương pháp (verifiable-only)
+```
+WHEN copy onboarding tự giới thiệu phương pháp
+THEN CHỈ dùng 3 nguồn đã xác thực:
+  - Pay Yourself First — George S. Clason, "Người giàu có nhất thành Babylon" (1926)
+  - Conscious Spending Plan — Ramit Sethi ("I Will Teach You To Be Rich")
+  - Mental accounting — Richard Thaler (Nobel Kinh tế 2017)
+CẤM nhắc "6 Lọ"/"6 Jars"/"50-30-20" ở bất kỳ đâu trong app
+  (data model = 6 fund_type + 18 budget line linh hoạt, không khớp 6 tỷ lệ cứng)
+Enforcement: APP (copy review) + i18n string audit
+```
+
 ---
 
 ## BR-CA — Category

@@ -1,8 +1,8 @@
 "use client"
 
 import { useMemo, useRef, useState } from "react"
-import { useRouter } from "next/navigation"
 import { Icon } from "@iconify/react"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils/cn"
 import { formatVND } from "@/lib/utils/currency"
@@ -25,6 +25,7 @@ import {
 import { parseExcel } from "@/lib/utils/excel"
 import { matchCategory } from "@/lib/utils/category-matcher"
 import { Button } from "@/components/ui/button"
+import { PageHeader } from "@/components/shared/PageHeader"
 import { Badge } from "@/components/ui/badge"
 import {
   Select,
@@ -275,22 +276,14 @@ export function ImportClient() {
 
   return (
     <div className="p-4 pb-24">
-      <div className="mb-6 flex items-center gap-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="min-h-[44px] min-w-[44px]"
-          onClick={() => router.push("/transactions")}
-          aria-label={t("import.back")}
-        >
-          <Icon icon="lucide:arrow-left" className="h-5 w-5" />
-        </Button>
-        <h1 className="text-xl font-bold text-ink">{t("import.title")}</h1>
-      </div>
+      <PageHeader
+        titleKey="import.title"
+        breadcrumbs={[{ labelKey: "nav.transactions", href: "/transactions" }]}
+      />
 
       <StepsIndicator current={step} />
 
-      <div className="mt-6 rounded-[15px] border border-border bg-card p-6 shadow-panel">
+      <div className="mt-6 rounded-[13px] border border-border/40 bg-card p-6 shadow-card">
         {step === 1 && (
           <UploadStep
             fileName={fileName}
@@ -331,7 +324,10 @@ export function ImportClient() {
         )}
 
         {step === 4 && (
-          <ConfirmStep count={selectedRows.length} total={selectedRows.reduce((s, r) => s + r.amount, 0)} />
+          <ConfirmStep
+            count={selectedRows.length}
+            total={selectedRows.reduce((s, r) => s + r.amount, 0)}
+          />
         )}
       </div>
 
@@ -357,12 +353,17 @@ export function ImportClient() {
             onClick={() => setStep(2)}
           >
             {t("import.next")}
+
             <Icon icon="lucide:chevron-right" className="ml-1 h-4 w-4" />
           </Button>
         )}
 
         {step === 2 && (
-          <Button className="min-h-[44px]" disabled={!canMap} onClick={goToPreview}>
+          <Button
+            className="min-h-[44px]"
+            disabled={!canMap}
+            onClick={goToPreview}
+          >
             {t("import.next")}
             <Icon icon="lucide:chevron-right" className="ml-1 h-4 w-4" />
           </Button>
@@ -377,7 +378,11 @@ export function ImportClient() {
             )}
             <Button
               className="min-h-[44px]"
-              disabled={selectedRows.length === 0 || !accountId || missingCategoryCount > 0}
+              disabled={
+                selectedRows.length === 0 ||
+                !accountId ||
+                missingCategoryCount > 0
+              }
               onClick={() => setStep(4)}
             >
               {t("import.next")}
@@ -393,16 +398,17 @@ export function ImportClient() {
             onClick={handleImport}
           >
             {importMutation.isPending && (
-              <Icon icon="lucide:loader-2" className="mr-2 h-4 w-4 animate-spin" />
+              <Icon
+                icon="lucide:loader-2"
+                className="mr-2 h-4 w-4 animate-spin"
+              />
             )}
-            {importMutation.isPending
-              ? t("import.importing")
-              : t("import.cta")}
+            {importMutation.isPending ? t("import.importing") : t("import.cta")}
           </Button>
         )}
       </div>
     </div>
-  )
+  );
 }
 
 function StepsIndicator({ current }: { current: Step }) {
@@ -491,7 +497,7 @@ function UploadStep({
           onDrop(e)
         }}
         className={cn(
-          "flex flex-col items-center justify-center gap-3 rounded-[15px] border-2 border-dashed px-6 py-12 text-center transition-colors",
+          "flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-6 py-12 text-center transition-colors",
           dragActive ? "border-primary bg-primary/5" : "border-border bg-background"
         )}
       >
@@ -513,7 +519,7 @@ function UploadStep({
       </div>
 
       {fileName && rowCount > 0 && (
-        <div className="mt-4 flex items-center gap-2 rounded-[15px] border border-border bg-success-soft/40 px-4 py-3">
+        <div className="mt-4 flex items-center gap-2 rounded-[13px] border border-success/20 bg-success-soft/40 px-4 py-3">
           <Icon icon="lucide:file-check-2" className="h-5 w-5 text-success" />
           <div className="text-sm">
             <div className="flex items-center gap-2">
@@ -756,12 +762,12 @@ function PreviewStep({
       </div>
 
       {totalCount === 0 && (
-        <p className="rounded-[15px] border border-border bg-warning-soft/40 px-4 py-3 text-sm text-warning">
+        <p className="rounded-[13px] border border-warning/20 bg-warning-soft/40 px-4 py-3 text-sm text-warning">
           {t("import.noValidRows")}
         </p>
       )}
 
-      <div className="hidden overflow-hidden rounded-[15px] border border-border md:block">
+      <div className="hidden overflow-hidden rounded-[13px] border border-border/40 md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -858,7 +864,7 @@ function PreviewStep({
           <div
             key={row.index}
             className={cn(
-              "rounded-[15px] border border-border bg-card p-3",
+              "rounded-[13px] border border-border/40 bg-card p-3",
               !row.valid && "border-warning/40 bg-warning-soft/30"
             )}
           >
@@ -925,7 +931,7 @@ function PreviewStep({
 function ConfirmStep({ count, total }: { count: number; total: number }) {
   const { t } = useTranslation()
   return (
-    <div className="flex flex-col items-center gap-4 py-8 text-center">
+    <div className="flex flex-col items-center gap-6 py-8 text-center">
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
         <Icon icon="lucide:database-backup" className="h-8 w-8 text-primary" />
       </div>
@@ -936,5 +942,5 @@ function ConfirmStep({ count, total }: { count: number; total: number }) {
         {formatVND(total)}
       </p>
     </div>
-  )
+  );
 }

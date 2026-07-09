@@ -3,12 +3,13 @@ import { cn } from "@/lib/utils/cn"
 
 const Card = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & { variant?: "default" | "stat" }
+>(({ className, variant = "default", ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
-      "rounded-[15px] border border-border bg-card text-card-foreground",
+      "border border-border/40 bg-card text-card-foreground shadow-card",
+      variant === "stat" ? "rounded-[18px]" : "rounded-[13px]",
       className
     )}
     {...props}
@@ -22,10 +23,10 @@ const CardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex items-start justify-between gap-4 p-7", className)}
+    className={cn("flex items-start justify-between gap-6 p-7", className)}
     {...props}
   />
-))
+));
 CardHeader.displayName = "CardHeader"
 
 const CardTitle = React.forwardRef<
@@ -56,7 +57,7 @@ const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("px-7 pb-7", className)} {...props} />
+  <div ref={ref} className={cn("p-[30px] pb-[24px]", className)} {...props} />
 ))
 CardContent.displayName = "CardContent"
 

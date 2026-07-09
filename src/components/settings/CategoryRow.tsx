@@ -1,10 +1,11 @@
 "use client"
 
 import { Icon } from "@iconify/react"
-import { cn } from "@/lib/utils/cn"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useTranslation } from "@/lib/i18n/useTranslation"
+import type { VariantProps } from "class-variance-authority"
+import type { badgeVariants } from "@/components/ui/badge"
 
 type CategoryRowProps = {
   category: {
@@ -18,12 +19,14 @@ type CategoryRowProps = {
   onDelete: () => void
 }
 
-const BEHAVIOR_BADGE_CLASS: Record<string, string> = {
-  fixed: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  variable: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-  wasteful: "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
-  debt_repayment: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
-  savings_investment: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300",
+type BadgeVariant = VariantProps<typeof badgeVariants>["variant"]
+
+const BEHAVIOR_BADGE_VARIANT: Record<string, BadgeVariant> = {
+  fixed: "default",
+  variable: "success",
+  wasteful: "warning",
+  debt_repayment: "destructive",
+  savings_investment: "violet",
 }
 
 export function CategoryRow({
@@ -33,7 +36,7 @@ export function CategoryRow({
   onDelete,
 }: CategoryRowProps) {
   const { t } = useTranslation()
-  const badgeClass = BEHAVIOR_BADGE_CLASS[category.default_behavior_type]
+  const badgeVariant = BEHAVIOR_BADGE_VARIANT[category.default_behavior_type]
   const behaviorKey = `behavior.${category.default_behavior_type}`
 
   return (
@@ -43,11 +46,8 @@ export function CategoryRow({
           <span className="text-base">{category.icon}</span>
         )}
         <span className="text-sm">{category.name}</span>
-        {badgeClass && (
-          <Badge
-            variant="secondary"
-            className={cn("text-[10px] font-normal", badgeClass)}
-          >
+        {badgeVariant && (
+          <Badge variant={badgeVariant} className="text-[10px] font-normal">
             {t(behaviorKey)}
           </Badge>
         )}

@@ -23,6 +23,7 @@ export function useFunds() {
       if (!res.ok) throw new Error(json.error ?? "Không tải được quỹ")
       return json.data
     },
+    staleTime: 30_000,
     enabled: Boolean(householdId),
   })
 }
@@ -38,6 +39,7 @@ export function useFundDetail(fundId: string) {
       if (!res.ok) throw new Error(json.error ?? "Không tải được quỹ")
       return json.data
     },
+    staleTime: 30_000,
     enabled: Boolean(householdId) && Boolean(fundId),
   })
 }
@@ -45,6 +47,7 @@ export function useFundDetail(fundId: string) {
 export function useCreateFund() {
   const qc = useQueryClient()
   const householdId = useAppStore((s) => s.householdId)
+  const month = useAppStore((s) => s.currentMonth)
 
   return useMutation({
     mutationFn: async (input: CreateFundInput) => {
@@ -60,6 +63,7 @@ export function useCreateFund() {
     onSuccess: () => {
       if (householdId) {
         void qc.invalidateQueries({ queryKey: keys.funds(householdId) })
+        void qc.invalidateQueries({ queryKey: keys.dashboard(householdId, month) })
       }
       toast.success("Đã tạo quỹ", { duration: 2000 })
     },
@@ -72,6 +76,7 @@ export function useCreateFund() {
 export function useUpdateFund(fundId: string) {
   const qc = useQueryClient()
   const householdId = useAppStore((s) => s.householdId)
+  const month = useAppStore((s) => s.currentMonth)
 
   return useMutation({
     mutationFn: async (input: UpdateFundInput) => {
@@ -88,6 +93,7 @@ export function useUpdateFund(fundId: string) {
       if (householdId) {
         void qc.invalidateQueries({ queryKey: keys.funds(householdId) })
         void qc.invalidateQueries({ queryKey: ["fund-detail", householdId, fundId] })
+        void qc.invalidateQueries({ queryKey: keys.dashboard(householdId, month) })
       }
       toast.success("Đã cập nhật", { duration: 2000 })
     },
@@ -100,6 +106,7 @@ export function useUpdateFund(fundId: string) {
 export function useDeleteFund(fundId: string) {
   const qc = useQueryClient()
   const householdId = useAppStore((s) => s.householdId)
+  const month = useAppStore((s) => s.currentMonth)
 
   return useMutation({
     mutationFn: async () => {
@@ -111,6 +118,7 @@ export function useDeleteFund(fundId: string) {
     onSuccess: () => {
       if (householdId) {
         void qc.invalidateQueries({ queryKey: keys.funds(householdId) })
+        void qc.invalidateQueries({ queryKey: keys.dashboard(householdId, month) })
       }
       toast.success("Đã xóa quỹ", { duration: 2000 })
     },
@@ -214,6 +222,7 @@ export function useFundTransactions(fundId: string) {
       if (!res.ok) throw new Error(json.error ?? "Không tải được lịch sử quỹ")
       return json.data
     },
+    staleTime: 30_000,
     enabled: Boolean(householdId) && Boolean(fundId),
   })
 }

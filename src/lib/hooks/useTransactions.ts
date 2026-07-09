@@ -19,6 +19,7 @@ export function useTransactions() {
       if (!res.ok) throw new Error(json.error ?? "Không tải được giao dịch")
       return json.data
     },
+    staleTime: 60_000,
     enabled: Boolean(householdId),
   })
 }
@@ -44,8 +45,11 @@ export function useCreateTransaction() {
         void qc.invalidateQueries({ queryKey: keys.transactions(householdId, month) })
         void qc.invalidateQueries({ queryKey: keys.budget(householdId, month) })
         void qc.invalidateQueries({ queryKey: keys.accounts(householdId) })
+        void qc.invalidateQueries({ queryKey: keys.dashboard(householdId, month) })
       }
       toast.success("Đã lưu", { duration: 2000 })
+      // Ghi ngày ghi giao dịch cũng tính hoạt động dù không mở dashboard (Story 7.2)
+      void fetch("/api/activity/heartbeat", { method: "POST" })
     },
     onError: (err: Error) => {
       toast.error(err.message, { duration: 5000 })

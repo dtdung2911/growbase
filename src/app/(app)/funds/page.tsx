@@ -5,6 +5,7 @@ import { useAppStore } from "@/lib/stores/appStore"
 import { FundList } from "@/components/funds/FundList"
 import { MonthlyBufferBanner } from "@/components/funds/MonthlyBufferBanner"
 import { SkeletonCard } from "@/components/shared/SkeletonCard"
+import { PageHeader } from "@/components/shared/PageHeader"
 
 export default function FundsPage() {
   const householdId = useAppStore((s) => s.householdId)
@@ -27,6 +28,7 @@ export default function FundsPage() {
 
   return (
     <div className="space-y-4 p-4 pb-16">
+      <PageHeader titleKey="nav.funds" />
       {bufferFund && <MonthlyBufferBanner fund={bufferFund} />}
       <FundList funds={list} />
     </div>

@@ -44,6 +44,7 @@ type GroupRow = {
 export function useCategories(householdId: string) {
   return useQuery({
     queryKey: keys.categories(householdId),
+    staleTime: 24 * 60 * 60_000,
     queryFn: async (): Promise<CategoryGroupWithCategories[]> => {
       const supabase = createClient()
       const { data, error } = await supabase

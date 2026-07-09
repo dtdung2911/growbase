@@ -70,7 +70,7 @@ export function EventBudgetDetail({ id, onBack }: EventBudgetDetailProps) {
         </Button>
       </div>
 
-      <div className="mb-4 rounded-[15px] border border-border bg-card p-4 shadow-panel">
+      <div className="mb-4 rounded-[13px] border border-border/40 bg-card p-4 shadow-card">
         <h2 className="text-lg font-semibold">{data.name}</h2>
         {data.event_date && (
           <p className="mt-0.5 text-xs text-muted-foreground">{data.event_date}</p>
@@ -126,7 +126,7 @@ export function EventBudgetDetail({ id, onBack }: EventBudgetDetailProps) {
       ) : (
         <>
           {/* Desktop: table */}
-          <div className="hidden rounded-[15px] border border-border bg-card shadow-panel md:block">
+          <div className="hidden rounded-[13px] border border-border/40 bg-card shadow-card md:block">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -175,7 +175,7 @@ export function EventBudgetDetail({ id, onBack }: EventBudgetDetailProps) {
               return (
                 <div
                   key={item.id}
-                  className="rounded-[15px] border border-border bg-card p-3 shadow-panel"
+                  className="rounded-[13px] border border-border/40 bg-card p-3 shadow-card"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-sm font-medium">{item.name}</span>

@@ -1,14 +1,19 @@
 "use client"
 
-import { cn } from "@/lib/utils/cn"
+import { Icon } from "@iconify/react"
+import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import type { Invitation } from "@/types/app"
+import type { VariantProps } from "class-variance-authority"
+import type { badgeVariants } from "@/components/ui/badge"
 
-const ROLE_BADGE_CLASS: Record<string, string> = {
-  owner: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300",
-  member: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  viewer: "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400",
+type BadgeVariant = VariantProps<typeof badgeVariants>["variant"]
+
+const ROLE_BADGE_VARIANT: Record<string, BadgeVariant> = {
+  owner: "violet",
+  member: "default",
+  viewer: "secondary",
 }
 
 type InviteCardProps = {
@@ -17,27 +22,30 @@ type InviteCardProps = {
 
 export function InviteCard({ invitation }: InviteCardProps) {
   const { t, locale } = useTranslation()
-  const roleClass = ROLE_BADGE_CLASS[invitation.role]
+  const roleVariant = ROLE_BADGE_VARIANT[invitation.role] ?? "secondary"
   const expiresDate = new Date(invitation.expires_at).toLocaleDateString(
     locale === "vi" ? "vi-VN" : "en-US"
   )
 
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}/invite/${invitation.token}`)
+      toast.success(t("settings.members.linkCopied"), { duration: 2000 })
+    } catch {
+      toast.error(t("settings.members.copyFailed"), { duration: 5000 })
+    }
+  }
+
   return (
-    <div className="rounded-2xl border border-dashed border-border bg-card p-4 shadow-panel">
+    <div className="flex items-start justify-between gap-2 rounded-[13px] border border-dashed border-border/40 bg-card p-4 shadow-card">
       <div className="space-y-1">
         <h4 className="text-sm font-semibold">{invitation.display_name}</h4>
         <p className="text-xs text-muted-foreground">{invitation.email}</p>
         <div className="flex flex-wrap gap-1.5">
-          <Badge
-            variant="secondary"
-            className={cn("text-[10px] font-normal", roleClass)}
-          >
+          <Badge variant={roleVariant} className="text-[10px] font-normal">
             {t(`settings.members.role.${invitation.role}`)}
           </Badge>
-          <Badge
-            variant="secondary"
-            className="bg-yellow-100 text-[10px] font-normal text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
-          >
+          <Badge variant="warning" className="text-[10px] font-normal">
             {t("settings.members.pendingBadge")}
           </Badge>
         </div>
@@ -45,6 +53,16 @@ export function InviteCard({ invitation }: InviteCardProps) {
           {t("settings.members.expiresAt", { date: expiresDate })}
         </p>
       </div>
+      {invitation.status === "pending" && invitation.token && (
+        <button
+          type="button"
+          onClick={copyLink}
+          aria-label={t("common.copy")}
+          className="flex h-11 w-11 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground"
+        >
+          <Icon icon="lucide:copy" className="h-4 w-4" />
+        </button>
+      )}
     </div>
   )
 }

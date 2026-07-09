@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { monthRange, toYearMonth, firstDayOfMonth } from "@/lib/utils/date"
+import { monthRange, toYearMonth, firstDayOfMonth, yesterday } from "@/lib/utils/date"
 
 describe("monthRange", () => {
   it("returns first and last day of a 31-day month", () => {
@@ -79,5 +79,35 @@ describe("firstDayOfMonth", () => {
   it("output matches monthRange.from for the same input", () => {
     const ym = "2026-09"
     expect(firstDayOfMonth(ym)).toBe(monthRange(ym).from)
+  })
+})
+
+describe("yesterday", () => {
+  it("returns the previous day within a month", () => {
+    expect(yesterday(new Date(2026, 5, 16))).toBe("2026-06-15")
+  })
+
+  it("crosses a month boundary (day 1 -> last day of previous month)", () => {
+    expect(yesterday(new Date(2026, 6, 1))).toBe("2026-06-30")
+  })
+
+  it("crosses a year boundary (Jan 1 -> Dec 31 previous year)", () => {
+    expect(yesterday(new Date(2026, 0, 1))).toBe("2025-12-31")
+  })
+
+  it("uses local time, not UTC, at midnight (no off-by-one from timezone conversion)", () => {
+    // 2026-03-01 00:00 local — a naive toISOString()/UTC approach on a
+    // negative-UTC-offset machine would wrongly report 2026-02-27
+    expect(yesterday(new Date(2026, 2, 1, 0, 0, 0))).toBe("2026-02-28")
+  })
+
+  it("defaults to computing from the current date when no arg passed", () => {
+    const now = new Date()
+    const expectedYesterday = new Date(now)
+    expectedYesterday.setDate(now.getDate() - 1)
+    const y = expectedYesterday.getFullYear()
+    const m = String(expectedYesterday.getMonth() + 1).padStart(2, "0")
+    const d = String(expectedYesterday.getDate()).padStart(2, "0")
+    expect(yesterday()).toBe(`${y}-${m}-${d}`)
   })
 })
