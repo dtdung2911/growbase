@@ -10,7 +10,7 @@ import { FUND_TYPE_CONFIG } from "@/types/app"
 import { ContributeModal } from "@/components/funds/ContributeModal"
 import { WithdrawModal } from "@/components/funds/WithdrawModal"
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog"
-import { GoalEditSheet } from "@/components/funds/GoalEditSheet"
+import { FundEditSheet } from "@/components/funds/FundEditSheet"
 import { SkeletonCard } from "@/components/shared/SkeletonCard"
 import { PageHeader } from "@/components/shared/PageHeader"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -58,6 +58,7 @@ export default function FundDetailPage({
   }
 
   const config = FUND_TYPE_CONFIG[fund.fund_type]
+  const canEdit = fund.fund_type === "goal" || fund.fund_type === "emergency"
   const color = fund.color || config.color
   const target = fund.target_amount
   const progress =
@@ -95,11 +96,11 @@ export default function FundDetailPage({
                 ` · ${monthsToTarget} ${t("funds.monthsToTarget")}`}
             </p>
           </div>
-          {fund.fund_type === "goal" && (
+          {canEdit && (
             <button
               type="button"
               onClick={() => setEditOpen(true)}
-              aria-label={t("funds.editGoal")}
+              aria-label={fund.fund_type === "emergency" ? t("funds.editEmergency") : t("funds.editGoal")}
               className="min-h-[44px] min-w-[44px] flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
             >
               <Icon icon="lucide:pencil" className="h-5 w-5" />
@@ -322,8 +323,8 @@ export default function FundDetailPage({
         open={withdrawOpen}
         onClose={() => setWithdrawOpen(false)}
       />
-      {fund.fund_type === "goal" && editOpen && (
-        <GoalEditSheet fund={fund} open={editOpen} onClose={() => setEditOpen(false)} />
+      {canEdit && editOpen && (
+        <FundEditSheet fund={fund} open={editOpen} onClose={() => setEditOpen(false)} />
       )}
       <ConfirmDialog
         open={deleteOpen}

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   fundContributeSchema,
   fundWithdrawSchema,
+  updateFundSchema,
 } from "@/lib/validations/fund"
 
 const UUID = "11111111-1111-1111-1111-111111111111"
@@ -150,5 +151,28 @@ describe("fundWithdrawSchema", () => {
       amount: 999_999_999_999,
     })
     expect(r.success).toBe(true)
+  })
+})
+
+describe("updateFundSchema target_months_expense", () => {
+  it("accepts an integer within [1, 24]", () => {
+    expect(updateFundSchema.safeParse({ target_months_expense: 6 }).success).toBe(true)
+    expect(updateFundSchema.safeParse({ target_months_expense: 1 }).success).toBe(true)
+    expect(updateFundSchema.safeParse({ target_months_expense: 24 }).success).toBe(true)
+  })
+
+  it("rejects values below 1 or above 24", () => {
+    expect(updateFundSchema.safeParse({ target_months_expense: 0 }).success).toBe(false)
+    expect(updateFundSchema.safeParse({ target_months_expense: 25 }).success).toBe(false)
+  })
+
+  it("allows null and omission (field is optional)", () => {
+    expect(updateFundSchema.safeParse({ target_months_expense: null }).success).toBe(true)
+    expect(updateFundSchema.safeParse({}).success).toBe(true)
+  })
+
+  it("keeps icon as a free string (no enum whitelist)", () => {
+    expect(updateFundSchema.safeParse({ icon: "lucide:piggy-bank" }).success).toBe(true)
+    expect(updateFundSchema.safeParse({ icon: "ph:car-duotone" }).success).toBe(true)
   })
 })

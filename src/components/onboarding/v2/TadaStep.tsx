@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
+import { Icon } from "@iconify/react"
 import { Button } from "@/components/ui/button"
 import { CurrencyInput } from "@/components/ui/CurrencyInput"
 import { Input } from "@/components/ui/input"
@@ -12,19 +13,23 @@ import {
   COMPLETE_ONBOARDING_V2_KEY,
   useCompleteOnboardingV2,
   type CompleteOnboardingV2Response,
+  type OnboardingFundResult,
 } from "@/lib/hooks/useCompleteOnboardingV2"
 import { useFunds, useUpdateFund } from "@/lib/hooks/useFunds"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import { formatVND } from "@/lib/utils/currency"
 import { addMonthsIso } from "@/lib/utils/date"
 import { cn } from "@/lib/utils/cn"
+import { toast } from "sonner"
 import {
   BUDGET_TEMPLATE,
+  FLEXIBLE_COST_TYPE_GROUPS,
+  calculateAggregateFeasibility,
   type CostTypeGroupKey,
   type FeasibilityResult,
 } from "@/lib/constants/budgetTemplate"
 import { TADA_REVEAL_STAGES, type TadaRevealStage } from "@/lib/constants/tadaReveal"
-import { PRESET_ICONS } from "./goalPresetIcons";
+import { PRESET_ICON_NAMES } from "./goalPresetIcons";
 
 const STAGE_DELAY_MS = 550
 
@@ -123,24 +128,30 @@ export function TadaStep() {
   }
 
   const original = result
-  // Nhánh infeasible điều chỉnh quỹ chưa khả thi đầu tiên (fallback quỹ đầu — luôn có emergency).
-  const targetFund = original.funds.find((f) => !f.feasibility.feasible) ?? original.funds[0]
-  const targetAmount = adjustedTargetAmount ?? targetFund.targetAmount
-  const months = adjustedMonths ?? targetFund.months
+  // Chỉ điều chỉnh quỹ mục tiêu thực sự chưa khả thi — không bao giờ đụng quỹ khẩn cấp (BR-OB-006).
+  // Không fallback funds[0]: nếu tổng infeasible mà không quỹ đơn nào infeasible → hiện thông báo, không có input chỉnh.
+  const adjustFund = original.funds.find((f) => !f.feasibility.feasible && f.fundType !== "emergency")
+  const targetAmount = adjustedTargetAmount ?? adjustFund?.targetAmount ?? 0
+  const months = adjustedMonths ?? adjustFund?.months ?? 1
 
-  // Feasibility phải tính TỔNG mọi fund cùng rút từ available, không chỉ targetFund.
-  // Các fund khác giữ monthlyNeeded gốc; targetFund dùng giá trị đang chỉnh.
-  const otherFundsMonthly = original.funds
-    .filter((f) => f !== targetFund)
-    .reduce((sum, f) => sum + f.feasibility.monthlyNeeded, 0)
-  const adjustedMonthly = otherFundsMonthly + targetAmount / months
-  const feasibility: FeasibilityResult = original.feasibility.feasible
-    ? original.feasibility
-    : {
-        monthlyNeeded: adjustedMonthly,
-        available: original.feasibility.available,
-        feasible: adjustedMonthly <= original.feasibility.available + 1,
-      }
+  // Góp/tháng per-fund: fund đang chỉnh dùng giá trị live, còn lại dùng số server tính.
+  const fundMonthly = (f: OnboardingFundResult) =>
+    f === adjustFund ? targetAmount / months : f.feasibility.monthlyNeeded
+
+  // API không trả icon: quỹ custom lấy icon user chọn từ goals state (match theo name), preset map từ presetId.
+  const iconFor = (f: OnboardingFundResult) =>
+    f.presetId === "custom"
+      ? goals.find((g) => g.presetId === "custom" && g.name === f.name)?.icon ?? PRESET_ICON_NAMES.custom
+      : PRESET_ICON_NAMES[f.presetId] ?? PRESET_ICON_NAMES.custom
+
+  // Feasibility phải tính TỔNG mọi fund cùng rút từ available; adjustFund dùng giá trị đang chỉnh.
+  const feasibility: FeasibilityResult =
+    original.feasibility.feasible || !adjustFund
+      ? original.feasibility
+      : calculateAggregateFeasibility(
+          original.funds.map(fundMonthly),
+          original.feasibility.available
+        )
 
   const wasAdjusted = adjustedTargetAmount !== null || adjustedMonths !== null
 
@@ -157,20 +168,26 @@ export function TadaStep() {
           </p>
           {original.funds.map((f) => (
             <div
-              key={`${f.fundType}-${f.name}`}
+              key={f.id}
               className="flex items-center gap-3 rounded-[13px] border border-border/40 bg-card p-4 shadow-card"
             >
-              <span className="text-2xl text-primary" aria-hidden>
-                {PRESET_ICONS[f.presetId] ?? PRESET_ICONS.custom}
-              </span>
+              <Icon icon={iconFor(f)} className="text-2xl text-primary" aria-hidden />
               <div className="flex-1">
                 <p className="font-semibold text-primary">{f.name}</p>
                 <p className="font-mono text-sm tabular-nums text-muted-foreground">
                   {formatVND(f.targetAmount)}
                 </p>
+                <p className="font-mono text-xs tabular-nums text-muted-foreground">
+                  {t("setupV2.tada.fundMonthly", { amount: formatVND(fundMonthly(f)) })}
+                </p>
               </div>
             </div>
           ))}
+          <p className="font-mono text-sm font-semibold tabular-nums text-foreground">
+            {t("setupV2.tada.totalMonthly", {
+              amount: formatVND(original.funds.reduce((s, f) => s + fundMonthly(f), 0)),
+            })}
+          </p>
         </div>
       )}
 
@@ -188,8 +205,11 @@ export function TadaStep() {
           </p>
           {/* Gate theo verdict gốc từ server, không theo feasibility live:
               nếu gate live thì vừa gõ qua ngưỡng khả thi là inputs unmount giữa chừng. */}
-          {!original.feasibility.feasible && (
+          {!original.feasibility.feasible && adjustFund && (
             <div className="space-y-3">
+              <p className="text-sm font-medium text-foreground">
+                {t("setupV2.tada.adjustingFund", { name: adjustFund.name })}
+              </p>
               <p className="text-sm text-muted-foreground">
                 {t("setupV2.tada.infeasibleDesc")}
               </p>
@@ -200,7 +220,7 @@ export function TadaStep() {
                 <CurrencyInput
                   id="tada-target"
                   value={targetAmount}
-                  onChange={setAdjustedTargetAmount}
+                  onChange={(v) => setAdjustedTargetAmount(v || null)}
                 />
               </div>
               <div className="space-y-1.5">
@@ -213,13 +233,18 @@ export function TadaStep() {
                   value={months}
                   onChange={(e) => {
                     const digits = e.target.value.replace(/\D/g, "");
-                    setAdjustedMonths(Number(digits) || 1);
+                    setAdjustedMonths(digits ? Number(digits) : null);
                   }}
                   className="font-mono tabular-nums"
                 />
               </div>
-              <p className="font-mono text-sm tabular-nums text-muted-foreground">
-                {t("setupV2.tada.monthlyNeeded", {
+              <p className="font-mono text-sm tabular-nums text-foreground">
+                {t("setupV2.tada.fundMonthly", {
+                  amount: formatVND(targetAmount / months),
+                })}
+              </p>
+              <p className="font-mono text-xs tabular-nums text-muted-foreground">
+                {t("setupV2.tada.totalMonthlyNeeded", {
                   amount: formatVND(feasibility.monthlyNeeded),
                 })}
               </p>
@@ -236,6 +261,12 @@ export function TadaStep() {
           <p className="animate-in zoom-in-95 font-mono text-4xl font-bold tabular-nums text-foreground duration-300 motion-reduce:animate-none">
             {formatVND(original.todayRemaining)}
           </p>
+          <p className="text-xs text-muted-foreground">
+            {t("setupV2.tada.todayRemainingHint", {
+              percent: sumBudgetPct(FLEXIBLE_COST_TYPE_GROUPS),
+              days: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate(),
+            })}
+          </p>
           <p className="text-sm text-muted-foreground">
             {t("setupV2.tada.hookCallback")}
           </p>
@@ -245,8 +276,7 @@ export function TadaStep() {
       {revealed.length === TADA_REVEAL_STAGES.length && (
         <TadaFinishButton
           wasAdjusted={wasAdjusted}
-          fundName={targetFund.name}
-          fundType={targetFund.fundType}
+          fundId={adjustFund?.id}
           targetAmount={targetAmount}
           months={months}
           onDone={() => {
@@ -263,29 +293,35 @@ export function TadaStep() {
 
 function TadaFinishButton({
   wasAdjusted,
-  fundName,
-  fundType,
+  fundId,
   targetAmount,
   months,
   onDone,
 }: {
   wasAdjusted: boolean
-  fundName: string
-  fundType: "emergency" | "goal"
+  fundId: string | undefined
   targetAmount: number
   months: number
   onDone: () => void
 }) {
   const { t } = useTranslation()
   const { data: funds, isPending: fundsPending } = useFunds()
-  // Match theo name + fund_type: nhiều fund cùng type 'goal' nên fund_type đơn không đủ định danh (AC4)
-  const fund = funds?.find((f) => f.name === fundName && f.fund_type === fundType)
+  const fund = funds?.find((f) => f.id === fundId)
   const updateFund = useUpdateFund(fund?.id ?? "")
 
   const handleClick = async () => {
-    if (wasAdjusted && fund) {
-      const targetDate = fundType === "goal" ? addMonthsIso(months) : undefined
-      await updateFund.mutateAsync({ target_amount: targetAmount, ...(targetDate ? { target_date: targetDate } : {}) })
+    if (wasAdjusted) {
+      if (!fund) {
+        toast.warning(t("setupV2.tada.fundNotFound"))
+      } else {
+        try {
+          const targetDate = fund.fund_type === "goal" ? addMonthsIso(months) : undefined
+          await updateFund.mutateAsync({ target_amount: targetAmount, ...(targetDate ? { target_date: targetDate } : {}) })
+        } catch {
+          // useUpdateFund.onError đã toast lỗi; giữ user ở Tada (không sang dashboard).
+          return
+        }
+      }
     }
     onDone()
   }

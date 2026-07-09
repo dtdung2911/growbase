@@ -798,3 +798,90 @@ So that tôi tin đây là khoa học chứ không phải tự suy diễn.
 **Given** docs dự án
 **When** story hoàn tất
 **Then** `docs/05_UX_SPEC.md` (flow onboarding mới) và `docs/02_BUSINESS_RULES.md` (emergency bắt buộc, multi-goal) được cập nhật khớp hiện trạng
+
+## Epic 9: Minh bạch số liệu Tada + kiểm soát quỹ hậu onboarding
+
+**Mục tiêu:** User hiểu đúng mọi con số ở màn Tada (góp bao nhiêu/tháng cho từng quỹ, tổng góp toàn bộ, vì sao được chi tiêu thoải mái X/ngày), quỹ giữ đúng bản sắc (icon) từ onboarding vào app, và điều chỉnh được quỹ bất cứ lúc nào sau onboarding.
+
+**Nguồn:** Change request 09-07-2026 (5 items user feedback sau Epic 8 done). Map PRD: FR4 (Tada feasibility), FR2 (goal setup), FR17 (sửa goals hậu onboarding — gap của Story 6.4).
+
+**FRs:**
+
+- **FR-9.1** — Khi user chỉnh số tháng ở Tada, số tiền góp/tháng hiển thị theo TỪNG QUỸ đang chỉnh (target/months, vd 400tr/10 = 40tr/tháng). Root cause hiện tại: `TadaStep.tsx:134-145` show tổng household (`otherFundsMonthly + target/months`) dưới label per-fund "Cần góp {{amount}}/tháng". Feasibility check tổng vẫn giữ nguyên logic.
+- **FR-9.2** — Card "Hôm nay bạn có thể chi tiêu thoải mái" có mô tả ngắn cách tính: 20% thu nhập (nhóm chi linh hoạt) ÷ số ngày trong tháng (`calculateTodayRemaining`, budgetTemplate.ts:77-81). i18n vi/en.
+- **FR-9.3** — Danh sách mục tiêu ở Tada: hiện số góp/tháng cho TỪNG quỹ + dòng TỔNG góp toàn bộ các quỹ.
+- **FR-9.4** — Quỹ custom ở GoalStep: user chọn được icon (phong cách Phosphor duotone, có fallback). Khi hoàn thành onboarding, icon lưu vào `funds.icon` cho MỌI quỹ (preset + custom) — RPC `complete_onboarding_v2` nhận icon trong `p_goals` (migration mới).
+- **FR-9.5** — Sau onboarding, user điều chỉnh được quỹ mọi lúc: `GoalEditSheet` thêm icon + target months; emergency fund có edit UI (target months expense); `updateFundSchema` bổ sung `target_months_expense`.
+
+### Story 9.1: Tada số liệu minh bạch — per-fund, tổng, giải thích
+
+As a người dùng mới vừa setup xong,
+I want thấy rõ từng quỹ cần góp bao nhiêu mỗi tháng, tổng cộng bao nhiêu, và hiểu vì sao tôi được chi tiêu thoải mái X mỗi ngày,
+So that tôi tin con số app đưa ra thay vì nghi nó tính sai.
+
+**Acceptance Criteria:**
+
+**Given** user ở Tada chỉnh quỹ 400.000.000đ về 10 tháng
+**When** UI recalc
+**Then** số góp/tháng của QUỸ ĐÓ hiển thị 40.000.000đ (target/months); cảnh báo khả thi (nếu có) dùng tổng household nhưng label phân biệt rõ "tổng tất cả quỹ"
+
+**Given** danh sách mục tiêu render ở Tada
+**When** có 1 emergency + N goal funds
+**Then** mỗi quỹ hiện số góp/tháng riêng, cuối danh sách có dòng tổng góp toàn bộ = sum các quỹ
+
+**Given** card "Hôm nay bạn có thể chi tiêu thoải mái"
+**When** render
+**Then** có mô tả ngắn cách tính (chi linh hoạt 20% thu nhập ÷ số ngày tháng), i18n vi/en, không phá layout 4 stage
+
+**Given** công thức aggregate feasibility đang duplicate ở `route.ts` và `TadaStep.tsx` (deferred [8-1])
+**When** story done
+**Then** logic share qua helper chung, `npx tsc --noEmit` sạch, tests pass
+
+### Story 9.2: Icon quỹ — picker cho quỹ custom + persist mọi quỹ
+
+As a người dùng tạo quỹ theo ý riêng,
+I want chọn icon thể hiện quỹ của tôi và thấy đúng icon đó trong app sau onboarding,
+So that quỹ mang bản sắc của tôi, không phải icon target vô hồn giống nhau.
+
+**Acceptance Criteria:**
+
+**Given** user thêm quỹ custom ở GoalStep
+**When** form custom mở
+**Then** có icon picker (bộ icon Phosphor duotone chọn sẵn ~8-12 icon phù hợp mục tiêu tài chính), mặc định fallback icon nếu user không chọn
+
+**Given** user hoàn thành onboarding với quỹ preset + custom
+**When** RPC `complete_onboarding_v2` chạy
+**Then** `funds.icon` được ghi đúng cho MỌI quỹ (preset map từ presetId, custom theo user chọn) — migration mới cho RPC nhận icon trong `p_goals`, validate an toàn
+
+**Given** user vào trang Funds sau onboarding
+**When** FundCard render
+**Then** icon hiển thị đúng theo `fund.icon` (đã render `fund.icon || config.icon` sẵn — verify end-to-end), fallback về config icon nếu null
+
+**Given** i18n + type safety
+**When** story done
+**Then** strings qua `t()`, `npx tsc --noEmit` sạch, Zod schema onboarding validate icon (string, whitelist hoặc format check)
+
+### Story 9.3: Điều chỉnh quỹ mọi lúc sau onboarding
+
+As a người dùng đã onboarding xong,
+I want sửa được mục tiêu, số tháng, icon của các quỹ (kể cả quỹ khẩn cấp) bất cứ lúc nào,
+So that kế hoạch tài chính theo kịp cuộc sống thay vì bị khoá cứng từ lúc setup.
+
+**Acceptance Criteria:**
+
+**Given** user mở fund detail của goal fund
+**When** bấm edit
+**Then** `GoalEditSheet` cho sửa name, target_amount, target_date/months, icon (reuse icon picker từ 9.2); lưu qua `useUpdateFund` PATCH hiện có
+
+**Given** user mở fund detail của emergency fund
+**When** xem trang
+**Then** có edit affordance (hiện tại KHÔNG có) — sửa được `target_months_expense` (số tháng chi tiêu dự phòng) và icon; `updateFundSchema` bổ sung `target_months_expense`
+
+**Given** fund `is_system = true` hoặc fund type khác (freedom/sinking/investment)
+**When** render edit UI
+**Then** giữ nguyên hành vi hiện tại (ngoài scope) — không mở edit cho types chưa được duyệt
+
+**Given** user sửa quỹ thành công
+**When** mutation xong
+**Then** toast.success, query invalidate đúng keys từ factory, số liệu dashboard/funds cập nhật; error → giữ form + toast.error
+

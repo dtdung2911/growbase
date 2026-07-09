@@ -8,6 +8,7 @@ const educationGoal: OnboardingGoal = {
   name: "Quỹ học cho con",
   targetAmount: 200_000_000,
   targetMonths: 60,
+  icon: "ph:graduation-cap-duotone",
 }
 
 const houseGoal: OnboardingGoal = {
@@ -16,6 +17,7 @@ const houseGoal: OnboardingGoal = {
   name: "Mua nhà",
   targetAmount: 500_000_000,
   targetMonths: 36,
+  icon: "ph:house-line-duotone",
 }
 
 describe("useOnboardingV2Store", () => {

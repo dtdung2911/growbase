@@ -74,6 +74,16 @@ export function calculateFeasibility(
   return { monthlyNeeded, available, feasible: monthlyNeeded <= available + 1 }
 }
 
+// Feasibility tổng khi nhiều quỹ cùng rút từ available. epsilon +1: target chia đều theo tháng
+// sinh sai số float ở biên, VND không cần độ chính xác dưới 1 đồng.
+export function calculateAggregateFeasibility(
+  monthlyNeededList: number[],
+  available: number
+): FeasibilityResult {
+  const monthlyNeeded = monthlyNeededList.reduce((sum, n) => sum + n, 0)
+  return { monthlyNeeded, available, feasible: monthlyNeeded <= available + 1 }
+}
+
 export function calculateTodayRemaining(monthlyIncome: number, today: Date = new Date()): number {
   const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate()
   const flexibleMonthly = monthlyIncome * (sumBudgetPct(FLEXIBLE_COST_TYPE_GROUPS) / 100)

@@ -26,6 +26,7 @@ export const updateFundSchema = z.object({
   contribution_day: z.number().min(1).max(28).optional(),
   target_amount: z.number().nonnegative().nullable().optional(),
   target_date: z.string().nullable().optional(),
+  target_months_expense: z.number().min(1).max(24).nullable().optional(),
   expected_return_rate: z.number().nullable().optional(),
   priority: z.number().min(1).max(10).optional(),
   sort_order: z.number().optional(),

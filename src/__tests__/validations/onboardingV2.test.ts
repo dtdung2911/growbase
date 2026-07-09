@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { completeOnboardingV2Schema, goalSchema, monthlyIncomeSchema } from "@/lib/validations/onboardingV2"
+import { CUSTOM_ICON_CHOICES, PRESET_ICON_NAMES } from "@/components/onboarding/v2/goalPresetIcons"
 
 const validGoal = {
   presetId: "education" as const,
@@ -44,20 +45,51 @@ describe("goalSchema", () => {
     expect(goalSchema.safeParse({ ...validGoal, targetMonths: 12.5 }).success).toBe(false)
   })
 
-  it("từ chối name rỗng", () => {
+  it("từ chối targetMonths vượt 600", () => {
+    expect(goalSchema.safeParse({ ...validGoal, targetMonths: 601 }).success).toBe(false)
+    expect(goalSchema.safeParse({ ...validGoal, targetMonths: 600 }).success).toBe(true)
+  })
+
+  it("từ chối targetAmount vượt trần numeric(15,0)", () => {
+    expect(goalSchema.safeParse({ ...validGoal, targetAmount: 100_000_000_000_001 }).success).toBe(false)
+  })
+
+  it("từ chối name rỗng hoặc chỉ khoảng trắng", () => {
     expect(goalSchema.safeParse({ ...validGoal, name: "" }).success).toBe(false)
+    expect(goalSchema.safeParse({ ...validGoal, name: "   " }).success).toBe(false)
   })
 
   it("từ chối presetId/fundType ngoài enum", () => {
     expect(goalSchema.safeParse({ ...validGoal, presetId: "yacht" }).success).toBe(false)
     expect(goalSchema.safeParse({ ...validGoal, fundType: "freedom" }).success).toBe(false)
   })
+
+  it("chấp nhận icon trong whitelist", () => {
+    expect(goalSchema.safeParse({ ...validGoal, icon: CUSTOM_ICON_CHOICES[0] }).success).toBe(true)
+    expect(goalSchema.safeParse({ ...validGoal, icon: PRESET_ICON_NAMES.education }).success).toBe(true)
+  })
+
+  it("từ chối icon string tự do ngoài whitelist", () => {
+    expect(goalSchema.safeParse({ ...validGoal, icon: "ph:skull-duotone" }).success).toBe(false)
+    expect(goalSchema.safeParse({ ...validGoal, icon: "definitely-not-an-icon" }).success).toBe(false)
+  })
+
+  it("mặc định icon fallback (pencil) khi bỏ trống", () => {
+    const result = goalSchema.safeParse(validGoal)
+    expect(result.success).toBe(true)
+    expect(result.success && result.data.icon).toBe(PRESET_ICON_NAMES.custom)
+  })
 })
 
 describe("monthlyIncomeSchema", () => {
-  it("chấp nhận số dương", () => {
+  it("chấp nhận số ≥ 100.000", () => {
     expect(monthlyIncomeSchema.safeParse(20_000_000).success).toBe(true)
-    expect(monthlyIncomeSchema.safeParse(1).success).toBe(true)
+    expect(monthlyIncomeSchema.safeParse(100_000).success).toBe(true)
+  })
+
+  it("từ chối dưới ngưỡng tối thiểu (nhầm đơn vị)", () => {
+    expect(monthlyIncomeSchema.safeParse(20).success).toBe(false)
+    expect(monthlyIncomeSchema.safeParse(99_999).success).toBe(false)
   })
 
   it("từ chối 0 và số âm", () => {
@@ -103,6 +135,64 @@ describe("completeOnboardingV2Schema", () => {
   it("rejects income 0 or negative", () => {
     expect(completeOnboardingV2Schema.safeParse({ goals: [validGoal], monthlyIncome: 0 }).success).toBe(false)
     expect(completeOnboardingV2Schema.safeParse({ goals: [validGoal], monthlyIncome: -1 }).success).toBe(false)
+  })
+
+  it("rejects income below minimum", () => {
+    expect(completeOnboardingV2Schema.safeParse({ goals: [validGoal], monthlyIncome: 20 }).success).toBe(false)
+  })
+
+  it("rejects a goal with targetMonths over 600", () => {
+    expect(
+      completeOnboardingV2Schema.safeParse({
+        goals: [{ ...validGoal, targetMonths: 601 }],
+        monthlyIncome: 20_000_000,
+      }).success,
+    ).toBe(false)
+  })
+
+  it("rejects a goal with targetAmount overflowing numeric(15,0)", () => {
+    expect(
+      completeOnboardingV2Schema.safeParse({
+        goals: [{ ...validGoal, targetAmount: 100_000_000_000_001 }],
+        monthlyIncome: 20_000_000,
+      }).success,
+    ).toBe(false)
+  })
+
+  it("rejects duplicate preset goals", () => {
+    expect(
+      completeOnboardingV2Schema.safeParse({
+        goals: [validGoal, { ...validGoal }],
+        monthlyIncome: 20_000_000,
+      }).success,
+    ).toBe(false)
+  })
+
+  it("rejects duplicate custom goals by name", () => {
+    const custom = { presetId: "custom" as const, fundType: "goal" as const, name: "Xe máy", targetAmount: 30_000_000, targetMonths: 12 }
+    expect(
+      completeOnboardingV2Schema.safeParse({
+        goals: [custom, { ...custom }],
+        monthlyIncome: 20_000_000,
+      }).success,
+    ).toBe(false)
+  })
+
+  it("accepts distinct custom goals with different names", () => {
+    const a = { presetId: "custom" as const, fundType: "goal" as const, name: "Xe máy", targetAmount: 30_000_000, targetMonths: 12 }
+    const b = { presetId: "custom" as const, fundType: "goal" as const, name: "Laptop", targetAmount: 25_000_000, targetMonths: 10 }
+    expect(
+      completeOnboardingV2Schema.safeParse({ goals: [a, b], monthlyIncome: 20_000_000 }).success,
+    ).toBe(true)
+  })
+
+  it("rejects a goal with whitespace-only name", () => {
+    expect(
+      completeOnboardingV2Schema.safeParse({
+        goals: [{ ...validGoal, name: "   " }],
+        monthlyIncome: 20_000_000,
+      }).success,
+    ).toBe(false)
   })
 
   it("rejects a goal with targetAmount 0", () => {

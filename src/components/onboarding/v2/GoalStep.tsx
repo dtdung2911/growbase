@@ -1,5 +1,6 @@
 "use client"
 
+import { Icon } from "@iconify/react"
 import { CurrencyInput } from "@/components/ui/CurrencyInput"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -8,7 +9,7 @@ import { useOnboardingV2Store } from "@/lib/stores/onboardingV2Store"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import { formatVNDCompact } from "@/lib/utils/currency"
 import { cn } from "@/lib/utils/cn"
-import { PRESET_ICONS } from "./goalPresetIcons";
+import { CUSTOM_ICON_CHOICES, PRESET_ICON_NAMES } from "./goalPresetIcons";
 
 const GOAL_PRESETS = [
   { presetId: "education", fundType: "goal", targetAmount: 200_000_000, targetMonths: 60 },
@@ -31,6 +32,7 @@ export function GoalStep() {
       name: preset.presetId === "custom" ? "" : t(`setupV2.goal.${preset.presetId}.name`),
       targetAmount: preset.targetAmount,
       targetMonths: preset.targetMonths,
+      icon: PRESET_ICON_NAMES[preset.presetId] ?? PRESET_ICON_NAMES.custom,
     })
 
   const durationLabel = (months: number) =>
@@ -48,9 +50,11 @@ export function GoalStep() {
 
       <div className="rounded-[13px] border border-primary/90 bg-card p-4 shadow-card">
         <div className="flex items-start gap-3">
-          <span className="text-2xl text-primary" aria-hidden>
-            {PRESET_ICONS.emergency}
-          </span>
+          <Icon
+            icon={PRESET_ICON_NAMES.emergency}
+            className="text-2xl text-primary"
+            aria-hidden
+          />
           <div className="flex-1 space-y-1.5">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-semibold text-primary">
@@ -94,7 +98,7 @@ export function GoalStep() {
                   "rounded-[13px] border shadow-card transition-[border-color,box-shadow] duration-[250ms] motion-reduce:transition-none",
                   selected
                     ? "border-primary ring-2 ring-primary/20 bg-card"
-                    : "border-border/40 bg-foreground/15 hover:border-border/80 hover:bg-foreground/20",
+                    : "border-border/40 bg-card hover:border-border/80",
                 )}
               >
                 <button
@@ -104,15 +108,14 @@ export function GoalStep() {
                   onClick={() => toggle(preset)}
                   className="flex min-h-[44px] w-full items-center gap-3 rounded-[13px] p-4 text-left"
                 >
-                  <span
+                  <Icon
+                    icon={PRESET_ICON_NAMES[preset.presetId]}
                     className={cn(
                       "text-2xl",
                       selected ? "text-primary" : "text-foreground",
                     )}
                     aria-hidden
-                  >
-                    {PRESET_ICONS[preset.presetId]}
-                  </span>
+                  />
                   <span className="flex-1">
                     <span
                       className={cn(
@@ -153,6 +156,46 @@ export function GoalStep() {
                             })
                           }
                         />
+                      </div>
+                    )}
+                    {preset.presetId === "custom" && (
+                      <div className="space-y-1.5">
+                        <Label>{t("setupV2.goal.customIconLabel")}</Label>
+                        <div
+                          role="radiogroup"
+                          aria-label={t("setupV2.goal.customIconLabel")}
+                          className="grid grid-cols-6 gap-2"
+                        >
+                          {CUSTOM_ICON_CHOICES.map((choice) => {
+                            const active = currentGoal.icon === choice;
+                            return (
+                              <button
+                                key={choice}
+                                type="button"
+                                role="radio"
+                                aria-checked={active}
+                                onClick={() =>
+                                  updateGoalField(preset.presetId, { icon: choice })
+                                }
+                                className={cn(
+                                  "flex h-11 min-h-[44px] items-center justify-center rounded-[13px] border transition-colors motion-reduce:transition-none",
+                                  active
+                                    ? "border-primary ring-2 ring-primary"
+                                    : "border-border/60 hover:border-border",
+                                )}
+                              >
+                                <Icon
+                                  icon={choice}
+                                  className={cn(
+                                    "text-xl",
+                                    active ? "text-primary" : "text-foreground",
+                                  )}
+                                  aria-hidden
+                                />
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
                     <div className="space-y-1.5">

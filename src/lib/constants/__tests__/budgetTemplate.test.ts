@@ -4,6 +4,7 @@ import {
   SPENDING_COST_TYPE_GROUPS,
   estimateEmergencyTarget,
   calculateFeasibility,
+  calculateAggregateFeasibility,
   calculateTodayRemaining,
 } from "@/lib/constants/budgetTemplate"
 
@@ -158,5 +159,30 @@ describe("calculateTodayRemaining", () => {
 
   it("income 0 → 0", () => {
     expect(calculateTodayRemaining(0, new Date(2026, 0, 15))).toBe(0)
+  })
+})
+
+describe("calculateAggregateFeasibility", () => {
+  it("cộng dồn monthlyNeeded của cả list", () => {
+    const r = calculateAggregateFeasibility([1_000_000, 2_000_000, 500_000], 10_000_000)
+    expect(r.monthlyNeeded).toBe(3_500_000)
+    expect(r.available).toBe(10_000_000)
+    expect(r.feasible).toBe(true)
+  })
+
+  it("list rỗng → monthlyNeeded 0, feasible", () => {
+    const r = calculateAggregateFeasibility([], 5_000_000)
+    expect(r.monthlyNeeded).toBe(0)
+    expect(r.feasible).toBe(true)
+  })
+
+  it("epsilon boundary: total == available + 1 vẫn feasible", () => {
+    const r = calculateAggregateFeasibility([5_000_001], 5_000_000)
+    expect(r.feasible).toBe(true)
+  })
+
+  it("total > available + 1 → không feasible", () => {
+    const r = calculateAggregateFeasibility([5_000_002], 5_000_000)
+    expect(r.feasible).toBe(false)
   })
 })
