@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { keys } from "@/lib/queries/queryKeys"
 import { useAppStore } from "@/lib/stores/appStore"
+import { recordActivityOnce } from "@/lib/hooks/useRecordActivity"
 import type { TransactionWithJoins } from "@/types/app"
 import type { CreateTransactionInput, UpdateTransactionInput } from "@/lib/validations/transaction"
 
@@ -28,6 +29,7 @@ export function useCreateTransaction() {
   const qc = useQueryClient()
   const householdId = useAppStore((s) => s.householdId)
   const month = useAppStore((s) => s.currentMonth)
+  const userId = useAppStore((s) => s.user?.id)
 
   return useMutation({
     mutationFn: async (input: CreateTransactionInput) => {
@@ -49,7 +51,7 @@ export function useCreateTransaction() {
       }
       toast.success("Đã lưu", { duration: 2000 })
       // Ghi ngày ghi giao dịch cũng tính hoạt động dù không mở dashboard (Story 7.2)
-      void fetch("/api/activity/heartbeat", { method: "POST" })
+      if (userId) void recordActivityOnce(userId).catch(() => {})
     },
     onError: (err: Error) => {
       toast.error(err.message, { duration: 5000 })

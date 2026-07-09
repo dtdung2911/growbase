@@ -36,6 +36,11 @@ so that tôi tin đây là khoa học chứ không phải tự suy diễn.
 - [x] Task 5: Verify (AC: 5)
   - [x] `npx tsc --noEmit`; kiểm tra Hook step render vi + en; grep xác nhận 0 "50/30/20"/"6 lọ" trong `src/`.
 
+### Review Findings (code review 09-07-2026)
+
+- [x] [Review][Patch] (Critical) Icon `height="12em"` (~192px) trong nút Skip/Next của OnboardingV2Shell — typo của `1.2em` (nút Back dùng `1em`), vỡ layout footer mọi step onboarding; nằm ngoài File List mọi story. Sửa về `1.2em`; cân nhắc icon close-circle cho nút Skip (ngữ nghĩa lệch) [src/components/onboarding/v2/OnboardingV2Shell.tsx:67,78]
+- [x] [Review][Patch] HookStep xoá title + insight vượt scope Task 1 ("thêm 1 element nhỏ") để lại xác chết: `todayRemaining` useMemo dead code, keys `setupV2.hook.title`, `setupV2.hook.insight`, `setupV2.tada.todayRemainingTitle/Desc` mồ côi cả 2 locale, Hook step không còn heading element. Xoá dead code + orphaned keys, document deviation vào Dev Record (docs/05 đã viết theo implementation — quyết định giữ hướng này, chỉ cần sync story) [src/components/onboarding/v2/HookStep.tsx:18-21, src/lib/i18n/messages/*]
+
 ## Dev Notes
 
 - **Độc lập tương đối với 8.1/8.2/8.3** — story này chủ yếu copy + docs, có thể làm sau cùng hoặc song song. Nhưng framing 3 nguồn phải NHẤT QUÁN với string 8.2 (goal blurb) và 8.3 (rationale Thaler) — nếu làm trước, chốt wording nguồn để 8.2/8.3 dùng lại.
@@ -80,6 +85,7 @@ claude-opus-4-8 (dev-story workflow)
 - Task 2 (audit framing): grep sạch — không có "6 Lọ"/"50-30-20" trong `src/`. Copy 8.2/8.3 chỉ dùng Clason/Ramit/Thaler.
 - Task 4 (BUSINESS_RULES): thêm mới BR-OB-006 (emergency bắt buộc), BR-OB-007 (multi-goal atomic), BR-OB-008 (framing 3 nguồn). Ground vào thực tế code: `complete_onboarding_v2` (migration 013) RAISE nếu `p_goals[0]` ≠ emergency; API route `/onboarding/complete` luôn dựng emergency `p_goals[0]`.
 - Không tạo file mới, không thêm dependency.
+- **Deviation được chấp nhận (code review 09-07-2026):** HookStep bỏ block title/insight (`setupV2.hook.title`, `setupV2.hook.insight`) — banner + mindset + demo dashboard đã đủ truyền tải hook, không cần dòng title/insight trùng lặp. Keys mồ côi đã xóa khỏi cả vi/en; `todayRemaining` useMemo chết (không còn render) cũng đã xóa.
 
 ### Testing
 
@@ -95,10 +101,12 @@ claude-opus-4-8 (dev-story workflow)
 
 - `docs/02_BUSINESS_RULES.md` (M) — thêm BR-OB-006/007/008
 - `docs/05_UX_SPEC.md` (M) — thêm section /setup Onboarding V2 redesign
-- `src/components/onboarding/v2/HookStep.tsx` (M) — dòng mindset
-- `src/lib/i18n/messages/vi.json` (M) — key `setupV2.hook.mindset`
-- `src/lib/i18n/messages/en.json` (M) — key `setupV2.hook.mindset`
+- `src/components/onboarding/v2/HookStep.tsx` (M) — dòng mindset; code review 09-07-2026: xóa `todayRemaining` chết + import thừa
+- `src/components/onboarding/v2/OnboardingV2Shell.tsx` (M) — code review 09-07-2026: fix `height="12em"` → `1.2em` (Skip/Next icon)
+- `src/lib/i18n/messages/vi.json` (M) — key `setupV2.hook.mindset`; code review 09-07-2026: xóa keys mồ côi
+- `src/lib/i18n/messages/en.json` (M) — key `setupV2.hook.mindset`; code review 09-07-2026: xóa keys mồ côi
 
 ### Change Log
 
 - 2026-07-07: Implement story 8.4 — Hook mindset copy, method framing audit, docs UX_SPEC + BUSINESS_RULES. Status → review.
+- 09-07-2026 — Code-review fixes (xem Review Findings)

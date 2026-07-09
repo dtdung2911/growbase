@@ -9,10 +9,11 @@ import type { IncomeSource } from "@/types/app"
 type IncomeSourceCardProps = {
   source: IncomeSource
   ownerName?: string
+  isFormerMember?: boolean
   onEdit: () => void
 }
 
-export function IncomeSourceCard({ source, ownerName, onEdit }: IncomeSourceCardProps) {
+export function IncomeSourceCard({ source, ownerName, isFormerMember, onEdit }: IncomeSourceCardProps) {
   const { t, locale } = useTranslation()
   const fromDate = new Date(source.effective_from).toLocaleDateString(
     locale === "vi" ? "vi-VN" : "en-US"
@@ -24,11 +25,15 @@ export function IncomeSourceCard({ source, ownerName, onEdit }: IncomeSourceCard
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <h4 className="text-sm font-semibold">{source.source_name}</h4>
-            {ownerName && (
+            {ownerName ? (
               <span className="rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-medium text-primary">
                 {ownerName}
               </span>
-            )}
+            ) : isFormerMember ? (
+              <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                {t("settings.income.formerMember")}
+              </span>
+            ) : null}
           </div>
           <p className="font-mono text-sm font-semibold tabular-nums text-foreground">
             {formatVND(source.monthly_amount)}

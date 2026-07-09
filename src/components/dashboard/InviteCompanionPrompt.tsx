@@ -23,12 +23,40 @@ export function InviteCompanionPrompt({ activeDaysLast7 }: InviteCompanionPrompt
 
   useEffect(() => {
     if (!householdId) return
-    const raw = localStorage.getItem(storageKey)
-    setDismissedAt(raw ? Number(raw) : null)
+    let raw: string | null = null
+    try {
+      raw = localStorage.getItem(storageKey)
+    } catch {
+      // private mode — coi như đã dismiss để không hiện lặp
+      setDismissedAt(Date.now())
+      return
+    }
+    if (raw === null) {
+      setDismissedAt(null)
+      return
+    }
+    const parsed = Number(raw)
+    // timestamp hỏng → coi như đã dismiss, không hiện trên dữ liệu rác
+    setDismissedAt(Number.isFinite(parsed) ? parsed : Date.now())
   }, [householdId, storageKey])
 
   if (dismissedAt === undefined || isLoading || !data) return null
-  if (!shouldShowInvitePrompt(data.members.length, activeDaysLast7, dismissedAt, Date.now())) {
+  const now = Date.now()
+  // status vẫn "pending" nhưng quá hạn thì không tính là lời mời đang chờ (trigger chưa flip status)
+  const pendingInvites = data.invitations.filter(
+    (i) => i.status === "pending" && new Date(i.expires_at).getTime() > now
+  ).length
+  // dismissedAt tương lai (rác/clock skew) → clamp về hiện tại, tránh treo prompt tới future+14d
+  const dismissedAtClamped = dismissedAt !== null ? Math.min(dismissedAt, now) : null
+  if (
+    !shouldShowInvitePrompt(
+      data.members.length,
+      activeDaysLast7,
+      dismissedAtClamped,
+      now,
+      pendingInvites
+    )
+  ) {
     return null
   }
 

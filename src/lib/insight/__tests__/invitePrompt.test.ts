@@ -5,24 +5,28 @@ const NOW = 1_700_000_000_000
 
 describe("shouldShowInvitePrompt", () => {
   it("false when active days < 5 (boundary 4)", () => {
-    expect(shouldShowInvitePrompt(1, 4, null, NOW)).toBe(false)
+    expect(shouldShowInvitePrompt(1, 4, null, NOW, 0)).toBe(false)
   })
 
   it("true when active days = 5 (boundary), member=1, not dismissed", () => {
-    expect(shouldShowInvitePrompt(1, 5, null, NOW)).toBe(true)
+    expect(shouldShowInvitePrompt(1, 5, null, NOW, 0)).toBe(true)
   })
 
   it("false when household has 2+ members regardless of activity", () => {
-    expect(shouldShowInvitePrompt(2, 7, null, NOW)).toBe(false)
+    expect(shouldShowInvitePrompt(2, 7, null, NOW, 0)).toBe(false)
+  })
+
+  it("false when a pending invitation exists", () => {
+    expect(shouldShowInvitePrompt(1, 5, null, NOW, 1)).toBe(false)
   })
 
   it("false while inside 14-day cooldown", () => {
     const dismissedAt = NOW - (INVITE_PROMPT_COOLDOWN_MS - 1000)
-    expect(shouldShowInvitePrompt(1, 5, dismissedAt, NOW)).toBe(false)
+    expect(shouldShowInvitePrompt(1, 5, dismissedAt, NOW, 0)).toBe(false)
   })
 
   it("true after cooldown elapsed", () => {
     const dismissedAt = NOW - (INVITE_PROMPT_COOLDOWN_MS + 1000)
-    expect(shouldShowInvitePrompt(1, 5, dismissedAt, NOW)).toBe(true)
+    expect(shouldShowInvitePrompt(1, 5, dismissedAt, NOW, 0)).toBe(true)
   })
 })

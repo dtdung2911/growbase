@@ -64,7 +64,7 @@ export function OnboardingV2Shell({ children }: { children: ReactNode }) {
                 onClick={next}
                 className="min-h-[44px]"
               >
-                <CloseCircleDuotoneIcon height="12em" />
+                <CloseCircleDuotoneIcon height="1.2em" />
                 {t("setupV2.nav.skip")}
               </Button>
             )}
@@ -75,7 +75,7 @@ export function OnboardingV2Shell({ children }: { children: ReactNode }) {
               className="ml-auto min-h-[44px] flex-1 sm:flex-none"
             >
               {step === 0 ? t("setupV2.hook.cta") : t("setupV2.nav.next")}
-              <ChevronRightCircleDuotoneIcon height="12em" />
+              <ChevronRightCircleDuotoneIcon height="1.2em" />
             </Button>
           </div>
         </footer>

@@ -8,6 +8,7 @@ export const createIncomeSourceSchema = z.object({
 
 export const updateIncomeSourceSchema = z.object({
   monthly_amount: z.number().positive("Thu nhập phải lớn hơn 0"),
+  member_id: z.string().uuid().nullable().optional(),
 })
 
 export type CreateIncomeSourceInput = z.infer<typeof createIncomeSourceSchema>

@@ -39,6 +39,25 @@ export async function PUT(
       )
     }
 
+    // Validate member_id BEFORE closing old record — a stale/foreign id would otherwise
+    // fail the insert FK after the old record is already closed, destroying the source
+    if (parsed.data.member_id) {
+      const { data: member } = await supabaseAdmin
+        .from("household_members")
+        .select("id")
+        .eq("id", parsed.data.member_id)
+        .eq("household_id", auth.householdId)
+        .eq("is_active", true)
+        .maybeSingle()
+
+      if (!member) {
+        return NextResponse.json(
+          { data: null, error: "Thành viên không hợp lệ" },
+          { status: 400 }
+        )
+      }
+    }
+
     // Step 1: Close old record
     const { error: closeErr } = await supabaseAdmin
       .from("income_sources")
@@ -57,7 +76,8 @@ export async function PUT(
         household_id: auth.householdId,
         source_name: old.source_name,
         monthly_amount: parsed.data.monthly_amount,
-        member_id: old.member_id,
+        member_id:
+          parsed.data.member_id !== undefined ? parsed.data.member_id : old.member_id,
         is_current: true,
         effective_from: today,
       })

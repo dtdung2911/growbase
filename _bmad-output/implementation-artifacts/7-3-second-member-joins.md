@@ -63,7 +63,18 @@ so that **gia nhập là bước vào một không gian đã có sẵn, không p
   - [x] 4.3 `npx tsc --noEmit` exit 0; `npx vitest run` 391/391 pass. Baseline trước khi sửa: 391/391 (đã tăng từ 381 của 7.1). Zero regression.
   - [x] 4.4 `### Testing` table điền đầy đủ bên dưới.
 
-## Dev Notes
+### Review Findings (code review 09-07-2026, range 954f19c..HEAD)
+
+- [x] [Review][Decision] Badge chủ sở hữu biến mất khi member bị deactivate: `memberNameById` build từ `useMembers()` (chỉ `is_active=true`) → nguồn thu của member đã rời hiển thị y hệt "chung/chưa gán", PUT tiếp tục nhân bản `member_id` mồ côi vào SCD record mới. **Quyết: hiện badge fallback "Thành viên cũ" (đã implement).** [src/components/settings/IncomeManager.tsx:20-22, IncomeSourceCard.tsx:27]
+- [x] [Review][Patch] (Major) AC4 chỉ đạt một nửa: "tạo/**sửa**" nhưng Select member chỉ render `{!isEdit && ...}`, `updateIncomeSourceSchema` không có `member_id`, PUT route carry-forward `old.member_id` → không thể gán lại/bỏ gán sau khi tạo, trừ khi delete+recreate [src/components/settings/IncomeSourceForm.tsx:138, src/lib/validations/income-source.ts:9, src/app/api/income-sources/[id]/route.ts:60]
+- [x] [Review][Defer] POST /api/income-sources không validate `member_id` thuộc household (schema chỉ check UUID shape, FK global) — cross-household/inactive member id được chấp nhận, UUID lạ trả 500 thay vì 400 — deferred, pre-existing route, UI mới chỉ đưa member hợp lệ [src/app/api/income-sources/route.ts:41-48]
+
+### Review Findings (vòng 2, 09-07-2026)
+
+- [x] [Review][Patch] (High) PUT income-source close-then-insert không atomic + không validate member: mở form sửa, member bị owner khác xoá, save → step 1 đã set `is_current=false`, step 2 insert fail FK → nguồn thu biến mất khỏi danh sách hiện tại. Vòng 1 defer validation cho POST, nhưng PUT giờ nhận `member_id` từ client (route dùng `supabaseAdmin` bypass RLS) nên còn nhận cả member household khác. Fix: validate `member_id` thuộc active members của household TRƯỚC khi close record cũ (chung fix cho cả 2 lỗ) [src/app/api/income-sources/[id]/route.ts:43-70]
+- [x] [Review][Patch] Badge "Former member" hiện sai khi `useMembers` đang loading/error: map rỗng → mọi source có gán đều bị dán badge. Gate theo members đã load xong [src/components/settings/IncomeManager.tsx:80-81]
+- [x] [Review][Patch] Doc sync: tick Decision #1 (badge fallback — đã implement) + Patch AC4 (đã fix end-to-end, verify form seed `source.member_id`), bổ sung File List (`income-source.ts`, `income-sources/[id]/route.ts`, `IncomeSourceCard`), Change Log entry [7-3 story file]
+- [x] [Review][Defer] Edit form không hiển thị được orphan assignment: Select value = uuid mồ côi → trigger render placeholder "Chọn thành viên" nhưng submit vẫn giữ orphan id — list badge nói "Thành viên cũ", form nói "chưa gán" — deferred, UX inconsistency nhỏ, user có thể reassign [src/components/settings/IncomeSourceForm.tsx:143-158]
 
 ### Phát hiện quan trọng nhất (đọc trước khi code)
 
@@ -185,6 +196,12 @@ claude-opus-4-8
 
 - `src/components/settings/IncomeSourceForm.tsx` (UPDATE — Select member dropdown thay Input)
 - `src/components/settings/IncomeManager.tsx` (UPDATE — resolve member name map, pass ownerName)
-- `src/components/settings/IncomeSourceCard.tsx` (UPDATE — badge chủ sở hữu nguồn thu)
+- `src/components/settings/IncomeSourceCard.tsx` (UPDATE — badge chủ sở hữu nguồn thu + fallback "Thành viên cũ")
+- `src/lib/validations/income-source.ts` (UPDATE — `updateIncomeSourceSchema` thêm `member_id` nullable)
+- `src/app/api/income-sources/[id]/route.ts` (UPDATE — PUT validate member_id thuộc active members trước khi close record cũ)
 - `src/lib/i18n/messages/vi.json` (UPDATE — memberPlaceholder + shared)
 - `src/lib/i18n/messages/en.json` (UPDATE — memberPlaceholder + shared)
+
+## Change Log
+
+- 09-07-2026 — Code-review vòng 2 fixes (xem Review Findings vòng 2)

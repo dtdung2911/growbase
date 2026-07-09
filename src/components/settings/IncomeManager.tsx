@@ -79,6 +79,7 @@ export function IncomeManager() {
                 key={s.id}
                 source={s}
                 ownerName={s.member_id ? memberNameById.get(s.member_id) : undefined}
+                isFormerMember={membersData != null && s.member_id != null && !memberNameById.has(s.member_id)}
                 onEdit={() => {
                   setEditingSource(s)
                   setShowForm(true)

@@ -177,17 +177,27 @@ export function DashboardView({
               </TableHeader>
               <TableBody>
                 {data.budgetLines.map((line: BudgetActualLine) => {
-                  const usage = Math.round(line.usage_pct ?? 0);
+                  const raw = line.usage_pct;
+                  const usage = Math.round(raw ?? 0);
+                  // Phân loại trên % thô: 100.4% làm tròn thành 100 nhưng vẫn phải đỏ.
+                  // usage_pct null mà đã chi (không có ngân sách) → cảnh báo vàng, không xanh
+                  const tint =
+                    raw == null
+                      ? line.actual_amount > 0 ? "warning" : "success"
+                      : raw > 100
+                        ? "destructive"
+                        : raw > 85
+                          ? "warning"
+                          : "success";
                   return (
                     <TableRow
                       key={line.cost_type_id}
                       className={cn(
-                        "",
-                        usage > 100
-                          ? "bg-destructive/10 text-destructive"
-                          : usage > 85
-                            ? "bg-warning/10 text-warning"
-                            : "bg-success/10 text-success",
+                        tint === "destructive"
+                          ? "bg-destructive/10"
+                          : tint === "warning"
+                            ? "bg-warning/10"
+                            : "bg-success/10",
                       )}
                     >
                       <TableCell className="text-sm font-medium">
@@ -203,9 +213,9 @@ export function DashboardView({
                         <span
                           className={cn(
                             "text-xs font-medium",
-                            usage > 100
+                            tint === "destructive"
                               ? "text-destructive"
-                              : usage > 85
+                              : tint === "warning"
                                 ? "text-warning"
                                 : "text-muted-foreground",
                           )}

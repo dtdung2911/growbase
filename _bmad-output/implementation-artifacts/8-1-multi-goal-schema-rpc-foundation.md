@@ -20,7 +20,7 @@ so that tôi không phải "hy sinh" quỹ khẩn cấp khi tôi cũng muốn ti
 2. **Given** user chọn thêm N mục tiêu (vd Mua nhà + Du lịch), **When** RPC chạy, **Then** tạo 1 fund emergency + N fund `goal` trong CÙNG transaction — all-or-nothing. Lỗi giữa chừng → không có household/fund nào được tạo.
 3. **Given** session cũ còn state shape cũ (`goal` object đơn) trong sessionStorage, **When** user quay lại flow, **Then** store migrate an toàn (zustand persist `version` + `migrate`), không crash, không kế thừa dữ liệu rác.
 4. **Given** API response trả về mảng funds, **When** TadaStep render, **Then** stage `goal` hiển thị đủ danh sách fund đã tạo; `TadaFinishButton` cập nhật đúng fund tương ứng khi user điều chỉnh ở nhánh infeasible (match theo fund trả về từ response, KHÔNG match theo `fund_type` vì giờ có nhiều fund cùng type `goal`).
-5. RPC mới REVOKE EXECUTE khỏi PUBLIC/anon/authenticated, GRANT chỉ service_role (giữ nguyên lockdown pattern của migration 012). Signature cũ bị DROP (đổi param type → Postgres coi là function khác, không tự thay).
+5. RPC mới REVOKE EXECUTE khỏi PUBLIC/anon/authenticated, GRANT chỉ service_role (giữ nguyên lockdown pattern của migration 012). Signature cũ bị DROP vì đổi TÊN param (`p_goal` → `p_goals`), không phải đổi type — `CREATE OR REPLACE` không đổi được tên param nên buộc phải DROP trước. (016 còn đổi return type uuid → jsonb + thêm param localize.)
 6. `npx tsc --noEmit` sạch; test store (`src/__tests__/stores/onboardingV2Store.test.ts`) cập nhật theo shape mới và pass.
 
 ## Tasks / Subtasks
@@ -57,6 +57,17 @@ so that tôi không phải "hy sinh" quỹ khẩn cấp khi tôi cũng muốn ti
   - [x] Cập nhật `src/__tests__/stores/onboardingV2Store.test.ts`: toggleGoal/canProceed/migrate v0→v1.
   - [x] `npx tsc --noEmit` + chạy test suite.
   - [x] Verify nghiệp vụ thủ công: onboard 0 goal → dashboard có 1 fund emergency; onboard 2 goals → 3 funds; user cũ (đã onboard) gọi lại → 409.
+
+### Review Findings (code review 09-07-2026)
+
+- [x] [Review][Decision] **Quyết định: localize theo locale user (route + RPC params, fund match by id).** Server hardcode tên tiếng Việt bất kể locale: `EMERGENCY_FUND_NAME = "Quỹ khẩn cấp"` (route) + `'Gia đình của …'`, `'Thu nhập hộ gia đình'`, `'Tài khoản chính'` (RPC) → user locale EN nhận dataset trộn ngôn ngữ. Tên fund cũng là join key cho TadaFinishButton nên localize sau sẽ vỡ match. Chấp nhận vi-only hay localize theo locale? [src/app/api/onboarding/complete/route.ts:17, supabase/migrations/013_onboarding_multi_goal.sql:41]
+- [x] [Review][Decision] **Quyết định: Zod min(100_000).** Thu nhập quá nhỏ (< ~41k VND, ví dụ user gõ `20` với ý "20 triệu") → `estimateEmergencyTarget` = 0 → emergency fund bắt buộc có target 0, feasibility trivially true, progress NaN downstream. Thêm floor tối thiểu (giá trị?) hay validate income sanity? [src/lib/constants/budgetTemplate.ts:54-57]
+- [x] [Review][Patch] (Major) RPC race double-submit: check `EXISTS household_members` không serialize → 2 request song song (double click / 2 tab / retry) cùng pass → 2 households + 2 bộ funds, `withAuth` bind nondeterministic. Thêm `pg_advisory_xact_lock(hashtext(p_user_id::text))` đầu RPC (migration mới) [supabase/migrations/013_onboarding_multi_goal.sql:27-31]
+- [x] [Review][Patch] (Major) Guard NULL-bypass: `p_goals->0->>'fund_type' <> 'emergency'` = NULL khi thiếu key → không RAISE. Dùng `IS DISTINCT FROM`; đồng thời thêm: chặn phần tử 1..N mang `fund_type='emergency'` (duplicate emergency), cap độ dài mảng (Zod `.max(5)` chỉ ở app), check `target_amount` dương [supabase/migrations/013_onboarding_multi_goal.sql:36]
+- [x] [Review][Patch] (Major) Zod thiếu bounds: `targetMonths` không `.max()` → `addMonths(9999999999)` throw RangeError uncaught → 500; `targetAmount` không `.max()` → overflow `numeric(15,0)` → RPC fail, raw DB message trả về client; `name` không `.trim()` → fund tên " "; không refine uniqueness `presetId`/`name` → 5 goals trùng tạo 5 funds. Thêm max(600 tháng), max(1e14), trim, uniqueness refine [src/lib/validations/onboardingV2.ts]
+- [x] [Review][Patch] Raw RPC error message (Postgres text) trả nguyên văn trong 500 body → leak internal. Map message generic, log chi tiết server-side; riêng lỗi `Already onboarded` map thành 409 + client redirect dashboard (hiện remount TadaStep refire mutation → error screen retry loop vô hạn) [src/app/api/onboarding/complete/route.ts:386-389]
+- [x] [Review][Patch] Doc sync: AC5 rationale sai ("đổi param type" — thực tế type y hệt, chỉ đổi param name nên mới cần DROP; comment trong migration đúng, story text sai); ghi nhận response shape deviation (`totalMonthlyNeeded` gộp vào `feasibility.monthlyNeeded`) [8-1 story file]
+- [x] [Review][Defer] Công thức aggregate feasibility (`monthlyNeeded <= available + 1`) duplicate 2 chỗ (route + TadaStep) với epsilon `+1` magic, không share với `calculateFeasibility` — deferred, hoạt động đúng, refactor sau [src/app/api/onboarding/complete/route.ts:400, src/components/onboarding/v2/TadaStep.tsx:142]
 
 ## Dev Notes
 
@@ -109,6 +120,7 @@ growbase-senior-developer (Sonnet) — orchestrated by dev-story workflow.
 - Emergency fund name hardcode `"Quỹ khẩn cấp"` trong route (server không i18n) — khớp value i18n `setupV2.goal.emergency.name`.
 - `resolveFeasibilityMonths` (tadaReveal.ts) không còn dùng bởi TadaStep nhưng để lại (còn unit test riêng) → **flag cleanup cho story 8-3**.
 - "Loop mutateAsync" KHÔNG implement dạng loop: `useUpdateFund(fundId)` bind 1 id (React rules), GoalStep single-select story này → tối đa 1 fund adjustable. Fix đúng AC4 (match name+fund_type thay vì fund_type đơn) với 1 mutateAsync. Multi-fund adjust thật sự = territory 8-3.
+- **Response-shape deviation (code review 09-07-2026):** không có field `totalMonthlyNeeded` riêng — gộp vào `feasibility.monthlyNeeded` (cộng dồn mọi fund). RPC 016 giờ trả `{ household_id, fund_ids[] }` (jsonb) thay vì `uuid`; route map `fund_ids` theo thứ tự p_goals vào `funds[i].id` → mỗi fund trong response có `id` để client match (thay match by name+fund_type ở AC4).
 
 ### Testing
 
@@ -121,6 +133,7 @@ growbase-senior-developer (Sonnet) — orchestrated by dev-story workflow.
 ### File List
 
 - `supabase/migrations/013_onboarding_multi_goal.sql` (new)
+- `supabase/migrations/016_onboarding_rpc_hardening.sql` (new — code review 09-07-2026)
 - `src/lib/validations/onboardingV2.ts` (mod)
 - `src/app/api/onboarding/complete/route.ts` (mod)
 - `src/lib/stores/onboardingV2Store.ts` (mod)
@@ -134,3 +147,4 @@ growbase-senior-developer (Sonnet) — orchestrated by dev-story workflow.
 ## Change Log
 
 - 06-07-2026: Implement multi-goal foundation (schema/RPC/store/route/Tada compat). tsc 0, 386 tests pass.
+- 09-07-2026 — Code-review fixes (xem Review Findings)

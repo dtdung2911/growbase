@@ -44,6 +44,15 @@ so that tôi không bị ép vào preset không liên quan (chưa có con, đã 
   - [x] `npx tsc --noEmit` sạch.
   - [x] Thủ công: chọn 2 goals → cả 2 expand editor giữ giá trị riêng; bỏ chọn 1 → editor đóng, value không rò sang goal kia; "để sau" → counter biến mất, Tiếp tục vẫn enable; reload giữa chừng → sessionStorage khôi phục đúng selections.
 
+### Review Findings (code review 09-07-2026)
+
+- [x] [Review][Patch] (Major) Unselected card dùng `bg-foreground/15` làm surface — vi phạm AC2 ("GIỮ NGUYÊN visual language `bg-card`") + CLAUDE.md semantic surfaces; light mode card unselected thành mảng xám đậm, chưa test dark mode. Đổi về `bg-card` (hoặc `bg-muted` nếu cần phân biệt), deviation chưa được document [src/components/onboarding/v2/GoalStep.tsx:97]
+- [x] [Review][Patch] Custom goal trùng tên preset đã chọn (ví dụ gõ "Mua nhà" khi đã chọn house) → 2 funds cùng `name`+`fund_type`: React key collision `key={fundType-name}` ở TadaStep + fund match sai. Schema uniqueness refine xử lý ở 8-1; phía UI đổi key sang index/presetId [src/components/onboarding/v2/TadaStep.tsx:160]
+- [x] [Review][Patch] `goalPresetIcons.tsx`: const `iconColor` chết (declared, never used) — pattern `var(--primary-color)` cũ bị drop im lặng, màu icon giờ phụ thuộc wrapper class của consumer. Xoá const + hoặc khôi phục style hoặc document pattern mới [src/components/onboarding/v2/goalPresetIcons.tsx:8]
+- [x] [Review][Patch] i18n keys mồ côi ngoài `goal.subtitle` đã document: `goal.emergency.desc` (emergency rời GOAL_PRESETS), `income.emergencyDesc`, `income.emergencyEditLabel` (IncomeStep bỏ nhánh editable-emergency). Xoá hoặc document [src/lib/i18n/messages/vi.json, en.json]
+- [x] [Review][Defer] Goal names đóng băng theo locale lúc toggle (t() capture vào store, persist sessionStorage) — đổi ngôn ngữ giữa chừng → fund name locale cũ. Deferred — gắn với Decision vi-only ở 8-1 [src/components/onboarding/v2/GoalStep.tsx]
+- [x] [Review][Defer] Custom goal chọn nhưng bỏ trống fields → Next disabled không có inline message nào chỉ ra field nào chặn — deferred, UX polish [src/components/onboarding/v2/GoalStep.tsx]
+
 ## Dev Notes
 
 - **PHỤ THUỘC CỨNG: story 8.1 phải done trước** — story này tiêu thụ `goals[]`, `toggleGoal`, `updateGoal`, `clearGoals`, `canProceed` từ store mới. Không tự chế state cục bộ.
@@ -100,6 +109,13 @@ claude-opus-4-8 (growbase-senior-developer agent)
 
 ### File List
 
-- `src/components/onboarding/v2/GoalStep.tsx` (rewrite)
-- `src/lib/i18n/messages/vi.json` (+5 keys)
-- `src/lib/i18n/messages/en.json` (+5 keys)
+- `src/components/onboarding/v2/GoalStep.tsx` (rewrite; code review 09-07-2026: unselected card `bg-card`)
+- `src/lib/i18n/messages/vi.json` (+5 keys; code review 09-07-2026: xóa keys mồ côi)
+- `src/lib/i18n/messages/en.json` (+5 keys; code review 09-07-2026: xóa keys mồ côi)
+- `src/components/onboarding/v2/goalPresetIcons.tsx` (mod — code review 09-07-2026: xóa `iconColor` chết)
+- `src/components/onboarding/v2/TadaStep.tsx` (mod — code review 09-07-2026: React key theo fund id)
+- `src/lib/validations/onboardingV2.ts` (mod — code review 09-07-2026: refine chặn goal trùng)
+
+## Change Log
+
+- 09-07-2026 — Code-review fixes (xem Review Findings)

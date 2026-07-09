@@ -178,7 +178,9 @@ export async function GET(request: NextRequest) {
     .from("member_activity")
     .select("active_date", { count: "exact", head: true })
     .eq("user_id", auth.user.id)
+    .eq("household_id", hid)
     .gte("active_date", activityCutoff.toISOString().slice(0, 10))
+    .lte("active_date", todayVN())
 
   // Net worth (latest snapshot — use total_system as best estimate)
   const { data: nwSnapshot, error: nwErr } = await supabase
@@ -190,9 +192,14 @@ export async function GET(request: NextRequest) {
     .maybeSingle()
 
   // Lỗi fetch phải nổ ra 500, không được im lặng biến thành "day-zero" giả
-  const fetchErr = budgetErr ?? countErr ?? fundsErr ?? recentErr ?? nwErr ?? activityErr
+  const fetchErr = budgetErr ?? countErr ?? fundsErr ?? recentErr ?? nwErr
   if (fetchErr) {
     return NextResponse.json({ data: null, error: fetchErr.message }, { status: 500 })
+  }
+
+  // Counter trang trí — lỗi không được đánh sập cả dashboard, chỉ log rồi coi như 0
+  if (activityErr) {
+    console.error("member_activity count failed:", activityErr.message)
   }
 
   const netWorth = nwSnapshot

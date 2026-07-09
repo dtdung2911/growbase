@@ -9,3 +9,20 @@
 ## Deferred from: code review of story-4.1 (03-07-2026)
 
 - `scripts/reset-test-data.ts` — fail giữa chừng (bước N/22 delete) để DB nửa vời không kèm hướng dẫn. Delete vốn idempotent, chạy lại là hoàn tất, nhưng script không nói. Fix nhỏ: catch trong `main()` in thêm "Chạy lại script để hoàn tất — delete là idempotent." Ưu tiên thấp, gộp khi có dịp đụng script này (story 4.4+ nếu cần re-seed).
+
+## Deferred from: code review of story 7-2 + 7-3 (09-07-2026)
+
+- **[7-2] Đổi household cùng ngày làm mất/gắn sai ngày hoạt động** — `member_activity` PK `(user_id, active_date)` không chứa household_id, heartbeat `ignoreDuplicates: true` → heartbeat thứ 2 trong ngày ở household mới là no-op, row giữ `household_id` cũ vĩnh viễn; ngày đó invisible với household mới qua RLS. Edge hiếm (user rời A join B cùng ngày VN). `src/app/api/activity/heartbeat/route.ts:9-18`, `supabase/migrations/014_member_activity.sql`.
+- **[7-3] POST /api/income-sources không validate `member_id` thuộc household** — pre-existing: `createIncomeSourceSchema` chỉ check UUID shape, FK trỏ `household_members(id)` global → member id household khác / member inactive được lưu không lỗi, UUID không tồn tại trả 500 thay vì 400. UI mới chỉ offer member hợp lệ nên chỉ exploit qua API trực tiếp. Fix gợi ý: verify `member_id` thuộc `auth.householdId` và `is_active=true` trong route. `src/app/api/income-sources/route.ts:41-48`.
+
+## Deferred from: code review vòng 2 — Epic 7 + Epic 8 (09-07-2026)
+
+- **[7-2] Tab sống qua nửa đêm VN không re-record ngày mới** — `useRecordActivity` effect deps `[householdId, userId]`, fire 1 lần mỗi mount; không interval/visibilitychange. Undercount `activeDaysLast7` cho tab luôn mở. `src/lib/hooks/useRecordActivity.ts:33-37`.
+- **[7-2] Heartbeat không rate-limit + response `recorded: true` vô điều kiện; tests chỉ assert mock** — thiếu case householdId null. `src/app/api/activity/heartbeat/route.ts`.
+- **[7-2] `member_activity` không có UPDATE/DELETE policy + `created_at`** — rows bất biến, user không purge được activity trail (privacy). `supabase/migrations/014_member_activity.sql`.
+- **[7-3] Edit form không hiển thị orphan assignment** — Select value = uuid mồ côi render placeholder nhưng submit giữ orphan id; list badge nói "Thành viên cũ", form nói "chưa gán". `src/components/settings/IncomeSourceForm.tsx:143-158`.
+- **[8-1] Công thức aggregate feasibility duplicate 2 chỗ với epsilon `+1` magic** — route + TadaStep, không share `calculateFeasibility`. Refactor thành helper chung. `src/app/api/onboarding/complete/route.ts:400`, `src/components/onboarding/v2/TadaStep.tsx:142`.
+- **[8-2] Goal names đóng băng theo locale lúc toggle** — `t()` capture vào store + sessionStorage persist; đổi ngôn ngữ giữa onboarding → fund name locale cũ. Gắn với decision vi-only. `src/components/onboarding/v2/GoalStep.tsx`.
+- **[8-2] Custom goal bỏ trống fields → Next disabled không inline message** — UX polish. `src/components/onboarding/v2/GoalStep.tsx`.
+- **[8-3] Mutation cache flash giữa 2 user cùng tab** — `resetOnboarding` không clear MutationCache; logout flow cần clear queryClient. `src/components/onboarding/v2/TadaStep.tsx:57-63`.
+- **[8-3] BUDGET_SEGMENTS không normalize/assert tổng 100%** — costTypeGroup ngoài nhóm liệt kê bị drop im lặng. `src/components/onboarding/v2/TadaStep.tsx`.

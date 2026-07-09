@@ -73,7 +73,7 @@ export function IncomeSourceForm({
 
     if (isEdit && source) {
       updateMutation.mutate(
-        { id: source.id, monthly_amount: monthlyAmount },
+        { id: source.id, monthly_amount: monthlyAmount, member_id: memberId || null },
         { onSuccess: () => onOpenChange(false) }
       )
     } else {
@@ -135,30 +135,28 @@ export function IncomeSourceForm({
             />
           </div>
 
-          {!isEdit && (
-            <div className="space-y-1.5">
-              <Label htmlFor="inc-member" className="text-xs">
-                {t("settings.income.memberLabel")}
-              </Label>
-              <Select
-                value={memberId === "" ? SHARED : memberId}
-                onValueChange={(v) => setMemberId(v === SHARED ? "" : v)}
-                disabled={membersLoading}
-              >
-                <SelectTrigger id="inc-member" className="rounded-xl bg-inset">
-                  <SelectValue placeholder={t("settings.income.memberPlaceholder")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={SHARED}>{t("settings.income.shared")}</SelectItem>
-                  {members.map((m) => (
-                    <SelectItem key={m.id} value={m.id}>
-                      {m.display_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+          <div className="space-y-1.5">
+            <Label htmlFor="inc-member" className="text-xs">
+              {t("settings.income.memberLabel")}
+            </Label>
+            <Select
+              value={memberId === "" ? SHARED : memberId}
+              onValueChange={(v) => setMemberId(v === SHARED ? "" : v)}
+              disabled={membersLoading}
+            >
+              <SelectTrigger id="inc-member" className="rounded-xl bg-inset">
+                <SelectValue placeholder={t("settings.income.memberPlaceholder")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={SHARED}>{t("settings.income.shared")}</SelectItem>
+                {members.map((m) => (
+                  <SelectItem key={m.id} value={m.id}>
+                    {m.display_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           {isEdit && (
             <p className="text-xs text-muted-foreground">

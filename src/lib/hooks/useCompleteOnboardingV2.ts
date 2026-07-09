@@ -2,10 +2,12 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAppStore } from "@/lib/stores/appStore"
+import { useTranslation } from "@/lib/i18n/useTranslation"
 import type { OnboardingGoal } from "@/lib/validations/onboardingV2"
 import type { FeasibilityResult } from "@/lib/constants/budgetTemplate"
 
 export interface OnboardingFundResult {
+  id: string
   name: string
   fundType: "emergency" | "goal"
   presetId: string
@@ -26,6 +28,7 @@ export const COMPLETE_ONBOARDING_V2_KEY = ["complete-onboarding-v2"]
 export function useCompleteOnboardingV2() {
   const setHouseholdId = useAppStore((s) => s.setHouseholdId)
   const queryClient = useQueryClient()
+  const { locale } = useTranslation()
 
   return useMutation({
     mutationKey: COMPLETE_ONBOARDING_V2_KEY,
@@ -36,7 +39,7 @@ export function useCompleteOnboardingV2() {
       const res = await fetch("/api/onboarding/complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
+        body: JSON.stringify({ ...input, locale }),
       })
       const json = await res.json()
       if (!res.ok) {

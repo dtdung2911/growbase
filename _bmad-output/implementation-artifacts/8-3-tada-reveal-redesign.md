@@ -49,6 +49,14 @@ so that tôi tin tưởng bức tranh tài chính và biết con số hôm nay c
 - [x] Không phá 2 fix cũ trong `TadaStep.tsx`: (1) `useMutationState` subscribe MutationCache (StrictMode spinner treo), (2) effect deps `[goals, monthlyIncome]` + `fired` ref (rehydrate sau mount). Đọc 2 comment dài trong file trước khi sửa bất kỳ dòng nào quanh đó.
 - [x] `resetOnboarding()` trong `onDone` giữ nguyên (user khác đăng nhập cùng tab không kế thừa state).
 
+### Review Findings (code review 09-07-2026)
+
+- [x] [Review][Patch] (Major) Adjust UI có thể trỏ vào emergency fund: `targetFund = funds.find(!feasible) ?? funds[0]` — khi aggregate infeasible nhưng từng fund đều feasible, fallback = funds[0] = emergency → user chỉnh target quỹ khẩn cấp (vi phạm BR-OB-006 "target tự tính từ server, read-only") và persist qua `useUpdateFund`. Kèm 2 lỗi phụ: adjust card không nói đang chỉnh fund nào (thiếu label tên fund), và khi `otherFundsMonthly` một mình đã vượt `available` thì không giá trị nào user nhập ra feasible — dead-end UI. Fix: bỏ fallback `?? funds[0]`, chỉ hiện adjust khi có fund goal thực sự infeasible, thêm tên fund vào adjust card [src/components/onboarding/v2/TadaStep.tsx:127-143, 198-221]
+- [x] [Review][Patch] (Major) Adjusted target 0 lọt qua và persist: clear CurrencyInput → `onChange(0)`, `0 ?? targetFund.targetAmount` giữ 0 (0 không nullish) → feasibility flip true giả, fund target 0 vào DB (fund schema `nonnegative()` cho qua) → progress NaN/Infinity. Normalize `v || null` như GoalStep; guard months tương tự [src/components/onboarding/v2/TadaStep.tsx:200-204]
+- [x] [Review][Patch] (Major) `updateFund.mutateAsync` không try/catch, không `toast.error` (vi phạm error pattern dự án): PATCH fail → unhandled rejection, `onDone` không chạy, button "không làm gì". Kèm: `useFunds` error → `fund` undefined → adjustment âm thầm vứt bỏ trong khi UI vừa nói "khả thi" — cần toast cảnh báo thay vì im lặng [src/components/onboarding/v2/TadaStep.tsx:285-299]
+- [x] [Review][Defer] Mutation cache flash: user A xong onboarding, logout; user B login cùng tab trong GC window → `mutationStates[last]` của A render thoáng qua (resetOnboarding chỉ clear sessionStorage, không clear MutationCache) — deferred, hiếm, cần logout flow clear queryClient [src/components/onboarding/v2/TadaStep.tsx:57-63]
+- [x] [Review][Defer] BUDGET_SEGMENTS không normalize/assert tổng 100%: template line mang costTypeGroup ngoài 4 nhóm → bar hụt im lặng — deferred, template hiện tại phủ đủ [src/components/onboarding/v2/TadaStep.tsx]
+
 ## Dev Notes
 
 - **PHỤ THUỘC CỨNG: story 8.1 done trước** (response shape `funds[]`). Story 8.2 nên done trước để icon map refactor chạm `GoalStep.tsx` không conflict — nếu làm song song, story này refactor icon, 8.2 rebase theo.
@@ -111,9 +119,12 @@ claude-opus-4-8
 - **UPDATE** `src/lib/constants/__tests__/tadaReveal.test.ts`
 - **UPDATE** `src/lib/i18n/messages/vi.json`
 - **UPDATE** `src/lib/i18n/messages/en.json`
+- **UPDATE** `src/lib/hooks/useCompleteOnboardingV2.ts` (code review 09-07-2026: `id` vào `OnboardingFundResult`)
+- **UPDATE** `src/app/api/onboarding/complete/route.ts` (code review 09-07-2026: map fund ids từ RPC vào response)
 
 ### Change Log
 
+- 09-07-2026 — Code-review fixes (xem Review Findings): bỏ fallback `?? funds[0]` (không chỉnh emergency, BR-OB-006), adjust card nêu tên fund (`adjustingFund`), normalize `v || null` cho target+months, `TadaFinishButton` match fund theo `id` + try/catch giữ user ở Tada + toast cảnh báo khi không resolve được fund, React key theo fund id.
 - 2026-07-07: Code-review fixes (Epic 8 review pass):
   - `TadaStep.tsx` feasibility nhánh infeasible: recompute theo TỔNG mọi fund cùng rút từ `available` (others giữ monthlyNeeded gốc + targetFund đang chỉnh), thay vì chỉ tính targetFund → sửa số "Cần góp X/tháng" sai + title lật "Khả thi" sớm khi có >1 fund. Bỏ import `calculateFeasibility` không còn dùng.
   - `TadaStep.tsx` nút Finish: `disabled` chỉ khi `fundsPending || updateFund.isPending` (không chặn vĩnh viễn khi `useFunds` lỗi → fund undefined); handleClick tự bỏ qua update khi thiếu fund.

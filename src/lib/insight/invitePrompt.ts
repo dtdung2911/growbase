@@ -4,9 +4,11 @@ export function shouldShowInvitePrompt(
   memberCount: number,
   activeDaysLast7: number,
   dismissedAt: number | null,
-  now: number
+  now: number,
+  pendingInvites: number
 ): boolean {
   if (memberCount !== 1) return false
+  if (pendingInvites > 0) return false
   if (activeDaysLast7 < 5) return false
   if (dismissedAt !== null && now - dismissedAt < INVITE_PROMPT_COOLDOWN_MS) return false
   return true
