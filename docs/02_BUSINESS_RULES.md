@@ -171,6 +171,53 @@ LUÔN kèm disclaimer highlight "tham khảo, không phải cam kết".
 Mode gợi ý tham khảo — KHÔNG phải tư vấn đầu tư.
 ```
 
+### BR-OB-014 Living Plan — kế hoạch luôn tươi (Tada↔Dashboard, 10-07-2026)
+```
+Kế hoạch phân bổ KHÔNG lưu tĩnh. Mọi màn hình (Funds strip, fund detail,
+dashboard badge, Tada) tính lại từ engine với STATE THẬT mỗi render:
+priority_rank (DB) + income thực hộ + emergency balance thật.
+Tada = snapshot đầu tiên của cùng một hàm; member mới xem "Tada tươi" bằng
+số hiện tại, KHÔNG replay snapshot cũ. Không schema plan.
+```
+Nguồn: brainstorm 10-07-2026 (living forecast — chìa khoá giải Tada tươi + tụt GĐ + chen ladder + drift cùng lúc).
+
+### BR-OB-015 Income vận hành — thu nhập thực cả hộ
+```
+Capacity góp/tháng = 15% × TỔNG thu nhập THỰC cả hộ trong tháng
+(ví chung, mọi member). Timeline dài hạn dùng trailing average 3 tháng
+(chống rung). Income onboarding CHỈ dùng estimate bức tranh ban đầu,
+không phải nguồn vận hành.
+```
+Nguồn: brainstorm 10-07-2026 (income vận hành = thực hộ gộp; mở rộng capacity BR-OB-009 sang vận hành).
+
+### BR-OB-016 Hạng quỹ persistent
+```
+Hạng goal funds sống ở cột priority_rank (DB), do USER xếp (kéo thả —
+sheet "Đổi hạng"); app chỉ advise, không tự đổi hạng. Goal mới tạo →
+rank cuối ladder, mọi số recompute tự nhiên (living plan), KHÔNG hỏi lại.
+Quyền sửa kế hoạch (hạng/target) theo permission flag per member, owner cấp.
+```
+Nguồn: brainstorm 10-07-2026 (gap kỹ thuật: hạng chỉ tồn tại lúc gửi route onboarding → migration priority_rank; mở rộng BR-OB-011).
+
+### BR-OB-017 Góp quỹ vận hành — advise không act
+```
+Góp quỹ = thao tác TAY từng quỹ. Engine chỉ PRE-FILL số gợi ý
+(capacity tháng × ladder, trừ phần đã góp trong tháng) — sửa/bỏ qua được.
+KHÔNG auto-allocate. Tháng không góp = HỢP LỆ: timeline tự giãn +
+kể tử tế kèm lối thoát, KHÔNG phải lỗi.
+```
+Nguồn: brainstorm 10-07-2026 (advise-not-act thành triết lý vận hành — mở rộng BR-OB-011).
+
+### BR-OB-018 Sự kiện giai đoạn — luôn kèm lối thoát
+```
+Chuyển giai đoạn (lên/xuống, kể cả rút emergency tụt ngưỡng) PHẢI được
+KỂ kèm lối thoát ("còn N tháng là đầy lại") — BR-OB-012 áp cho vận hành.
+Rút quỹ yêu cầu nhập mô tả lý do (text, lưu vào lịch sử). KHÔNG notify
+chéo member khi biến động lan. Ngưỡng GĐ derive từ emergency target
+(GĐ1 = target/3, GĐ2 = target); emergency target giữ số onboarding, user tự sửa.
+```
+Nguồn: brainstorm 10-07-2026 (tụt GĐ được kể + lối thoát; friction tốt khi rút — mở rộng BR-OB-012).
+
 ### BR-CA-001 behavior_type locked to category
 ```
 WHEN transaction is INSERT

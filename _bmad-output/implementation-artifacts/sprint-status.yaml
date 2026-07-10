@@ -121,6 +121,20 @@ development_status:
   11-3-detailed-plan-screen: done
   epic-11-retrospective: optional
 
+  epic-12: backlog
+  12-1-rank-persistent-living-engine: backlog
+  12-2-funds-strip-rank-sheet: backlog
+  12-3-fund-plan-tab: backlog
+  12-4-prefill-contribute: backlog
+  epic-12-retrospective: optional
+
+  epic-13: backlog
+  13-1-stage-badge-dashboard: backlog
+  13-2-drift-stage-events: backlog
+  13-3-withdraw-note: backlog
+  13-4-fresh-tada-member: backlog
+  epic-13-retrospective: optional
+
 # Action items committed during retrospectives (section created by the retrospective workflow)
 action_items:
   - epic: 3

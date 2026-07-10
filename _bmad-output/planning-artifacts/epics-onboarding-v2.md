@@ -959,3 +959,175 @@ So that tôi tin kế hoạch và muốn kể ngay cho vợ/chồng.
 **Given** user bấm "Xem kế hoạch chi tiết" từ Tada
 **When** màn mở
 **Then** hiện %, tỷ trọng theo hạng, timeline từng quỹ, 3 giai đoạn đầy đủ, kênh gợi ý tham khảo cho quỹ dài hạn; amounts font-mono; không lộ công thức ở Tada chính (giữ câu-1 gọn)
+
+## Epic 12: Living Plan — engine sống bằng số thật
+
+**Mục tiêu:** Kế hoạch phân bổ luôn tươi — engine chạy lại với state thật (rank DB + income thực hộ gộp + emergency balance) mỗi render, không lưu plan tĩnh. Funds làm gốc: summary strip mini-Tada + plan theo từng fund. User giữ tay lái (góp tay, engine pre-fill; sửa hạng/target tay). Tada = lần chạy đầu của cùng hàm → Tada tươi miễn phí.
+
+**Nguồn:** Sprint Change Proposal 10-07-2026 + brainstorm-intent.md (Tada↔Dashboard continuity). MoSCoW: Must (C+M+A+D+E+K). Rules: BR-OB-014 → BR-OB-018.
+
+### Story 12.1: Rank persistent + engine vận hành
+
+As a hệ thống,
+I want hạng quỹ sống trong DB và một engine vận hành đọc số thật của hộ,
+So that mọi màn hình (Funds, fund detail, dashboard, Tada) đọc cùng một kế hoạch tươi qua reload.
+
+**Acceptance Criteria:**
+
+**Given** cột `priority_rank` chưa tồn tại trên bảng funds
+**When** migration chạy
+**Then** thêm `priority_rank` (int, not null, default 0); backfill goal funds hiện có theo THỨ TỰ TẠO (created_at ASC → rank 1,2,3…); emergency fund không tham gia ladder; migration idempotent
+
+**Given** hộ có income thực (transactions in) + emergency balance + goals theo `priority_rank`
+**When** helper thuần `getOperationalPlanInput` chạy
+**Then** trả input engine với: income = tổng thu nhập THỰC cả hộ gộp (mọi member, ví chung) tháng hiện tại (BR-OB-015); trailing = trung bình 3 tháng gần nhất cho timeline dài hạn; emergency balance thật; goals sort theo `priority_rank`
+
+**Given** helper cấp input cho allocation engine (Epic 10)
+**When** hook `useLivingPlan` gọi
+**Then** trả plan tươi (capacity tháng, GĐ hiện tại + ngưỡng derive từ emergency target, phân bổ/tháng per-fund, timeline per-fund) compute-on-render, KHÔNG đọc plan lưu tĩnh (BR-OB-014)
+
+**Given** user tạo goal fund mới sau onboarding
+**When** fund được lưu
+**Then** `priority_rank` = max+1 (cuối ladder); lần render kế mọi số recompute tự nhiên qua useLivingPlan, không prompt hỏi lại (BR-OB-016)
+
+**Given** boundary cases
+**When** chạy tests
+**Then** pass: 0 income tháng này (timeline giãn, không chia 0), hộ 2 member (income gộp đúng), goal mới chen ladder (rank cuối + recompute), emergency đã đầy một phần; `tsc` + vitest sạch
+
+### Story 12.2: Funds summary strip + Đổi hạng
+
+As a người dùng mở trang Funds,
+I want thấy bức tranh tập hợp (mini-Tada) đầu trang và đổi hạng quỹ bằng kéo thả,
+So that tôi hiểu kế hoạch chung và điều khiển ưu tiên mà không rời trang.
+
+**Acceptance Criteria:**
+
+**Given** trang Funds render
+**When** summary strip hiện
+**Then** mini-Tada đầu trang: capacity tháng (15% income thực), GĐ hiện tại + progress 3 giai đoạn, cách chia ladder theo hạng — tất cả từ useLivingPlan (BR-OB-014); amounts font-mono; câu chuyện tập hợp không phân rã
+
+**Given** hộ có ≥2 goal funds
+**When** user mở sheet "Đổi hạng" và kéo thả
+**Then** reuse GoalRankList; lưu thứ tự mới vào `priority_rank` (DB, persistent qua reload — BR-OB-016); mọi số strip/timeline recompute live; app advise không tự đổi hạng
+
+**Given** member không có quyền sửa kế hoạch
+**When** mở Funds
+**Then** sheet "Đổi hạng" permission-aware — Epic 12 check OWNER trước (permission flag UI đầy đủ deferred, item J); non-owner thấy read-only
+
+**Given** viewport 375px
+**When** render strip + sheet
+**Then** touch target ≥44px; layout không tràn; i18n vi/en
+
+### Story 12.3: Tab Kế hoạch fund detail
+
+As a người dùng xem chi tiết một quỹ,
+I want một tab "Kế hoạch" kể góp trung bình, timeline, kênh gợi ý và chặng,
+So that tôi thấy con đường đến mục tiêu của riêng quỹ đó, luôn cập nhật.
+
+**Acceptance Criteria:**
+
+**Given** fund detail có tab mới "Kế hoạch"
+**When** tab mở
+**Then** hiện góp trung bình/tháng + timeline (living — từ useLivingPlan, không số tĩnh); marker chặng 50% trên progress bar
+
+**Given** goal dài hạn
+**When** tab render kênh gợi ý
+**Then** hiện kênh gợi ý + simulation lãi kép 3 tầng (reuse compound helpers Epic 11) + disclaimer highlight "tham khảo, không phải cam kết" (BR-OB-013); reuse planDetail patterns
+
+**Given** tháng chưa góp cho quỹ
+**When** tab hiện timeline
+**Then** timeline tự giãn + message lối thoát tử tế, KHÔNG hiện như lỗi (BR-OB-017); amounts font-mono; i18n vi/en; `tsc` sạch
+
+### Story 12.4: Pre-fill dialog góp quỹ
+
+As a người dùng góp vào một quỹ,
+I want dialog góp gợi ý sẵn số nên góp tháng này,
+So that tôi góp nhanh theo kế hoạch nhưng vẫn tự quyết con số.
+
+**Acceptance Criteria:**
+
+**Given** user mở dialog "Nạp quỹ" cho một fund
+**When** dialog render
+**Then** pre-fill số engine gợi ý tháng này = capacity tháng × ladder của quỹ, TRỪ phần đã góp vào quỹ đó trong tháng hiện tại (không double-count); nguồn useLivingPlan (BR-OB-017)
+
+**Given** số pre-fill hiện sẵn
+**When** user tương tác
+**Then** sửa được (tự nhập số khác) hoặc bỏ qua (đóng không góp) — engine advise không act; KHÔNG auto-allocate
+
+**Given** user xác nhận góp
+**When** contribute hoàn tất (RPC fund_contribute atomic)
+**Then** strip mini-Tada + timeline fund detail + dashboard badge cập nhật ở render kế (living recompute); toast.success 2s; touch ≥44px; i18n vi/en
+
+## Epic 13: Narrative layer — app kể chuyện vận hành
+
+**Mục tiêu:** App nói cùng ngôn ngữ giai đoạn khi vận hành: dashboard đeo badge GĐ, tụt/lên giai đoạn và tháng không góp được kể tử tế kèm lối thoát, rút quỹ có lý do, member mới xem Tada tươi. Gap là NGÔN NGỮ — reuse engine + Epic 5 insight + TadaStep parts.
+
+**Nguồn:** Sprint Change Proposal 10-07-2026 + brainstorm-intent.md. MoSCoW: Should (B+F+G+L+I). Rules: BR-OB-014, BR-OB-018. Phụ thuộc Epic 12 (useLivingPlan).
+
+### Story 13.1: Badge giai đoạn dashboard
+
+As a người dùng xem dashboard,
+I want một badge giai đoạn ở header,
+So that tôi biết mình đang ở đâu trong hành trình mà không rời màn quen thuộc.
+
+**Acceptance Criteria:**
+
+**Given** dashboard header render
+**When** badge hiện
+**Then** đeo badge "GĐ1 · tháng 2/6" (lớp phủ, trục tháng của dashboard giữ nguyên — BR-OB-014); nguồn duy nhất useLivingPlan (Epic 12)
+
+**Given** hộ chưa có đủ dữ liệu (0 income / mới tạo)
+**When** dashboard render
+**Then** badge fallback tử tế (không crash, không số vô nghĩa); i18n vi/en; touch/tap không cần nhưng đọc rõ ở 375px; `tsc` sạch
+
+### Story 13.2: Drift + sự kiện giai đoạn kể tử tế
+
+As a người dùng có tháng biến động,
+I want app kể chuyện tụt/giãn kèm lối thoát thay vì báo lỗi,
+So that tin xấu không làm tôi bỏ cuộc.
+
+**Acceptance Criteria:**
+
+**Given** một tháng hộ không góp (hoặc góp thiếu)
+**When** dashboard/fund render
+**Then** timeline giãn + message lối thoát ("còn N tháng là đầy lại"), khung tích cực, KHÔNG hiện như lỗi (BR-OB-017)
+
+**Given** emergency balance qua ngưỡng GĐ (lên hoặc xuống — kể cả rút tụt ngưỡng)
+**When** useLivingPlan phát hiện chuyển giai đoạn
+**Then** insight card kể sự kiện GĐ kèm lối thoát "còn N tháng là đầy lại" (BR-OB-018); tận dụng Epic 5 insight layer; KHÔNG notify chéo member
+
+**Given** sự kiện GĐ được kể
+**When** render
+**Then** insight ngôn ngữ giai đoạn ở mức EVENTS (insight engine ngôn ngữ GĐ toàn diện deferred, item H); i18n vi/en; vitest cho logic phát hiện chuyển GĐ; `tsc` sạch
+
+### Story 13.3: Mô tả lý do rút quỹ
+
+As a người dùng rút tiền khỏi quỹ,
+I want nhập lý do khi rút,
+So that có friction lành mạnh và dữ liệu cho câu chuyện sau này.
+
+**Acceptance Criteria:**
+
+**Given** user mở dialog "Rút quỹ"
+**When** form render
+**Then** thêm field mô tả lý do (text) BẮT BUỘC (BR-OB-018)
+
+**Given** user xác nhận rút với lý do
+**When** withdraw hoàn tất (RPC fund_withdraw atomic, ConfirmDialog trước)
+**Then** lý do lưu vào transaction/fund history, hiện được ở tab Lịch sử; giữ atomic RPC; toast; i18n vi/en
+
+### Story 13.4: Tada tươi cho member mới
+
+As a member vừa gia nhập hộ (flow 7-3),
+I want xem reveal 4 giai đoạn bằng số hôm nay,
+So that tôi hiểu bức tranh tài chính chung ngay khi vào.
+
+**Acceptance Criteria:**
+
+**Given** member mới join household
+**When** offer "Xem bức tranh" hiện
+**Then** reveal 4-stage chạy bằng useLivingPlan với SỐ HÔM NAY, KHÔNG replay snapshot onboarding cũ (BR-OB-014)
+
+**Given** reveal render
+**When** hiển thị
+**Then** reuse TadaStep parts (không dựng lại UI); số per-fund + tổng + GĐ hiện tại từ engine; skip được; i18n vi/en; mobile 375px; vitest pass

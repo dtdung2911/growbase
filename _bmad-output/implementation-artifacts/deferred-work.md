@@ -73,3 +73,12 @@
 
 - `planGoalChannels` (planDetail.ts) mirror logic `goalCalcs` (GoalStep 11.2) — không drift hiện tại, cả 2 có test; extract chung nếu tier logic thay đổi (cập nhật COMPOUND_RATES_YEAR hằng năm chỉ đổi constant, ít rủi ro).
 - PlanDetailSheet card kênh gợi ý có thể không có channel line (compound không cải thiện ≥2 tháng) dưới heading "kênh sinh lời" — cân nhắc ẩn card rỗng.
+
+## Living Plan — Could/Won't (từ brainstorm 10-07-2026)
+
+Nguồn: brainstorm-tada-dashboard-continuity-2026-07-10 + sprint-change-proposal-2026-07-10.md. Epic 12/13 lấy Must+Should; các item dưới đây scoped ra ngoài.
+
+- **H — Insight engine ngôn ngữ giai đoạn toàn diện** (Could): kể mọi khoảnh khắc bằng ngôn ngữ GĐ (kể cả first-expense = "viên gạch đầu GĐ1"). Story 13.2 CHỈ làm sự kiện chuyển GĐ (events), chưa phủ toàn diện.
+- **J — Permission flag UI đầy đủ** (Could): màn cấu hình quyền sửa kế hoạch per member (owner cấp). Story 12.2 CHỈ check owner trước; non-owner read-only, chưa có UI cấp quyền chi tiết.
+- **O — Dòng chuyện 4 bucket ở Budget page** (Could): 1 dòng kể câu chuyện 4 bucket (thay nhà tạm CSP bar) trên trang Budget.
+- **N — Chế độ tháng khó** (Won't lần này): gom tin xấu thành 1 câu chuyện + lối thoát. Cần Story 13.2 (drift + sự kiện GĐ) chạy trước để có data tín hiệu.

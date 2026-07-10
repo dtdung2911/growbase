@@ -182,6 +182,9 @@ KHÔNG nhắc "6 Lọ"/"6 Jars"/"50-30-20" ở bất kỳ đâu.
 ```
 
 ### SCREEN: /dashboard
+
+> **(Epic 13 — Narrative layer planned, 10-07-2026):** header sẽ đeo badge giai đoạn "GĐ1 · tháng 2/6" (lớp phủ, giữ trục tháng); tháng không góp / chuyển GĐ → insight card kể tử tế kèm lối thoát "còn N tháng là đầy lại" (BR-OB-018). Nguồn số: hook useLivingPlan (Epic 12). Mô tả dưới đây là HIỆN TRẠNG. Chi tiết: sprint-change-proposal-2026-07-10.md + BR-OB-014→018.
+
 ```
 Purpose:  Monthly financial overview
 Layout:   1 column mobile, 2 column desktop
@@ -252,6 +255,9 @@ CategoryPicker (bottom sheet):
 ```
 
 ### SCREEN: /funds
+
+> **(Epic 12 — Living Plan planned, 10-07-2026):** đầu trang sẽ có summary strip mini-Tada (capacity tháng 15% income thực, GĐ hiện tại + progress 3 GĐ, cách chia ladder — nguồn useLivingPlan) + sheet "Đổi hạng" kéo thả ghi `priority_rank` (persistent, permission-aware). Kế hoạch luôn tươi, không lưu tĩnh (BR-OB-014→017). Mô tả dưới đây là HIỆN TRẠNG.
+
 ```
 Purpose:  Fund list overview
 Layout:   Cards grid (1 col mobile, 2 col desktop)
@@ -275,6 +281,9 @@ Click card → /funds/[id]
 ```
 
 ### SCREEN: /funds/[id]
+
+> **(Epic 12/13 — Living Plan + Narrative planned, 10-07-2026):** thêm tab "Kế hoạch" (góp TB + timeline living, kênh gợi ý + lãi kép + disclaimer BR-OB-013, marker chặng 50%); dialog "Nạp quỹ" pre-fill số engine gợi ý tháng này (sửa/bỏ qua được — BR-OB-017); dialog "Rút quỹ" yêu cầu nhập mô tả lý do (BR-OB-018). Mô tả dưới đây là HIỆN TRẠNG.
+
 ```
 Purpose:  Fund detail + manage
 Layout:   Header + tabs

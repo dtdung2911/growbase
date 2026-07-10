@@ -45,3 +45,22 @@ Nội dung kỹ thuật/how thuộc downstream (architecture, UX spec), không t
 - **Rule hiển thị:** số timeline tụt mood không bao giờ đứng một mình — luôn kèm lối thoát. Thu nhập thấp: hiện thực trực diện, không tô hồng.
 - **Tada = kế-hoạch-là-thành-tựu** ("kế hoạch xịn trong vài phút"); chi tiết %, tỷ trọng, công thức → màn "kế hoạch chi tiết"; invite companion (7-2) giữ sau reveal.
 - Chuẩn BR: BR-OB-009 → BR-OB-013 trong docs/02_BUSINESS_RULES.md.
+
+## Living Plan (10-07-2026 — Sprint Change Proposal)
+
+> Nguồn: correct-course + brainstorm 10-07-2026 (`_bmad-output/brainstorming/brainstorm-tada-dashboard-continuity-2026-07-10/` — 12 quyết định, MoSCoW chốt). Đóng gap Tada↔Dashboard: rời Tada là mọi khái niệm biến mất (7 khái niệm mồ côi). Gap = ngôn ngữ + tính liên tục, không phải thiếu feature.
+
+- **Kế hoạch LUÔN TƯƠI (living forecast):** engine chạy lại với state thật mỗi render — không lưu plan tĩnh vào DB. Tada = lần chạy đầu tiên của cùng một hàm → Tada tươi cho member mới miễn phí.
+- **Funds làm gốc:** plan đi theo từng fund + summary strip mini-Tada đầu trang (câu chuyện tập hợp không phân rã — tránh tái phạm lỗi 2-model-song-song). KHÔNG tách trang /plan.
+- **Trục thời gian giữ tháng/quý/năm** — giai đoạn là lớp phủ (badge), không thay thế trục.
+- **Góp quỹ giữ thao tác tay từng quỹ** (có tháng góp có tháng không) — engine chỉ gợi ý (pre-fill), không auto-allocate. Advise-not-act là triết lý vận hành.
+- **Income vận hành = thu nhập THỰC cả hộ gộp** (mọi member, ví chung); capacity tháng = 15% × income thực tháng; timeline dùng trailing average 3 tháng chống rung.
+- **Emergency target giữ số onboarding**, user tự sửa; ngưỡng GĐ derive từ target (GĐ1 = target/3, GĐ2 = target).
+- **Goal mới chen ladder** → recompute toàn bộ theo living plan, không hỏi lại.
+- **Quyền sửa kế hoạch:** permission flag per member (owner cấp khi invite hoặc trong cấu hình).
+- **Tụt giai đoạn được KỂ** + lối thoát "còn N tháng là đầy lại" (BR-OB-012); không notify chéo member khi biến động lan.
+- **Rút quỹ thêm nhập mô tả lý do** (friction tốt + data).
+- **Tada tươi cho member mới:** reveal 4-stage chạy bằng số hôm nay — không replay snapshot.
+- Concept **"chế độ tháng khó"** (gom tin xấu thành 1 câu chuyện + lối thoát) — để epic tương lai (cần data tín hiệu từ sự kiện GĐ trước).
+- **Gap kỹ thuật:** hạng quỹ không sống trong DB (chỉ thứ tự mảng lúc gửi route onboarding) → 1 migration duy nhất cột `priority_rank`; còn lại compute-on-render.
+- Chuẩn BR: BR-OB-014 → BR-OB-018 trong docs/02_BUSINESS_RULES.md. Epic 12 (Living Plan core — Must) + Epic 13 (Narrative layer — Should) trong epics-onboarding-v2.md.
