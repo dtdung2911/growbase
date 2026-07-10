@@ -7,7 +7,6 @@ const educationGoal: OnboardingGoal = {
   fundType: "goal",
   name: "Quỹ học cho con",
   targetAmount: 200_000_000,
-  targetMonths: 60,
   icon: "ph:graduation-cap-duotone",
 }
 
@@ -16,7 +15,6 @@ const houseGoal: OnboardingGoal = {
   fundType: "goal",
   name: "Mua nhà",
   targetAmount: 500_000_000,
-  targetMonths: 36,
   icon: "ph:house-line-duotone",
 }
 
@@ -58,6 +56,54 @@ describe("useOnboardingV2Store", () => {
     expect(store.getState().goals.find((g) => g.presetId === "education")?.targetAmount).toBe(200_000_000)
   })
 
+  it("reorderGoals di chuyển goal đúng vị trí, giữ nguyên phần tử", () => {
+    const store = useOnboardingV2Store
+    const travelGoal: OnboardingGoal = {
+      presetId: "travel",
+      fundType: "goal",
+      name: "Du lịch",
+      targetAmount: 30_000_000,
+      icon: "ph:airplane-tilt-duotone",
+    }
+    store.getState().toggleGoal(educationGoal)
+    store.getState().toggleGoal(houseGoal)
+    store.getState().toggleGoal(travelGoal)
+    // kéo hạng 3 (travel, index 2) lên hạng 1 (index 0)
+    store.getState().reorderGoals(2, 0)
+    expect(store.getState().goals.map((g) => g.presetId)).toEqual(["travel", "education", "house"])
+    // không mất/thêm phần tử
+    expect(store.getState().goals).toHaveLength(3)
+  })
+
+  it("reorderGoals kéo xuống (0 → 2): [A,B,C] → [B,C,A]", () => {
+    const store = useOnboardingV2Store
+    const travelGoal: OnboardingGoal = {
+      presetId: "travel",
+      fundType: "goal",
+      name: "Du lịch",
+      targetAmount: 30_000_000,
+      icon: "ph:airplane-tilt-duotone",
+    }
+    store.getState().toggleGoal(educationGoal)
+    store.getState().toggleGoal(houseGoal)
+    store.getState().toggleGoal(travelGoal)
+    // kéo hạng 1 (education, index 0) xuống hạng 3 (index 2)
+    store.getState().reorderGoals(0, 2)
+    expect(store.getState().goals.map((g) => g.presetId)).toEqual(["house", "travel", "education"])
+    expect(store.getState().goals).toHaveLength(3)
+  })
+
+  it("reorderGoals index ngoài biên → no-op", () => {
+    const store = useOnboardingV2Store
+    store.getState().toggleGoal(educationGoal)
+    store.getState().toggleGoal(houseGoal)
+    const before = store.getState().goals
+    store.getState().reorderGoals(-1, 1)
+    store.getState().reorderGoals(0, 5)
+    store.getState().reorderGoals(1, 1)
+    expect(store.getState().goals).toEqual(before)
+  })
+
   it("clearGoals xoá hết goals", () => {
     const store = useOnboardingV2Store
     store.getState().toggleGoal(educationGoal)
@@ -69,27 +115,28 @@ describe("useOnboardingV2Store", () => {
     expect(useOnboardingV2Store.getState().canProceed()).toBe(true)
   })
 
-  it("canProceed step 1: true khi goals rỗng (chỉ quỹ khẩn cấp implicit)", () => {
+  it("canProceed step 1 (Thu nhập): cần income > 0", () => {
     const store = useOnboardingV2Store
-    store.getState().next()
-    expect(store.getState().canProceed()).toBe(true)
-  })
-
-  it("canProceed step 1: false khi có goal không pass schema", () => {
-    const store = useOnboardingV2Store
-    store.getState().next()
-    store.getState().toggleGoal({ ...educationGoal, targetAmount: null })
-    expect(store.getState().canProceed()).toBe(false)
-  })
-
-  it("canProceed step 2 (Thu nhập): cần income > 0", () => {
-    const store = useOnboardingV2Store
-    store.getState().next()
     store.getState().next()
     expect(store.getState().canProceed()).toBe(false)
     store.getState().setMonthlyIncome(30_000_000)
     expect(store.getState().canProceed()).toBe(true)
     store.getState().setMonthlyIncome(0)
+    expect(store.getState().canProceed()).toBe(false)
+  })
+
+  it("canProceed step 2 (Mục tiêu): true khi goals rỗng (chỉ quỹ khẩn cấp implicit)", () => {
+    const store = useOnboardingV2Store
+    store.getState().next()
+    store.getState().next()
+    expect(store.getState().canProceed()).toBe(true)
+  })
+
+  it("canProceed step 2 (Mục tiêu): false khi có goal không pass schema", () => {
+    const store = useOnboardingV2Store
+    store.getState().next()
+    store.getState().next()
+    store.getState().toggleGoal({ ...educationGoal, targetAmount: null })
     expect(store.getState().canProceed()).toBe(false)
   })
 

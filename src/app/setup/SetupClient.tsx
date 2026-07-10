@@ -8,7 +8,8 @@ import { IncomeStep } from "@/components/onboarding/v2/IncomeStep"
 import { TadaStep } from "@/components/onboarding/v2/TadaStep"
 import { useOnboardingV2Store } from "@/lib/stores/onboardingV2Store"
 
-// Onboarding v2 — 4 bước "mở quà": Hook → Mục tiêu → Thu nhập → Tada (PRD onboarding-v2 F1).
+// Onboarding v2 — 4 bước "mở quà": Hook → Thu nhập → Mục tiêu → Tada (PRD onboarding-v2 F1).
+// Thu nhập trước Mục tiêu: engine gợi ý khả thi cần thu nhập tại lúc nhập số đích (story 10.2 D1).
 export function SetupClient() {
   const step = useOnboardingV2Store((s) => s.step)
 
@@ -29,8 +30,8 @@ export function SetupClient() {
   return (
     <OnboardingV2Shell>
       {step === 0 && <HookStep />}
-      {step === 1 && <GoalStep />}
-      {step === 2 && <IncomeStep />}
+      {step === 1 && <IncomeStep />}
+      {step === 2 && <GoalStep />}
       {step === 3 && <TadaStep />}
     </OnboardingV2Shell>
   )

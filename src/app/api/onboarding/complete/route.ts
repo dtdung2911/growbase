@@ -9,10 +9,8 @@ import { addMonthsIso } from "@/lib/utils/date"
 import {
   BUDGET_TEMPLATE,
   EMERGENCY_FUND_MONTHS,
-  EMERGENCY_FUND_TIMELINE_MONTHS,
   estimateEmergencyTarget,
-  calculateFeasibility,
-  calculateAggregateFeasibility,
+  calculateAllocationPlan,
   calculateTodayRemaining,
 } from "@/lib/constants/budgetTemplate"
 
@@ -41,22 +39,26 @@ export async function POST(req: Request) {
   const names = LOCALIZED_NAMES[locale]
 
   const emergencyTarget = estimateEmergencyTarget(monthlyIncome)
+
+  // Engine chỉ để suy ra target_date mỗi goal fund; client (TadaStep) tự re-run cho storytelling.
+  const plan = calculateAllocationPlan({
+    monthlyIncome,
+    goals: goals.map((g, i) => ({ id: String(i), targetAmount: g.targetAmount! })),
+  })
+  const goalAllocs = plan.allocations.slice(1)
+
   const funds = [
     {
       name: names.emergencyFund,
       fundType: "emergency" as const,
       presetId: "emergency",
       targetAmount: emergencyTarget,
-      months: EMERGENCY_FUND_TIMELINE_MONTHS,
-      feasibility: calculateFeasibility(emergencyTarget, EMERGENCY_FUND_TIMELINE_MONTHS, monthlyIncome),
     },
     ...goals.map((g) => ({
       name: g.name,
       fundType: "goal" as const,
       presetId: g.presetId,
       targetAmount: g.targetAmount!,
-      months: g.targetMonths!,
-      feasibility: calculateFeasibility(g.targetAmount!, g.targetMonths!, monthlyIncome),
     })),
   ]
 
@@ -77,11 +79,11 @@ export async function POST(req: Request) {
       icon: PRESET_ICON_NAMES.emergency,
     },
     // preset icon là single source of truth từ presetId (server-side); custom lấy icon user đã validate
-    ...goals.map((g) => ({
+    ...goals.map((g, i) => ({
       fund_type: "goal",
       name: g.name,
       target_amount: g.targetAmount,
-      target_date: addMonthsIso(g.targetMonths!),
+      target_date: goalAllocs[i].timelineMonths !== null ? addMonthsIso(goalAllocs[i].timelineMonths!) : null,
       target_months_expense: null,
       icon: g.presetId === "custom" ? g.icon : PRESET_ICON_NAMES[g.presetId] ?? PRESET_ICON_NAMES.custom,
     })),
@@ -124,17 +126,10 @@ export async function POST(req: Request) {
   // fund_ids theo đúng thứ tự p_goals (= thứ tự funds): map id vào từng quỹ để client match.
   const fundsWithId = funds.map((f, i) => ({ ...f, id: fundIds[i] }))
 
-  // available giống nhau mọi fund (income − budget chi tiêu).
-  const feasibility = calculateAggregateFeasibility(
-    funds.map((f) => f.feasibility.monthlyNeeded),
-    funds[0].feasibility.available
-  )
-
   return NextResponse.json({
     data: {
       householdId,
       funds: fundsWithId,
-      feasibility,
       todayRemaining: calculateTodayRemaining(monthlyIncome),
     },
     error: null,

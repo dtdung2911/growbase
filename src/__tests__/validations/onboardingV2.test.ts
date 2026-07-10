@@ -7,7 +7,6 @@ const validGoal = {
   fundType: "goal" as const,
   name: "Quỹ học cho con",
   targetAmount: 200_000_000,
-  targetMonths: 60,
 }
 
 describe("goalSchema", () => {
@@ -15,13 +14,12 @@ describe("goalSchema", () => {
     expect(goalSchema.safeParse(validGoal).success).toBe(true)
   })
 
-  it("chấp nhận emergency với target/months null (tự tính sau)", () => {
+  it("chấp nhận emergency với target null (tự tính sau)", () => {
     const result = goalSchema.safeParse({
       presetId: "emergency",
       fundType: "emergency",
       name: "Quỹ khẩn cấp",
       targetAmount: null,
-      targetMonths: null,
     })
     expect(result.success).toBe(true)
   })
@@ -30,24 +28,16 @@ describe("goalSchema", () => {
     expect(goalSchema.safeParse({ ...validGoal, targetAmount: null }).success).toBe(false)
   })
 
-  it("từ chối goal thường thiếu targetMonths", () => {
-    expect(goalSchema.safeParse({ ...validGoal, targetMonths: null }).success).toBe(false)
-  })
-
   it("từ chối targetAmount 0 hoặc âm", () => {
     expect(goalSchema.safeParse({ ...validGoal, targetAmount: 0 }).success).toBe(false)
     expect(goalSchema.safeParse({ ...validGoal, targetAmount: -1000 }).success).toBe(false)
   })
 
-  it("từ chối targetMonths 0, âm, hoặc lẻ", () => {
-    expect(goalSchema.safeParse({ ...validGoal, targetMonths: 0 }).success).toBe(false)
-    expect(goalSchema.safeParse({ ...validGoal, targetMonths: -6 }).success).toBe(false)
-    expect(goalSchema.safeParse({ ...validGoal, targetMonths: 12.5 }).success).toBe(false)
-  })
-
-  it("từ chối targetMonths vượt 600", () => {
-    expect(goalSchema.safeParse({ ...validGoal, targetMonths: 601 }).success).toBe(false)
-    expect(goalSchema.safeParse({ ...validGoal, targetMonths: 600 }).success).toBe(true)
+  it("từ chối targetAmount dưới 100.000đ hoặc số lẻ; chấp nhận đúng 100.000", () => {
+    expect(goalSchema.safeParse({ ...validGoal, targetAmount: 1 }).success).toBe(false)
+    expect(goalSchema.safeParse({ ...validGoal, targetAmount: 99_999 }).success).toBe(false)
+    expect(goalSchema.safeParse({ ...validGoal, targetAmount: 100_000.5 }).success).toBe(false)
+    expect(goalSchema.safeParse({ ...validGoal, targetAmount: 100_000 }).success).toBe(true)
   })
 
   it("từ chối targetAmount vượt trần numeric(15,0)", () => {
@@ -121,7 +111,6 @@ describe("completeOnboardingV2Schema", () => {
       fundType: "emergency",
       name: "Quỹ khẩn cấp",
       targetAmount: null,
-      targetMonths: null,
     }
     const result = completeOnboardingV2Schema.safeParse({ goals: [emergencyGoal], monthlyIncome: 20_000_000 })
     expect(result.success).toBe(false)
@@ -147,15 +136,6 @@ describe("completeOnboardingV2Schema", () => {
     expect(completeOnboardingV2Schema.safeParse({ goals: [validGoal], monthlyIncome: 20 }).success).toBe(false)
   })
 
-  it("rejects a goal with targetMonths over 600", () => {
-    expect(
-      completeOnboardingV2Schema.safeParse({
-        goals: [{ ...validGoal, targetMonths: 601 }],
-        monthlyIncome: 20_000_000,
-      }).success,
-    ).toBe(false)
-  })
-
   it("rejects a goal with targetAmount overflowing numeric(15,0)", () => {
     expect(
       completeOnboardingV2Schema.safeParse({
@@ -175,7 +155,7 @@ describe("completeOnboardingV2Schema", () => {
   })
 
   it("rejects duplicate custom goals by name", () => {
-    const custom = { presetId: "custom" as const, fundType: "goal" as const, name: "Xe máy", targetAmount: 30_000_000, targetMonths: 12 }
+    const custom = { presetId: "custom" as const, fundType: "goal" as const, name: "Xe máy", targetAmount: 30_000_000 }
     expect(
       completeOnboardingV2Schema.safeParse({
         goals: [custom, { ...custom }],
@@ -185,8 +165,8 @@ describe("completeOnboardingV2Schema", () => {
   })
 
   it("accepts distinct custom goals with different names", () => {
-    const a = { presetId: "custom" as const, fundType: "goal" as const, name: "Xe máy", targetAmount: 30_000_000, targetMonths: 12 }
-    const b = { presetId: "custom" as const, fundType: "goal" as const, name: "Laptop", targetAmount: 25_000_000, targetMonths: 10 }
+    const a = { presetId: "custom" as const, fundType: "goal" as const, name: "Xe máy", targetAmount: 30_000_000 }
+    const b = { presetId: "custom" as const, fundType: "goal" as const, name: "Laptop", targetAmount: 25_000_000 }
     expect(
       completeOnboardingV2Schema.safeParse({ goals: [a, b], monthlyIncome: 20_000_000 }).success,
     ).toBe(true)
@@ -204,14 +184,6 @@ describe("completeOnboardingV2Schema", () => {
   it("rejects a goal with targetAmount 0", () => {
     const result = completeOnboardingV2Schema.safeParse({
       goals: [{ ...validGoal, targetAmount: 0 }],
-      monthlyIncome: 20_000_000,
-    })
-    expect(result.success).toBe(false)
-  })
-
-  it("rejects a goal with non-integer targetMonths", () => {
-    const result = completeOnboardingV2Schema.safeParse({
-      goals: [{ ...validGoal, targetMonths: 5.5 }],
       monthlyIncome: 20_000_000,
     })
     expect(result.success).toBe(false)

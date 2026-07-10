@@ -36,7 +36,7 @@
 # - Retrospective appends its action items to action_items; sprint-status surfaces open ones
 
 generated: 02-07-2026
-last_updated: 09-07-2026
+last_updated: 10-07-2026
 project: growbase
 project_key: NOKEY
 tracking_system: file-system
@@ -109,16 +109,16 @@ development_status:
   9-3-edit-funds-post-onboarding: done
   epic-9-retrospective: optional
 
-  epic-10: backlog
-  10-1-allocation-engine-3-stages: backlog
-  10-2-goalstep-live-suggest: backlog
-  10-3-tada-three-stage-story: backlog
+  epic-10: done
+  10-1-allocation-engine-3-stages: done
+  10-2-goalstep-live-suggest: done
+  10-3-tada-three-stage-story: done
   epic-10-retrospective: optional
 
-  epic-11: backlog
-  11-1-goal-priority-drag-rank: backlog
-  11-2-compound-sim-milestone-optin: backlog
-  11-3-detailed-plan-screen: backlog
+  epic-11: done
+  11-1-goal-priority-drag-rank: done
+  11-2-compound-sim-milestone-optin: done
+  11-3-detailed-plan-screen: done
   epic-11-retrospective: optional
 
 # Action items committed during retrospectives (section created by the retrospective workflow)

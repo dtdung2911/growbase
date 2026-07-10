@@ -1,28 +1,25 @@
 import { z } from "zod"
 import { ICON_CATALOG, PRESET_ICON_NAMES } from "@/lib/constants/fundIcons"
 
-// Quỹ khẩn cấp: target/months để null — tự tính "3 × chi tiêu tháng" sau khi có thu nhập (story 4.3/4.4)
+// Quỹ khẩn cấp: target để null — tự tính "3 × chi tiêu tháng" sau khi có thu nhập (story 4.3/4.4).
+// Timeline không do user nhập nữa — engine phân bổ tự suy ra từ thu nhập + hạng (story 10.2).
 export const goalSchema = z
   .object({
     presetId: z.enum(["emergency", "education", "house", "travel", "custom"]),
     fundType: z.enum(["emergency", "goal"]),
     name: z.string().trim().min(1, "Tên mục tiêu không được để trống"),
+    // min(100_000): số 1đ lọt sẽ cho engine timeline 0 tháng (epsilon 1đ) → gợi ý "0đ/tháng · 0 tháng" vô nghĩa
     targetAmount: z
       .number()
-      .positive("Số đích phải lớn hơn 0")
+      .int("Số đích phải là số nguyên")
+      .min(100_000, "Số đích tối thiểu 100.000đ")
       .max(100_000_000_000_000, "Số đích quá lớn")
-      .nullable(),
-    targetMonths: z
-      .number()
-      .int("Thời hạn phải là số tháng nguyên")
-      .positive("Thời hạn phải lớn hơn 0")
-      .max(600, "Thời hạn tối đa 600 tháng")
       .nullable(),
     // Whitelist icon — không nhận string tự do; thiếu → fallback pencil
     icon: z.enum(ICON_CATALOG).default(PRESET_ICON_NAMES.custom),
   })
-  .refine((g) => g.fundType === "emergency" || (g.targetAmount !== null && g.targetMonths !== null), {
-    message: "Mục tiêu cần số đích và thời hạn",
+  .refine((g) => g.fundType === "emergency" || g.targetAmount !== null, {
+    message: "Mục tiêu cần số đích",
   })
 
 export type OnboardingGoal = z.infer<typeof goalSchema>

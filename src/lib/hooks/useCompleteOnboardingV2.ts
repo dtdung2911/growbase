@@ -4,7 +4,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAppStore } from "@/lib/stores/appStore"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import type { OnboardingGoal } from "@/lib/validations/onboardingV2"
-import type { FeasibilityResult } from "@/lib/constants/budgetTemplate"
 
 export interface OnboardingFundResult {
   id: string
@@ -12,14 +11,11 @@ export interface OnboardingFundResult {
   fundType: "emergency" | "goal"
   presetId: string
   targetAmount: number
-  months: number
-  feasibility: FeasibilityResult
 }
 
 export interface CompleteOnboardingV2Response {
   householdId: string
   funds: OnboardingFundResult[]
-  feasibility: FeasibilityResult
   todayRemaining: number
 }
 

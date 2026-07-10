@@ -43,3 +43,33 @@
 - **Slider tỷ lệ power-user** (trang Funds): chỉnh tỷ trọng bậc thang/70-30 chi tiết hậu onboarding.
 - **Nối investment portfolio**: gợi ý kênh lãi kép → cửa ngõ sang module đầu tư (retention loop).
 - **Review số GĐ2 70/30 + bậc thang** sau khi có data thực (số sản phẩm tự quyết, chưa có nguồn ngoài).
+
+## Deferred from: code review story 10-1 (10-07-2026)
+
+- Target 1đ auto-complete qua epsilon 1đ (`timelineMonths = 0`, `addMonthsIso(0)` = hôm nay) — theoretical: CurrencyInput integer + Zod `.positive()`; cân nhắc `.int().min(100_000)` cho targetAmount.
+- `monthlyIncome` schema thiếu `.max()` + `.int()` — income >1e16 mất precision đồng-level (pre-existing Epic 4).
+- `addMonthsIso` dùng server TZ (`new Date()`) thay `todayVN()` — `target_date` lệch 1 ngày window 00:00-07:00 VN khi server UTC (pre-existing class; client-side call không bị).
+- Engine `calculateAllocationPlan` không guard income <41k (emergencyTarget floor 100k → 0 → stage state mâu thuẫn) — unreachable qua schema min 100k, chỉ ảnh hưởng caller tương lai truyền raw income.
+- `targetMonths` user nhập ở GoalStep bị engine bỏ qua (schema giữ backward-compat) — story 10-2 xử lý theo plan (GoalStep live suggest, bỏ months input).
+- Response `plan` + `funds[].monthlyAmount/timelineMonths` server-side chưa consumer nào đọc (TadaStep tự recompute client-side) — story 10-3 tiêu thụ cho storytelling 3 giai đoạn; nếu 10-3 không dùng thì xóa khỏi response.
+
+## Deferred from: code review story 10-2 (10-07-2026)
+
+- Suggest line GoalStep font-mono cả câu thay vì chỉ số — cosmetic; 10.3 làm đúng chuẩn cho text mới.
+- Toggle goal off/on mất edits + demote rank xuống cuối (rank invisible, chỉ đổi được bằng toggle) — story 11-1 kéo thả xếp hạng giải quyết.
+- Emergency card GoalStep không hiện suggest dù engine dồn GĐ1/GĐ2 cho emergency (timeline goals dài hơn user expect, không giải thích) — 10.3 Tada narrative; cân nhắc bổ sung ở GoalStep nếu chưa đủ.
+
+## Deferred from: code review story 10-3 (10-07-2026)
+
+- TadaPending copy rotation không bao giờ advance (`revealed.length` luôn 0 khi pending) — 3 pending strings unreachable, pre-existing Epic 8/9.
+- `stage1EndMonth` GĐ1 với input onboarding luôn = 6 tháng (ceil(81/15), không phụ thuộc income) — số "cá nhân hóa" là hằng số; cân nhắc copy product sau (bản chất model BR-OB-009/010, không phải bug).
+- `stage2EndMonth` không consumer ngoài engine/tests sau khi 10.3 ẩn số GĐ2 — story 11-3 màn kế hoạch chi tiết nên tiêu thụ.
+
+## Deferred from: code review story 11-2 (10-07-2026)
+
+- `t().replace` trong TranslationProvider.tsx:46 chỉ thay occurrence đầu của placeholder — an toàn hiện tại (mọi template dùng placeholder 1 lần), fragile nếu tương lai template lặp `{{months}}` 2 lần. Fix: replaceAll hoặc regex global.
+
+## Deferred from: code review story 11-3 (10-07-2026)
+
+- `planGoalChannels` (planDetail.ts) mirror logic `goalCalcs` (GoalStep 11.2) — không drift hiện tại, cả 2 có test; extract chung nếu tier logic thay đổi (cập nhật COMPOUND_RATES_YEAR hằng năm chỉ đổi constant, ít rủi ro).
+- PlanDetailSheet card kênh gợi ý có thể không có channel line (compound không cải thiện ≥2 tháng) dưới heading "kênh sinh lời" — cân nhắc ẩn card rỗng.

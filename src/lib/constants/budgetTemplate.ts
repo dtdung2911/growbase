@@ -44,11 +44,7 @@ export const FLEXIBLE_COST_TYPE_GROUPS: readonly CostTypeGroupKey[] = ["variable
 
 export const EMERGENCY_FUND_MONTHS = 3
 
-// Preset quỹ khẩn cấp không có targetMonths — giãn mốc gom đủ ra 18 tháng (D2 story 9.1):
-// 12 tháng khiến emergency gần như luôn infeasible (cần ~20% income vs available ~19%).
-export const EMERGENCY_FUND_TIMELINE_MONTHS = 18
-
-function sumBudgetPct(groups: readonly CostTypeGroupKey[]): number {
+export function sumBudgetPct(groups: readonly CostTypeGroupKey[]): number {
   return BUDGET_TEMPLATE.filter((l) => groups.includes(l.costTypeGroup)).reduce((sum, l) => sum + l.budgetPct, 0)
 }
 
@@ -57,32 +53,162 @@ export function estimateEmergencyTarget(monthlyIncome: number): number {
   return Math.floor(target / 100_000) * 100_000
 }
 
-export interface FeasibilityResult {
-  monthlyNeeded: number
-  available: number
-  feasible: boolean
+export interface AllocationGoalInput {
+  id: string
+  targetAmount: number
+  initialBalance?: number
 }
 
-export function calculateFeasibility(
-  targetAmount: number,
-  months: number,
+export interface AllocationInput {
   monthlyIncome: number
-): FeasibilityResult {
-  const monthlyNeeded = targetAmount / months
-  const totalBudget = monthlyIncome * (sumBudgetPct(SPENDING_COST_TYPE_GROUPS) / 100)
-  const available = monthlyIncome - totalBudget
-  // epsilon tránh false-negative do sai số float ở biên (VND không cần độ chính xác dưới 1 đồng)
-  return { monthlyNeeded, available, feasible: monthlyNeeded <= available + 1 }
+  goals: AllocationGoalInput[] // thứ tự = hạng (index 0 = hạng cao nhất)
+  emergencyBalance?: number
 }
 
-// Feasibility tổng khi nhiều quỹ cùng rút từ available. epsilon +1: target chia đều theo tháng
-// sinh sai số float ở biên, VND không cần độ chính xác dưới 1 đồng.
-export function calculateAggregateFeasibility(
-  monthlyNeededList: number[],
-  available: number
-): FeasibilityResult {
-  const monthlyNeeded = monthlyNeededList.reduce((sum, n) => sum + n, 0)
-  return { monthlyNeeded, available, feasible: monthlyNeeded <= available + 1 }
+export interface FundAllocation {
+  id: string // "emergency" cho quỹ khẩn cấp
+  // Góp TRUNG BÌNH mỗi tháng = (target − initialBalance) / timelineMonths. Dùng trung bình vì
+  // snapshot tháng 1 luôn 0đ cho goal ở GĐ1 (100% dồn emergency) → "góp 0đ/tháng" mâu thuẫn với
+  // "xong trong N tháng". null khi timeline null; 0 khi quỹ đã đầy sẵn (timeline 0).
+  monthlyAmount: number | null
+  timelineMonths: number | null // tháng hoàn thành (1-based); null nếu > 600 tháng
+}
+
+export interface AllocationPlan {
+  capacityMonthly: number
+  emergencyTarget: number
+  stage1EndMonth: number | null // emergency đạt 1× chi tiêu thiết yếu (0 = đã đạt sẵn)
+  stage2EndMonth: number | null // emergency đạt target 3×
+  allocations: FundAllocation[] // emergency đầu tiên, rồi goals theo hạng
+}
+
+export const MAX_ALLOCATION_MONTHS = 600
+// 1đ: VND không cần độ chính xác dưới 1 đồng, khớp convention epsilon cũ
+const ALLOCATION_EPSILON = 1
+
+// timelineMonths null → góp trung bình không xác định (không bao giờ xong); 0 → quỹ đã đầy sẵn.
+function averageMonthly(target: number, initialBalance: number, timelineMonths: number | null): number | null {
+  if (timelineMonths === null) return null
+  if (timelineMonths === 0) return 0
+  return Math.round((target - initialBalance) / timelineMonths)
+}
+
+// Bậc thang theo hạng (BR-OB-011). N≥4 (D2): hạng 1-2 giữ 60/30, hạng 3..N chia đều 10%.
+export function ladderWeights(n: number): number[] {
+  if (n <= 0) return []
+  if (n === 1) return [1]
+  if (n === 2) return [0.7, 0.3]
+  if (n === 3) return [0.6, 0.3, 0.1]
+  const tail = 0.1 / (n - 2)
+  return [0.6, 0.3, ...Array<number>(n - 2).fill(tail)]
+}
+
+// Engine thuần 3 giai đoạn (BR-OB-009..011): single source of truth cho góp/tháng mọi quỹ.
+export function calculateAllocationPlan(input: AllocationInput): AllocationPlan {
+  const capacity = input.monthlyIncome * (sumBudgetPct(["savings_investment"]) / 100)
+  const emergencyTarget = estimateEmergencyTarget(input.monthlyIncome)
+  const stage1Threshold = input.monthlyIncome * (sumBudgetPct(SPENDING_COST_TYPE_GROUPS) / 100)
+
+  const emergencyInitial = input.emergencyBalance ?? 0
+  let emergencyBalance = emergencyInitial
+  const goals = input.goals.map((g) => ({
+    id: g.id,
+    target: g.targetAmount,
+    balance: g.initialBalance ?? 0,
+    initialBalance: g.initialBalance ?? 0,
+  }))
+
+  const emergencyDone = () => emergencyBalance >= emergencyTarget - ALLOCATION_EPSILON
+  const goalDone = (g: { target: number; balance: number }) => g.balance >= g.target - ALLOCATION_EPSILON
+
+  let stage1EndMonth: number | null = emergencyBalance >= stage1Threshold - ALLOCATION_EPSILON ? 0 : null
+  let stage2EndMonth: number | null = emergencyDone() ? 0 : null
+  let emergencyTimeline: number | null = stage2EndMonth
+  const goalTimeline: (number | null)[] = goals.map((g) => (goalDone(g) ? 0 : null))
+
+  // Rót pool cho goals theo ladder; goal đầy giữa chừng → spill sang goals còn lại. Trả phần dư.
+  const pourGoals = (pool: number): number => {
+    let guard = 0
+    while (pool > ALLOCATION_EPSILON && guard++ < goals.length + 2) {
+      const incomplete = goals.filter((g) => !goalDone(g))
+      if (incomplete.length === 0) break
+      const weights = ladderWeights(incomplete.length)
+      let consumed = 0
+      incomplete.forEach((g, i) => {
+        const give = Math.min(pool * weights[i], g.target - g.balance)
+        g.balance += give
+        consumed += give
+      })
+      if (consumed <= ALLOCATION_EPSILON) break
+      pool -= consumed
+    }
+    return pool
+  }
+
+  const distributeMonth = () => {
+    let remaining = capacity
+    let guard = 0
+    while (remaining > ALLOCATION_EPSILON && guard++ < 4) {
+      if (emergencyBalance < stage1Threshold - ALLOCATION_EPSILON) {
+        const give = Math.min(remaining, stage1Threshold - emergencyBalance)
+        emergencyBalance += give
+        remaining -= give
+      } else if (!emergencyDone()) {
+        const hasGoals = goals.some((g) => !goalDone(g))
+        const emergencyShare = hasGoals ? remaining * 0.7 : remaining
+        const room = emergencyTarget - emergencyBalance
+        const emergencyGive = Math.min(emergencyShare, room)
+        emergencyBalance += emergencyGive
+        // Phần goals + phần emergency tràn khỏi target; dư từ goals (đầy hết) chảy ngược về emergency.
+        const overflow = pourGoals(remaining - emergencyGive)
+        if (overflow > ALLOCATION_EPSILON) {
+          emergencyBalance += Math.min(overflow, emergencyTarget - emergencyBalance)
+        }
+        remaining = 0
+      } else {
+        pourGoals(remaining)
+        remaining = 0
+      }
+    }
+  }
+
+  if (capacity > ALLOCATION_EPSILON) {
+    for (let month = 1; month <= MAX_ALLOCATION_MONTHS; month++) {
+      if (emergencyDone() && goals.every(goalDone)) break
+
+      distributeMonth()
+
+      if (stage1EndMonth === null && emergencyBalance >= stage1Threshold - ALLOCATION_EPSILON) {
+        stage1EndMonth = month
+      }
+      if (stage2EndMonth === null && emergencyDone()) {
+        stage2EndMonth = month
+        emergencyTimeline = month
+      }
+      goals.forEach((g, i) => {
+        if (goalTimeline[i] === null && goalDone(g)) goalTimeline[i] = month
+      })
+    }
+  }
+
+  return {
+    capacityMonthly: Math.floor(capacity),
+    emergencyTarget,
+    stage1EndMonth,
+    stage2EndMonth,
+    allocations: [
+      {
+        id: "emergency",
+        monthlyAmount: averageMonthly(emergencyTarget, emergencyInitial, emergencyTimeline),
+        timelineMonths: emergencyTimeline,
+      },
+      ...goals.map((g, i) => ({
+        id: g.id,
+        monthlyAmount: averageMonthly(g.target, g.initialBalance, goalTimeline[i]),
+        timelineMonths: goalTimeline[i],
+      })),
+    ],
+  }
 }
 
 export function calculateTodayRemaining(monthlyIncome: number, today: Date = new Date()): number {
@@ -264,3 +390,50 @@ export const BUDGET_TEMPLATE: BudgetTemplateLine[] = [
     costTypeGroup: "other",
   },
 ]
+
+// BR-OB-013: lãi suất tham chiếu năm T-1. Cập nhật TAY mỗi năm khi số thị trường đổi.
+export const COMPOUND_RATES_YEAR = 2025
+
+// 3 tầng theo timeline baseline (BR-OB-013): <2 năm tiết kiệm 5% · 2-5 năm quỹ trái phiếu 6,5% · >5 năm DCA chỉ số 8%.
+export const COMPOUND_TIERS = [
+  { maxMonths: 24, annualRate: 0.05, key: "savings" },
+  { maxMonths: 60, annualRate: 0.065, key: "bonds" },
+  { maxMonths: Infinity, annualRate: 0.08, key: "index" },
+] as const
+
+export type CompoundTier = (typeof COMPOUND_TIERS)[number]
+
+// n nhỏ nhất để FV annuity góp cuối kỳ đạt target: C×((1+i)^n − 1)/i ≥ target, i = annualRate/12.
+// C ≤ 0 hoặc không đạt trong cap → null; target ≤ 0 → 0. Cap 600 nhất quán MAX_ALLOCATION_MONTHS.
+export function compoundTimelineMonths(
+  monthlyContribution: number,
+  targetAmount: number,
+  annualRate: number,
+): number | null {
+  if (targetAmount <= 0) return 0
+  if (monthlyContribution <= 0) return null
+  const i = annualRate / 12
+  let futureValue = 0
+  for (let n = 1; n <= MAX_ALLOCATION_MONTHS; n++) {
+    futureValue = futureValue * (1 + i) + monthlyContribution
+    if (futureValue >= targetAmount - ALLOCATION_EPSILON) return n
+  }
+  return null
+}
+
+// Chọn tầng theo timeline baseline; null (ngoài cap) coi như tầng xa nhất (index 8%).
+export function pickCompoundTier(baselineTimelineMonths: number | null): CompoundTier {
+  const last = COMPOUND_TIERS[COMPOUND_TIERS.length - 1]
+  if (baselineTimelineMonths === null) return last
+  return COMPOUND_TIERS.find((tier) => baselineTimelineMonths <= tier.maxMonths) ?? last
+}
+
+// 4 nhóm Conscious Spending Plan (bar Tada + màn kế hoạch chi tiết). Nhóm linh hoạt gộp
+// variable+wasteful+other để bar phủ đúng 100%; fixed/savings/debt giữ % chuẩn khớp màn Budget.
+// key khớp i18n setupV2.tada.budgetLegend.*.
+export const BUDGET_SEGMENTS = [
+  { key: "fixed", pct: sumBudgetPct(["fixed"]), color: "bg-primary" },
+  { key: "variable", pct: sumBudgetPct(["variable", "wasteful", "other"]), color: "bg-info" },
+  { key: "savingsInvestment", pct: sumBudgetPct(["savings_investment"]), color: "bg-success" },
+  { key: "debtRepayment", pct: sumBudgetPct(["debt_repayment"]), color: "bg-warning" },
+] as const

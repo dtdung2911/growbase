@@ -5,45 +5,35 @@ import { useRouter } from "next/navigation"
 import { Icon } from "@iconify/react"
 import { Button } from "@/components/ui/button"
 import { CurrencyInput } from "@/components/ui/CurrencyInput"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useOnboardingV2Store } from "@/lib/stores/onboardingV2Store"
-import { useMutationState } from "@tanstack/react-query"
+import { useAppStore } from "@/lib/stores/appStore"
+import { useMutation, useMutationState, useQueryClient } from "@tanstack/react-query"
 import {
   COMPLETE_ONBOARDING_V2_KEY,
   useCompleteOnboardingV2,
   type CompleteOnboardingV2Response,
   type OnboardingFundResult,
 } from "@/lib/hooks/useCompleteOnboardingV2"
-import { useFunds, useUpdateFund } from "@/lib/hooks/useFunds"
+import { useFunds } from "@/lib/hooks/useFunds"
+import { keys } from "@/lib/queries/queryKeys"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import { formatVND } from "@/lib/utils/currency"
 import { addMonthsIso } from "@/lib/utils/date"
 import { cn } from "@/lib/utils/cn"
 import { toast } from "sonner"
 import {
-  BUDGET_TEMPLATE,
+  BUDGET_SEGMENTS,
   FLEXIBLE_COST_TYPE_GROUPS,
-  calculateAggregateFeasibility,
-  type CostTypeGroupKey,
-  type FeasibilityResult,
+  MAX_ALLOCATION_MONTHS,
+  calculateAllocationPlan,
+  sumBudgetPct,
 } from "@/lib/constants/budgetTemplate"
-import { TADA_REVEAL_STAGES, type TadaRevealStage } from "@/lib/constants/tadaReveal"
+import { TADA_REVEAL_STAGES, pickThreeStageKey, type TadaRevealStage } from "@/lib/constants/tadaReveal"
 import { PRESET_ICON_NAMES } from "./goalPresetIcons";
+import { PlanDetailSheet } from "./PlanDetailSheet";
 
 const STAGE_DELAY_MS = 550
-
-const sumBudgetPct = (groups: readonly CostTypeGroupKey[]) =>
-  BUDGET_TEMPLATE.filter((l) => groups.includes(l.costTypeGroup)).reduce((s, l) => s + l.budgetPct, 0)
-
-// 4 nhóm Conscious Spending Plan. Nhóm linh hoạt gộp variable+wasteful+other để bar phủ đúng 100%;
-// fixed/savings/debt giữ % chuẩn khớp màn Budget.
-const BUDGET_SEGMENTS = [
-  { key: "fixed", pct: sumBudgetPct(["fixed"]), color: "bg-primary" },
-  { key: "variable", pct: sumBudgetPct(["variable", "wasteful", "other"]), color: "bg-info" },
-  { key: "savingsInvestment", pct: sumBudgetPct(["savings_investment"]), color: "bg-success" },
-  { key: "debtRepayment", pct: sumBudgetPct(["debt_repayment"]), color: "bg-warning" },
-] as const
 
 export function TadaStep() {
   const { t } = useTranslation()
@@ -93,7 +83,6 @@ export function TadaStep() {
   }, [mutationStatus])
 
   const [adjustedTargetAmount, setAdjustedTargetAmount] = useState<number | null>(null)
-  const [adjustedMonths, setAdjustedMonths] = useState<number | null>(null)
 
   if (monthlyIncome === null) return null
 
@@ -134,15 +123,39 @@ export function TadaStep() {
   }
 
   const original = result
-  // Chỉ điều chỉnh quỹ mục tiêu thực sự chưa khả thi — không bao giờ đụng quỹ khẩn cấp (BR-OB-006).
-  // Không fallback funds[0]: nếu tổng infeasible mà không quỹ đơn nào infeasible → hiện thông báo, không có input chỉnh.
-  const adjustFund = original.funds.find((f) => !f.feasibility.feasible && f.fundType !== "emergency")
+  // Quỹ có thể chỉnh: goal hạng cao nhất — không bao giờ đụng quỹ khẩn cấp (BR-OB-006).
+  const adjustFund = original.funds.find((f) => f.fundType === "goal")
   const targetAmount = adjustedTargetAmount ?? adjustFund?.targetAmount ?? 0
-  const months = adjustedMonths ?? adjustFund?.months ?? 1
 
-  // Góp/tháng per-fund: fund đang chỉnh dùng giá trị live, còn lại dùng số server tính.
-  const fundMonthly = (f: OnboardingFundResult) =>
-    f === adjustFund ? targetAmount / months : f.feasibility.monthlyNeeded
+  // Re-run engine client-side: đổi target quỹ đang chỉnh → timeline + phân bổ giãn theo (một nguồn số với server).
+  const engineGoals = original.funds
+    .filter((f) => f.fundType === "goal")
+    .map((f) => ({
+      id: f.id,
+      targetAmount: adjustFund && f.id === adjustFund.id ? targetAmount : f.targetAmount,
+    }))
+  const livePlan = calculateAllocationPlan({ monthlyIncome, goals: engineGoals })
+  const allocById = new Map(livePlan.allocations.map((a) => [a.id, a]))
+  const allocFor = (f: OnboardingFundResult) =>
+    allocById.get(f.fundType === "emergency" ? "emergency" : f.id)
+
+  const fundMonthly = (f: OnboardingFundResult) => allocFor(f)?.monthlyAmount ?? null
+  const fundTimeline = (f: OnboardingFundResult) => allocFor(f)?.timelineMonths ?? null
+  const targetFor = (f: OnboardingFundResult) =>
+    adjustFund && f.id === adjustFund.id ? targetAmount : f.targetAmount
+
+  // livePlan re-time TẤT CẢ quỹ theo target mới → DB target_date mọi goal fund phải khớp Tada
+  // (không chỉ quỹ vừa chỉnh) nếu không dashboard sẽ mâu thuẫn. Emergency không đụng (target_date luôn null).
+  const goalFundUpdates = original.funds
+    .filter((f) => f.fundType === "goal")
+    .map((f) => {
+      const timeline = fundTimeline(f)
+      return {
+        fundId: f.id,
+        target_date: timeline !== null ? addMonthsIso(timeline) : null,
+        ...(adjustFund && f.id === adjustFund.id ? { target_amount: targetAmount } : {}),
+      }
+    })
 
   // API không trả icon: quỹ custom lấy icon user chọn từ goals state (match theo name), preset map từ presetId.
   const iconFor = (f: OnboardingFundResult) =>
@@ -150,16 +163,20 @@ export function TadaStep() {
       ? goals.find((g) => g.presetId === "custom" && g.name.trim() === f.name.trim())?.icon ?? PRESET_ICON_NAMES.custom
       : PRESET_ICON_NAMES[f.presetId] ?? PRESET_ICON_NAMES.custom
 
-  // Feasibility phải tính TỔNG mọi fund cùng rút từ available; adjustFund dùng giá trị đang chỉnh.
-  const feasibility: FeasibilityResult =
-    original.feasibility.feasible || !adjustFund
-      ? original.feasibility
-      : calculateAggregateFeasibility(
-          original.funds.map(fundMonthly),
-          original.feasibility.available
-        )
+  const timelineLabel = (months: number | null) =>
+    months === null
+      ? t("setupV2.tada.fundTimelineNever", { max: MAX_ALLOCATION_MONTHS })
+      : t("setupV2.tada.fundTimeline", { months })
 
-  const wasAdjusted = adjustedTargetAmount !== null || adjustedMonths !== null
+  const wasAdjusted = adjustedTargetAmount !== null
+  // goalSchema min(100_000): số nhỏ hơn (vd gõ "20" = 20đ) không được đẩy vào PATCH.
+  const belowMinTarget = adjustedTargetAmount !== null && adjustedTargetAmount < 100_000
+
+  // Dòng kể 3 giai đoạn: chỉ surface số tháng GĐ1 (stage1EndMonth) — GĐ2/GĐ3 là narrative kế hoạch,
+  // không phải mốc đã đạt nên s2===null không cần nhánh riêng. Nhánh theo edge engine (§Edge story).
+  const stage1End = livePlan.stage1EndMonth
+  const threeStageKey = pickThreeStageKey(stage1End, engineGoals.length > 0)
+  const threeStageMonths = stage1End !== null && stage1End > 0 ? stage1End : null
 
   return (
     <div className="space-y-4">
@@ -181,18 +198,19 @@ export function TadaStep() {
               <div className="flex-1">
                 <p className="font-semibold text-primary">{f.name}</p>
                 <p className="font-mono text-sm tabular-nums text-muted-foreground">
-                  {formatVND(f.targetAmount)}
+                  {formatVND(targetFor(f))}
                 </p>
-                <p className="font-mono text-xs tabular-nums text-muted-foreground">
-                  {t("setupV2.tada.fundMonthly", { amount: formatVND(fundMonthly(f)) })}
-                </p>
+                {fundMonthly(f) !== null && (
+                  <p className="font-mono text-xs tabular-nums text-muted-foreground">
+                    {t("setupV2.tada.fundMonthly", { amount: formatVND(fundMonthly(f)!) })}
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground">{timelineLabel(fundTimeline(f))}</p>
               </div>
             </div>
           ))}
           <p className="font-mono text-sm font-semibold tabular-nums text-foreground">
-            {t("setupV2.tada.totalMonthly", {
-              amount: formatVND(original.funds.reduce((s, f) => s + fundMonthly(f), 0)),
-            })}
+            {t("setupV2.tada.totalMonthly", { amount: formatVND(livePlan.capacityMonthly) })}
           </p>
         </div>
       )}
@@ -200,67 +218,36 @@ export function TadaStep() {
       {revealed.includes("feasibility") && (
         <div className="space-y-3 rounded-[13px] border border-border/40 bg-card p-4 shadow-card">
           <p className="font-semibold text-foreground">
-            {feasibility.feasible
-              ? t("setupV2.tada.feasibleTitle", {
-                  amount: formatVND(feasibility.monthlyNeeded),
-                })
-              : t("setupV2.tada.infeasibleTitle")}
+            {t("setupV2.tada.feasibleTitle", { amount: formatVND(livePlan.capacityMonthly) })}
           </p>
+          <p className="text-xs text-muted-foreground">
+            {t("setupV2.tada.capacitySource", { percent: sumBudgetPct(["savings_investment"]) })}
+          </p>
+          <ThreeStageLine template={t(`setupV2.tada.threeStage.${threeStageKey}`)} months={threeStageMonths} />
           <p className="text-xs text-muted-foreground">
             {t("setupV2.tada.rationale.mentalAccounting")}
           </p>
-          {/* Gate theo verdict gốc từ server, không theo feasibility live:
-              nếu gate live thì vừa gõ qua ngưỡng khả thi là inputs unmount giữa chừng. */}
-          {!original.feasibility.feasible && adjustFund && (
+          {adjustFund ? (
             <div className="space-y-3">
               <p className="text-sm font-medium text-foreground">
                 {t("setupV2.tada.adjustingFund", { name: adjustFund.name })}
               </p>
-              <p className="text-sm text-muted-foreground">
-                {t("setupV2.tada.infeasibleDesc")}
-              </p>
               <div className="space-y-1.5">
-                <Label htmlFor="tada-target">
-                  {t("setupV2.tada.adjustTargetLabel")}
-                </Label>
+                <Label htmlFor="tada-target">{t("setupV2.tada.adjustTargetLabel")}</Label>
                 <CurrencyInput
                   id="tada-target"
                   value={targetAmount}
-                  onChange={(v) => setAdjustedTargetAmount(v || null)}
+                  // Clamp khớp cap Zod onboarding (100_000_000_000_000) → tránh PATCH số vượt trần
+                  onChange={(v) => setAdjustedTargetAmount(v ? Math.min(v, 100_000_000_000_000) : null)}
                 />
+                {belowMinTarget && (
+                  <p className="text-xs text-destructive">{t("setupV2.tada.minTargetHint")}</p>
+                )}
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="tada-months">
-                  {t("setupV2.tada.adjustMonthsLabel")}
-                </Label>
-                <Input
-                  id="tada-months"
-                  inputMode="numeric"
-                  value={months}
-                  onChange={(e) => {
-                    const digits = e.target.value.replace(/\D/g, "");
-                    const n = Number(digits);
-                    setAdjustedMonths(digits ? Math.max(1, n) : null);
-                  }}
-                  className="font-mono tabular-nums"
-                />
-              </div>
-              <p className="font-mono text-sm tabular-nums text-foreground">
-                {t("setupV2.tada.fundMonthly", {
-                  amount: formatVND(targetAmount / months),
-                })}
-              </p>
-              <p className="font-mono text-xs tabular-nums text-muted-foreground">
-                {t("setupV2.tada.totalMonthlyNeeded", {
-                  amount: formatVND(feasibility.monthlyNeeded),
-                })}
-              </p>
+              <p className="text-sm text-muted-foreground">{timelineLabel(fundTimeline(adjustFund))}</p>
             </div>
-          )}
-          {!original.feasibility.feasible && !adjustFund && (
-            <p className="text-sm text-muted-foreground">
-              {t("setupV2.tada.noAdjustHint")}
-            </p>
+          ) : (
+            <p className="text-sm text-muted-foreground">{t("setupV2.tada.noAdjustHint")}</p>
           )}
         </div>
       )}
@@ -286,11 +273,21 @@ export function TadaStep() {
       )}
 
       {revealed.length === TADA_REVEAL_STAGES.length && (
+        <div className="space-y-3">
+          <p className="text-xs text-muted-foreground">{t("setupV2.tada.attribution")}</p>
+          <PlanDetailSheet
+            plan={livePlan}
+            funds={original.funds.map((f) => ({ ...f, targetAmount: targetFor(f) }))}
+            monthlyIncome={monthlyIncome}
+          />
+        </div>
+      )}
+
+      {revealed.length === TADA_REVEAL_STAGES.length && (
         <TadaFinishButton
           wasAdjusted={wasAdjusted}
-          fundId={adjustFund?.id}
-          targetAmount={targetAmount}
-          months={months}
+          invalid={belowMinTarget}
+          updates={goalFundUpdates}
           onDone={() => {
             // Xóa sessionStorage: user khác đăng nhập cùng tab không được
             // thừa hưởng goal/income cũ và auto-fire mutation ở TadaStep
@@ -303,34 +300,59 @@ export function TadaStep() {
   );
 }
 
+interface GoalFundUpdate {
+  fundId: string
+  target_date: string | null
+  target_amount?: number
+}
+
 function TadaFinishButton({
   wasAdjusted,
-  fundId,
-  targetAmount,
-  months,
+  invalid,
+  updates,
   onDone,
 }: {
   wasAdjusted: boolean
-  fundId: string | undefined
-  targetAmount: number
-  months: number
+  invalid: boolean
+  updates: GoalFundUpdate[]
   onDone: () => void
 }) {
   const { t } = useTranslation()
   const { data: funds, isPending: fundsPending } = useFunds()
-  const fund = funds?.find((f) => f.id === fundId)
-  const updateFund = useUpdateFund(fund?.id ?? "")
+  const qc = useQueryClient()
+  const householdId = useAppStore((s) => s.householdId)
+
+  // Sequential PATCH mọi goal fund: quỹ chỉnh nhận {target_amount, target_date}, còn lại {target_date} mới.
+  const patchFunds = useMutation({
+    mutationFn: async (ups: GoalFundUpdate[]) => {
+      for (const { fundId, ...body } of ups) {
+        const res = await fetch(`/api/funds/${fundId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        })
+        if (!res.ok) {
+          const json = await res.json().catch(() => ({}))
+          throw new Error(json.error ?? t("funds.updateFailed"))
+        }
+      }
+    },
+    onSuccess: () => {
+      if (householdId) void qc.invalidateQueries({ queryKey: keys.funds(householdId) })
+    },
+  })
 
   const handleClick = async () => {
+    if (invalid) return // số dưới min không bao giờ được PATCH (button cũng disabled)
     if (wasAdjusted) {
-      if (!fund) {
+      if (!funds || funds.length === 0) {
         toast.warning(t("setupV2.tada.fundNotFound"))
       } else {
         try {
-          const targetDate = fund.fund_type === "goal" ? addMonthsIso(months) : undefined
-          await updateFund.mutateAsync({ target_amount: targetAmount, ...(targetDate ? { target_date: targetDate } : {}) })
-        } catch {
-          // useUpdateFund.onError đã toast lỗi; giữ user ở Tada (không sang dashboard).
+          await patchFunds.mutateAsync(updates)
+        } catch (err) {
+          // Giữ user ở Tada (không sang dashboard) khi lưu lỗi.
+          toast.error(err instanceof Error ? err.message : t("funds.updateFailed"), { duration: 5000 })
           return
         }
       }
@@ -342,12 +364,25 @@ function TadaFinishButton({
     <Button
       className="min-h-[44px] w-full"
       onClick={handleClick}
-      // Không chặn vĩnh viễn nếu useFunds lỗi (fund undefined): chỉ chặn khi đang tải/đang lưu.
-      // handleClick tự bỏ qua updateFund khi thiếu fund → user vẫn vào được dashboard.
-      disabled={wasAdjusted && (fundsPending || updateFund.isPending)}
+      // Không chặn vĩnh viễn nếu useFunds lỗi (funds undefined): chỉ chặn khi đang tải/đang lưu.
+      disabled={invalid || (wasAdjusted && (fundsPending || patchFunds.isPending))}
     >
       {t("setupV2.tada.cta")}
     </Button>
+  )
+}
+
+// Câu kể prose; chỉ SỐ tháng bọc font-mono (không mono cả câu). Template có/không {{months}}
+// tùy nhánh — split trả 1 phần khi vắng placeholder nên months===null render nguyên câu.
+function ThreeStageLine({ template, months }: { template: string; months: number | null }) {
+  if (months === null) return <p className="text-sm text-foreground">{template}</p>
+  const [before, after = ""] = template.split("{{months}}")
+  return (
+    <p className="text-sm text-foreground">
+      {before}
+      <span className="font-mono tabular-nums">{months}</span>
+      {after}
+    </p>
   )
 }
 

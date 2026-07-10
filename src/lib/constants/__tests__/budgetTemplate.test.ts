@@ -3,9 +3,13 @@ import {
   BUDGET_TEMPLATE,
   SPENDING_COST_TYPE_GROUPS,
   estimateEmergencyTarget,
-  calculateFeasibility,
-  calculateAggregateFeasibility,
+  calculateAllocationPlan,
   calculateTodayRemaining,
+  ladderWeights,
+  COMPOUND_TIERS,
+  COMPOUND_RATES_YEAR,
+  compoundTimelineMonths,
+  pickCompoundTier,
 } from "@/lib/constants/budgetTemplate"
 
 describe("BUDGET_TEMPLATE", () => {
@@ -111,29 +115,189 @@ describe("estimateEmergencyTarget", () => {
   })
 })
 
-describe("calculateFeasibility", () => {
-  // income 20tr, chi tiêu 81% = 16.2tr → available = 3.8tr
-  it("feasible khi monthlyNeeded <= available", () => {
-    const result = calculateFeasibility(45_600_000, 12, 20_000_000)
-    expect(result.available).toBeCloseTo(3_800_000)
-    expect(result.monthlyNeeded).toBe(3_800_000)
-    expect(result.feasible).toBe(true)
+describe("calculateAllocationPlan", () => {
+  const goal = (id: string, targetAmount: number, initialBalance = 0) => ({
+    id,
+    targetAmount,
+    initialBalance,
   })
 
-  it("không feasible khi monthlyNeeded > available", () => {
-    const result = calculateFeasibility(100_000_000, 12, 20_000_000)
-    expect(result.feasible).toBe(false)
+  it("capacity = 15% thu nhập, derive từ BUDGET_TEMPLATE (không hardcode)", () => {
+    const plan = calculateAllocationPlan({ monthlyIncome: 20_000_000, goals: [] })
+    expect(plan.capacityMonthly).toBe(3_000_000)
+    expect(plan.emergencyTarget).toBe(estimateEmergencyTarget(20_000_000))
   })
 
-  it("số tháng lẻ tính đúng phép chia", () => {
-    const result = calculateFeasibility(10_000_000, 3, 20_000_000)
-    expect(result.monthlyNeeded).toBeCloseTo(10_000_000 / 3)
+  it("0 quỹ mục tiêu: 100% capacity → emergency mọi giai đoạn", () => {
+    // income 20tr: capacity 3tr, essential 16.2tr, target 48.6tr
+    const plan = calculateAllocationPlan({ monthlyIncome: 20_000_000, goals: [] })
+    expect(plan.allocations).toHaveLength(1)
+    const em = plan.allocations[0]
+    expect(em.id).toBe("emergency")
+    // góp trung bình = target 48.6tr / timeline 17 tháng
+    expect(em.monthlyAmount).toBe(2_858_824)
+    // stage1 (16.2tr): tháng 6 (5×3=15tr chưa đủ, tháng 6 → 18tr)
+    expect(plan.stage1EndMonth).toBe(6)
+    // không goal → GĐ2 dồn 100% emergency: 48.6tr / 3tr = 16.2 → tháng 17
+    expect(plan.stage2EndMonth).toBe(17)
+    expect(em.timelineMonths).toBe(17)
   })
 
-  it("target 0 → monthlyNeeded 0, luôn feasible", () => {
-    const result = calculateFeasibility(0, 12, 20_000_000)
-    expect(result.monthlyNeeded).toBe(0)
-    expect(result.feasible).toBe(true)
+  it("income 15tr, 3 quỹ: emergency ưu tiên (GĐ1), mọi quỹ hoàn thành hữu hạn", () => {
+    const plan = calculateAllocationPlan({
+      monthlyIncome: 15_000_000,
+      goals: [goal("a", 30_000_000), goal("b", 20_000_000), goal("c", 10_000_000)],
+    })
+    // capacity 2.25tr < stage1Threshold (12.15tr) → GĐ1 dồn emergency trước
+    expect(plan.capacityMonthly).toBe(2_250_000)
+    // monthlyAmount = góp trung bình = (target − initial) / timeline
+    expect(plan.allocations[0].monthlyAmount).toBe(1_733_333)
+    expect(plan.allocations.every((a) => a.timelineMonths !== null)).toBe(true)
+    // emergency xong trước goal hạng 1 (ưu tiên GĐ1/GĐ2)
+    expect(plan.allocations[0].timelineMonths!).toBeLessThan(plan.allocations[1].timelineMonths!)
+  })
+
+  it("income 40tr (biên AC3): capacity = 15% = 6tr, mọi quỹ hoàn thành hữu hạn", () => {
+    const plan = calculateAllocationPlan({
+      monthlyIncome: 40_000_000,
+      goals: [goal("a", 100_000_000), goal("b", 50_000_000)],
+    })
+    expect(plan.capacityMonthly).toBe(6_000_000)
+    expect(plan.emergencyTarget).toBe(97_200_000)
+    // emergency góp trung bình = 97.2tr / timeline 21
+    expect(plan.allocations[0].monthlyAmount).toBe(4_628_571)
+    expect(plan.allocations.every((a) => a.timelineMonths !== null)).toBe(true)
+  })
+
+  it("income 100tr: mọi quỹ hoàn thành, timeline hữu hạn và tăng dần theo hạng", () => {
+    const plan = calculateAllocationPlan({
+      monthlyIncome: 100_000_000,
+      goals: [goal("a", 50_000_000), goal("b", 50_000_000)],
+    })
+    expect(plan.allocations.every((a) => a.timelineMonths !== null)).toBe(true)
+    expect(plan.stage2EndMonth).not.toBeNull()
+  })
+
+  describe("bậc thang theo hạng (emergency đã đầy → GĐ3 100% goals)", () => {
+    const full = estimateEmergencyTarget(100_000_000)
+
+    it("1 quỹ [100]: 900tr / 15tr = 60 tháng đúng → góp trung bình = capacity", () => {
+      const plan = calculateAllocationPlan({
+        monthlyIncome: 100_000_000,
+        emergencyBalance: full,
+        goals: [goal("a", 900_000_000)],
+      })
+      expect(plan.allocations[1].monthlyAmount).toBe(15_000_000)
+      expect(plan.allocations[1].timelineMonths).toBe(60)
+    })
+
+    it("2 quỹ [70,30]: hạng cao xong trước, góp trung bình theo timeline riêng", () => {
+      const plan = calculateAllocationPlan({
+        monthlyIncome: 100_000_000,
+        emergencyBalance: full,
+        goals: [goal("a", 900_000_000), goal("b", 900_000_000)],
+      })
+      expect(plan.allocations[1].monthlyAmount).toBe(10_465_116)
+      expect(plan.allocations[1].timelineMonths).toBe(86)
+      expect(plan.allocations[2].monthlyAmount).toBe(7_500_000)
+      expect(plan.allocations[2].timelineMonths).toBe(120)
+    })
+
+    it("ladderWeights: 70/30, 60/30/10, N≥4 chia đều 10% cho hạng 3..N", () => {
+      expect(ladderWeights(1)).toEqual([1])
+      expect(ladderWeights(2)).toEqual([0.7, 0.3])
+      expect(ladderWeights(3)).toEqual([0.6, 0.3, 0.1])
+      expect(ladderWeights(4)).toEqual([0.6, 0.3, 0.05, 0.05])
+      expect(ladderWeights(5)).toEqual([0.6, 0.3, 0.1 / 3, 0.1 / 3, 0.1 / 3])
+    })
+
+    it("5 goals + emergency = 6 quỹ (ladder N=5)", () => {
+      const plan = calculateAllocationPlan({
+        monthlyIncome: 100_000_000,
+        emergencyBalance: full,
+        goals: [goal("a", 9e9), goal("b", 9e9), goal("c", 9e9), goal("d", 9e9), goal("e", 9e9)],
+      })
+      expect(plan.allocations).toHaveLength(6)
+      expect(plan.allocations[0].id).toBe("emergency")
+    })
+  })
+
+  it("goal xong giữa tháng → phần dư redistribute sang quỹ còn lại (spill-over)", () => {
+    // GĐ3, capacity 15tr, ladder [70,30]: a cần 5tr (đầy ngay) → 10tr dư dồn sang b
+    const plan = calculateAllocationPlan({
+      monthlyIncome: 100_000_000,
+      emergencyBalance: estimateEmergencyTarget(100_000_000),
+      goals: [goal("a", 5_000_000), goal("b", 900_000_000)],
+    })
+    expect(plan.allocations[1].monthlyAmount).toBe(5_000_000)
+    expect(plan.allocations[1].timelineMonths).toBe(1)
+    // b nhận 30% + 10tr spill tháng 1 rồi 100% → xong tháng 61, góp trung bình
+    expect(plan.allocations[2].monthlyAmount).toBe(14_754_098)
+    expect(plan.allocations[2].timelineMonths).toBe(61)
+  })
+
+  it("emergency GĐ2 (đã đầy 1× essential): 70% emergency / 30% goals", () => {
+    // income 20tr: capacity 3tr, essential 16.2tr → bắt đầu GĐ2
+    const plan = calculateAllocationPlan({
+      monthlyIncome: 20_000_000,
+      emergencyBalance: 16_200_000,
+      goals: [goal("a", 100_000_000)],
+    })
+    expect(plan.stage1EndMonth).toBe(0) // đã đạt 1× ngay từ đầu
+    // góp trung bình = (target − initial) / timeline (GĐ2 70/30 phản ánh trong timeline)
+    expect(plan.allocations[0].monthlyAmount).toBe(2_025_000)
+    expect(plan.allocations[1].monthlyAmount).toBe(2_222_222)
+  })
+
+  it("emergency đã đầy hoàn toàn → stage ends = 0, timeline emergency 0", () => {
+    const plan = calculateAllocationPlan({
+      monthlyIncome: 20_000_000,
+      emergencyBalance: estimateEmergencyTarget(20_000_000),
+      goals: [],
+    })
+    expect(plan.stage1EndMonth).toBe(0)
+    expect(plan.stage2EndMonth).toBe(0)
+    expect(plan.allocations[0].timelineMonths).toBe(0)
+  })
+
+  it("timeline > 600 tháng → null", () => {
+    // income tối thiểu, quỹ khổng lồ: không bao giờ đạt trong 600 tháng
+    const plan = calculateAllocationPlan({
+      monthlyIncome: 100_000,
+      goals: [goal("a", 10_000_000_000)],
+    })
+    expect(plan.allocations[1].timelineMonths).toBeNull()
+  })
+
+  it("timeline biên chính xác 600 tháng: khít 600 → 600, quá 1 tháng góp → null", () => {
+    const full = estimateEmergencyTarget(100_000_000)
+    // capacity 15tr, emergency đầy sẵn → 15tr × 600 = 9e9 xong đúng tháng 600
+    const exact = calculateAllocationPlan({
+      monthlyIncome: 100_000_000,
+      emergencyBalance: full,
+      goals: [goal("a", 9_000_000_000)],
+    })
+    expect(exact.allocations[1].timelineMonths).toBe(600)
+    expect(exact.allocations[1].monthlyAmount).toBe(15_000_000)
+    // thêm đúng 1 tháng góp (15tr) → cần tháng 601 > 600 → null
+    const over = calculateAllocationPlan({
+      monthlyIncome: 100_000_000,
+      emergencyBalance: full,
+      goals: [goal("a", 9_015_000_000)],
+    })
+    expect(over.allocations[1].timelineMonths).toBeNull()
+    expect(over.allocations[1].monthlyAmount).toBeNull()
+  })
+
+  it("income 0 (capacity 0): emergency góp 0 (target 0 đã đầy), goal null timeline null", () => {
+    const plan = calculateAllocationPlan({
+      monthlyIncome: 0,
+      goals: [goal("a", 1_000_000)],
+    })
+    expect(plan.capacityMonthly).toBe(0)
+    expect(plan.allocations[0].monthlyAmount).toBe(0)
+    expect(plan.allocations[1].monthlyAmount).toBeNull()
+    expect(plan.allocations[1].timelineMonths).toBeNull()
   })
 })
 
@@ -162,27 +326,66 @@ describe("calculateTodayRemaining", () => {
   })
 })
 
-describe("calculateAggregateFeasibility", () => {
-  it("cộng dồn monthlyNeeded của cả list", () => {
-    const r = calculateAggregateFeasibility([1_000_000, 2_000_000, 500_000], 10_000_000)
-    expect(r.monthlyNeeded).toBe(3_500_000)
-    expect(r.available).toBe(10_000_000)
-    expect(r.feasible).toBe(true)
+describe("COMPOUND_TIERS config (BR-OB-013)", () => {
+  it("3 tầng 5/6,5/8% năm tham chiếu 2025", () => {
+    expect(COMPOUND_RATES_YEAR).toBe(2025)
+    expect(COMPOUND_TIERS.map((tt) => tt.annualRate)).toEqual([0.05, 0.065, 0.08])
+    expect(COMPOUND_TIERS.map((tt) => tt.maxMonths)).toEqual([24, 60, Infinity])
+    expect(COMPOUND_TIERS.map((tt) => tt.key)).toEqual(["savings", "bonds", "index"])
+  })
+})
+
+describe("compoundTimelineMonths", () => {
+  it("case tay: 10tr/tháng, 8%/năm, target 500tr → 44 tháng", () => {
+    expect(compoundTimelineMonths(10_000_000, 500_000_000, 0.08)).toBe(44)
   })
 
-  it("list rỗng → monthlyNeeded 0, feasible", () => {
-    const r = calculateAggregateFeasibility([], 5_000_000)
-    expect(r.monthlyNeeded).toBe(0)
-    expect(r.feasible).toBe(true)
+  it("cùng target rate cao → n nhỏ hơn (monotonic)", () => {
+    const high = compoundTimelineMonths(10_000_000, 500_000_000, 0.08)
+    const low = compoundTimelineMonths(10_000_000, 500_000_000, 0.05)
+    expect(high).toBe(44)
+    expect(low).toBe(46)
+    expect(high! < low!).toBe(true)
   })
 
-  it("epsilon boundary: total == available + 1 vẫn feasible", () => {
-    const r = calculateAggregateFeasibility([5_000_001], 5_000_000)
-    expect(r.feasible).toBe(true)
+  it("C ≤ 0 → null", () => {
+    expect(compoundTimelineMonths(0, 500_000_000, 0.08)).toBeNull()
+    expect(compoundTimelineMonths(-1, 500_000_000, 0.08)).toBeNull()
   })
 
-  it("total > available + 1 → không feasible", () => {
-    const r = calculateAggregateFeasibility([5_000_002], 5_000_000)
-    expect(r.feasible).toBe(false)
+  it("target ≤ 0 → 0", () => {
+    expect(compoundTimelineMonths(10_000_000, 0, 0.08)).toBe(0)
+    expect(compoundTimelineMonths(10_000_000, -5, 0.08)).toBe(0)
+  })
+
+  it("không đạt trong cap 600 → null", () => {
+    expect(compoundTimelineMonths(1_000, 1_000_000_000_000, 0.05)).toBeNull()
+  })
+
+  it("một kỳ góp đủ → 1 tháng (biên n nhỏ nhất)", () => {
+    expect(compoundTimelineMonths(500, 500, 0.05)).toBe(1)
+  })
+})
+
+describe("pickCompoundTier — biên 23/24/60/61 + null", () => {
+  it("≤24 tháng → savings 5%", () => {
+    expect(pickCompoundTier(23).key).toBe("savings")
+    expect(pickCompoundTier(24).key).toBe("savings")
+    expect(pickCompoundTier(24).annualRate).toBe(0.05)
+  })
+
+  it("25-60 tháng → bonds 6,5%", () => {
+    expect(pickCompoundTier(25).key).toBe("bonds")
+    expect(pickCompoundTier(60).key).toBe("bonds")
+    expect(pickCompoundTier(60).annualRate).toBe(0.065)
+  })
+
+  it(">60 tháng → index 8%", () => {
+    expect(pickCompoundTier(61).key).toBe("index")
+    expect(pickCompoundTier(61).annualRate).toBe(0.08)
+  })
+
+  it("null (ngoài cap) → index 8%", () => {
+    expect(pickCompoundTier(null).key).toBe("index")
   })
 })
