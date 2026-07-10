@@ -82,3 +82,17 @@ Nguồn: brainstorm-tada-dashboard-continuity-2026-07-10 + sprint-change-proposa
 - **J — Permission flag UI đầy đủ** (Could): màn cấu hình quyền sửa kế hoạch per member (owner cấp). Story 12.2 CHỈ check owner trước; non-owner read-only, chưa có UI cấp quyền chi tiết.
 - **O — Dòng chuyện 4 bucket ở Budget page** (Could): 1 dòng kể câu chuyện 4 bucket (thay nhà tạm CSP bar) trên trang Budget.
 - **N — Chế độ tháng khó** (Won't lần này): gom tin xấu thành 1 câu chuyện + lối thoát. Cần Story 13.2 (drift + sự kiện GĐ) chạy trước để có data tín hiệu.
+
+## Deferred from: code review story 12-1 (10-07-2026)
+
+- Ghost ranks: soft-delete (is_active=false) giữ priority_rank, POST max+1 đếm cả fund chết → gaps — 12.2 rank display không assume contiguous; cân nhắc clear rank khi archive.
+- 2 emergency funds có thể tồn tại → living-plan `.find()` chọn arbitrary — chặn tạo emergency thứ 2 hoặc sum balance.
+- `monthRange` util parse UTC/format local — pre-existing, chỉ lệch nếu server TZ tây UTC.
+- POST max-rank race đồng thời → duplicate rank (hiếm) — dedup tự nhiên ở reorder sheet 12.2.
+- Route living-plan chưa có integration test (sort/bucketing/fallback = manual trace).
+
+## Deferred from: code review Epic 13 (11-07-2026)
+
+- `withAuth()` chọn membership joined_at ASC — user đa hộ luôn thấy data hộ đầu tiên bất kể appStore (systemic; cần household context param trong API).
+- StageEventCard: cached plan + background refetch error → event consumed nhưng card ẩn (hiếm, per-device).
+- Copy BudgetBar/ThreeStageLine ở /welcome — đổi TadaStep keys/logic phải sửa cả 2 chỗ.

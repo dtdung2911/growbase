@@ -36,10 +36,31 @@ export async function POST(request: Request) {
 
   const input = parsed.data
 
+  // priority_rank chỉ áp cho goal fund: chen cuối ladder = max(priority_rank)+1 trong household.
+  // Gán route-side (không trigger) để giữ logic ở 1 nơi, dễ đọc — trigger là black-box khó trace.
+  let priorityRank: number | null = null
+  if (input.fund_type === "goal") {
+    const { data: maxRow, error: maxErr } = await auth.supabase
+      .from("funds")
+      .select("priority_rank")
+      .eq("household_id", auth.householdId)
+      .eq("fund_type", "goal")
+      .not("priority_rank", "is", null)
+      .order("priority_rank", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    // Không nuốt lỗi: nếu query fail, maxRow undefined → rank 1 trùng quỹ đang có. Surface như insert.
+    if (maxErr) {
+      return NextResponse.json({ data: null, error: maxErr.message }, { status: 500 })
+    }
+    priorityRank = (maxRow?.priority_rank ?? 0) + 1
+  }
+
   const { data, error } = await auth.supabase
     .from("funds")
     .insert({
       household_id: auth.householdId,
+      priority_rank: priorityRank,
       name: input.name,
       description: input.description ?? null,
       fund_type: input.fund_type,

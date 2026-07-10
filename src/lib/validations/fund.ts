@@ -32,6 +32,7 @@ export const updateFundSchema = z.object({
   target_months_expense: z.number().int().min(1).max(24).nullable().optional(),
   expected_return_rate: z.number().nullable().optional(),
   priority: z.number().min(1).max(10).optional(),
+  priority_rank: z.number().int().min(1, "Hạng phải ≥ 1").optional(),
   sort_order: z.number().optional(),
   is_active: z.boolean().optional(),
 })
@@ -50,7 +51,11 @@ export const fundWithdrawSchema = z.object({
   amount: z.number().positive("Số tiền phải lớn hơn 0"),
   account_id: z.string().uuid("Tài khoản không hợp lệ"),
   category_id: z.string().uuid("Danh mục không hợp lệ"),
-  description: z.string().optional(),
+  description: z
+    .string()
+    .trim()
+    .min(1, "Vui lòng nhập lý do rút quỹ")
+    .max(200, "Lý do rút tối đa 200 ký tự"),
   transaction_date: z.string().default(() => new Date().toISOString().slice(0, 10)),
 })
 

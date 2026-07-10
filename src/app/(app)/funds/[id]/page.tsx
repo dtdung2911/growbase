@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils/cn"
 import { formatVND, formatVNDCompact } from "@/lib/utils/currency"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import { useFundDetail, useDeleteFund } from "@/lib/hooks/useFunds"
+import { useLivingPlan } from "@/lib/hooks/useLivingPlan"
+import { todayVN } from "@/lib/utils/date"
 import { FUND_TYPE_CONFIG } from "@/types/app"
 import { ContributeModal } from "@/components/funds/ContributeModal"
 import { WithdrawModal } from "@/components/funds/WithdrawModal"
@@ -23,6 +25,12 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import type { Fund, FundTransaction } from "@/types/app"
+import { FundPlanTab } from "@/components/funds/FundPlanTab"
+import {
+  FUND_HAS_PLAN,
+  suggestedContribution,
+  sumContributedInMonth,
+} from "@/components/funds/fundPlan"
 
 export default function FundDetailPage({
   params,
@@ -32,6 +40,7 @@ export default function FundDetailPage({
   const { t } = useTranslation()
   const { data, isLoading } = useFundDetail(params.id)
   const deleteFund = useDeleteFund(params.id)
+  const { plan, emergencyBalance, capacityThisMonth } = useLivingPlan()
   const [contributeOpen, setContributeOpen] = useState(false)
   const [withdrawOpen, setWithdrawOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -59,12 +68,23 @@ export default function FundDetailPage({
 
   const config = FUND_TYPE_CONFIG[fund.fund_type]
   const canEdit = fund.fund_type === "goal" || fund.fund_type === "emergency"
+  const hasPlan = FUND_HAS_PLAN.includes(fund.fund_type)
   const color = fund.color || config.color
   const target = fund.target_amount
   const progress =
     target && target > 0 ? (fund.current_balance / target) * 100 : null
   const remaining = target ? Math.max(0, target - fund.current_balance) : 0
   const monthly = fund.monthly_contribution ?? 0
+  // Gợi ý góp theo kế hoạch tháng: trừ phần đã góp tháng THỰC (todayVN, mirror living-plan 12.3 P2).
+  const suggestedContributeAmount = plan
+    ? suggestedContribution({
+        fund,
+        plan,
+        emergencyBalance,
+        capacityThisMonth,
+        contributedThisMonth: sumContributedInMonth(history, todayVN().slice(0, 7)),
+      })
+    : null
   const monthsToTarget =
     monthly > 0 && remaining > 0 ? Math.ceil(remaining / monthly) : null
 
@@ -175,8 +195,13 @@ export default function FundDetailPage({
       </div>
 
       {/* Transaction history */}
-      <Tabs defaultValue="history">
+      <Tabs defaultValue={hasPlan ? "plan" : "history"}>
         <TabsList className="w-full">
+          {hasPlan && (
+            <TabsTrigger value="plan" className="flex-1 text-xs">
+              {t("funds.plan.tabLabel")}
+            </TabsTrigger>
+          )}
           <TabsTrigger value="history" className="flex-1 text-xs">
             {t("funds.history")}
           </TabsTrigger>
@@ -184,6 +209,12 @@ export default function FundDetailPage({
             {t("funds.info")}
           </TabsTrigger>
         </TabsList>
+
+        {hasPlan && (
+          <TabsContent value="plan" className="mt-3">
+            <FundPlanTab fund={fund} history={history} />
+          </TabsContent>
+        )}
 
         <TabsContent value="history" className="mt-3">
           {history.length === 0 ? (
@@ -317,6 +348,7 @@ export default function FundDetailPage({
         fund={contributeOpen ? fund : null}
         open={contributeOpen}
         onClose={() => setContributeOpen(false)}
+        suggestedAmount={suggestedContributeAmount}
       />
       <WithdrawModal
         fund={withdrawOpen ? fund : null}

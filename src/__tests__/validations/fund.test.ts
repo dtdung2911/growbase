@@ -18,6 +18,7 @@ const validWithdraw = {
   amount: 500_000,
   account_id: UUID,
   category_id: UUID2,
+  description: "Chi tiêu khẩn cấp",
 }
 
 // ============================================================
@@ -137,10 +138,49 @@ describe("fundWithdrawSchema", () => {
     expect(r.success).toBe(false)
   })
 
-  it("accepts optional description", () => {
+  it("accepts a non-empty description and trims it", () => {
     const r = fundWithdrawSchema.safeParse({
       ...validWithdraw,
-      description: "Emergency expense",
+      description: "  Emergency expense  ",
+    })
+    expect(r.success).toBe(true)
+    if (r.success) expect(r.data.description).toBe("Emergency expense")
+  })
+
+  it("rejects missing description (now required)", () => {
+    const r = fundWithdrawSchema.safeParse({
+      amount: 500_000,
+      account_id: UUID,
+      category_id: UUID2,
+    })
+    expect(r.success).toBe(false)
+  })
+
+  it("rejects empty description", () => {
+    const r = fundWithdrawSchema.safeParse({ ...validWithdraw, description: "" })
+    expect(r.success).toBe(false)
+  })
+
+  it("rejects whitespace-only description", () => {
+    const r = fundWithdrawSchema.safeParse({
+      ...validWithdraw,
+      description: "   ",
+    })
+    expect(r.success).toBe(false)
+  })
+
+  it("rejects description longer than 200 chars", () => {
+    const r = fundWithdrawSchema.safeParse({
+      ...validWithdraw,
+      description: "x".repeat(201),
+    })
+    expect(r.success).toBe(false)
+  })
+
+  it("accepts description at the 200-char boundary", () => {
+    const r = fundWithdrawSchema.safeParse({
+      ...validWithdraw,
+      description: "x".repeat(200),
     })
     expect(r.success).toBe(true)
   })
@@ -190,6 +230,23 @@ describe("updateFundSchema icon", () => {
   it("rejects icon longer than 120 chars", () => {
     const long = `ph:${"a".repeat(200)}`
     expect(updateFundSchema.safeParse({ icon: long }).success).toBe(false)
+  })
+})
+
+describe("updateFundSchema priority_rank", () => {
+  it("accepts integer >= 1", () => {
+    expect(updateFundSchema.safeParse({ priority_rank: 1 }).success).toBe(true)
+    expect(updateFundSchema.safeParse({ priority_rank: 5 }).success).toBe(true)
+  })
+
+  it("rejects < 1, non-integer, and negatives", () => {
+    expect(updateFundSchema.safeParse({ priority_rank: 0 }).success).toBe(false)
+    expect(updateFundSchema.safeParse({ priority_rank: -2 }).success).toBe(false)
+    expect(updateFundSchema.safeParse({ priority_rank: 1.5 }).success).toBe(false)
+  })
+
+  it("is optional (omission allowed)", () => {
+    expect(updateFundSchema.safeParse({}).success).toBe(true)
   })
 })
 

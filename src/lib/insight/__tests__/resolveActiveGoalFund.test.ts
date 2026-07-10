@@ -23,6 +23,7 @@ function fund(overrides: Partial<Fund>): Fund {
     icon: null,
     is_active: true,
     priority: 0,
+    priority_rank: null,
     per_member: false,
     amount_per_member: null,
     sort_order: 0,

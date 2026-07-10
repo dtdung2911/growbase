@@ -39,4 +39,5 @@ export const keys = {
     ["eventBudget", hid, eventBudgetId] as const,
   monthlySummary: (hid: string, months: number) =>
     ["monthlySummary", hid, months] as const,
+  livingPlan: (hid: string) => ["livingPlan", hid] as const,
 }

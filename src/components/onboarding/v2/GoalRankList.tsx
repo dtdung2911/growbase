@@ -17,7 +17,6 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { useOnboardingV2Store } from "@/lib/stores/onboardingV2Store"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import { formatVND } from "@/lib/utils/currency"
 import {
@@ -26,33 +25,45 @@ import {
   type FundAllocation,
 } from "@/lib/constants/budgetTemplate"
 import { cn } from "@/lib/utils/cn"
-import type { OnboardingGoal } from "@/lib/validations/onboardingV2"
 
-// Mirror GoalStep: engine chỉ nhận goal có target hợp lệ, thứ tự = hạng (goals array order).
-function planFor(goals: OnboardingGoal[], monthlyIncome: number | null) {
+export type RankItem = {
+  id: string
+  name: string
+  targetAmount: number | null
+  currentBalance?: number
+}
+
+// Engine chỉ nhận item có target hợp lệ, thứ tự = hạng (items array order = index 0 hạng cao nhất).
+function planFor(items: RankItem[], monthlyIncome: number | null, emergencyBalance: number) {
   if (!monthlyIncome || monthlyIncome <= 0) return null
   return calculateAllocationPlan({
     monthlyIncome,
-    goals: goals
-      .filter((g) => g.targetAmount !== null && g.targetAmount > 0)
-      .map((g) => ({ id: g.presetId, targetAmount: g.targetAmount as number })),
+    emergencyBalance,
+    goals: items
+      .filter((i) => i.targetAmount !== null && i.targetAmount > 0)
+      .map((i) => ({
+        id: i.id,
+        targetAmount: i.targetAmount as number,
+        initialBalance: i.currentBalance,
+      })),
   })
 }
 
 type Advise = { delta: number; targetRank: number }
 
-// What-if thuần (BR-OB-011: app chỉ advise): đẩy goal lên 1 bậc, đo timeline mới. Không tự đổi hạng.
+// What-if thuần (BR-OB-011: app chỉ advise): đẩy item lên 1 bậc, đo timeline mới. Không tự đổi hạng.
 function computeAdvise(
-  goals: OnboardingGoal[],
+  items: RankItem[],
   monthlyIncome: number | null,
+  emergencyBalance: number,
   index: number,
   alloc: FundAllocation | undefined,
 ): Advise | null {
   if (index === 0 || !alloc || alloc.timelineMonths === null) return null
-  const swapped = [...goals]
+  const swapped = [...items]
   ;[swapped[index - 1], swapped[index]] = [swapped[index], swapped[index - 1]]
-  const swappedAlloc = planFor(swapped, monthlyIncome)?.allocations.find(
-    (a) => a.id === goals[index].presetId,
+  const swappedAlloc = planFor(swapped, monthlyIncome, emergencyBalance)?.allocations.find(
+    (a) => a.id === items[index].id,
   )
   if (!swappedAlloc || swappedAlloc.timelineMonths === null) return null
   const delta = alloc.timelineMonths - swappedAlloc.timelineMonths
@@ -60,27 +71,50 @@ function computeAdvise(
   return { delta, targetRank: index }
 }
 
-export function GoalRankList() {
-  const { t } = useTranslation()
-  const goals = useOnboardingV2Store((s) => s.goals)
-  const monthlyIncome = useOnboardingV2Store((s) => s.monthlyIncome)
-  const reorderGoals = useOnboardingV2Store((s) => s.reorderGoals)
+type GoalRankListProps = {
+  items: RankItem[]
+  monthlyIncome: number | null
+  onReorder: (from: number, to: number) => void
+  emergencyBalance?: number
+  readOnly?: boolean
+}
 
+export function GoalRankList({
+  items,
+  monthlyIncome,
+  onReorder,
+  emergencyBalance = 0,
+  readOnly = false,
+}: GoalRankListProps) {
+  const { t } = useTranslation()
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
 
-  const allocById = new Map(planFor(goals, monthlyIncome)?.allocations.map((a) => [a.id, a]) ?? [])
+  const allocById = new Map(
+    planFor(items, monthlyIncome, emergencyBalance)?.allocations.map((a) => [a.id, a]) ?? [],
+  )
 
   const handleDragEnd = (e: DragEndEvent) => {
     const { active, over } = e
     if (!over || active.id === over.id) return
-    const from = goals.findIndex((g) => g.presetId === active.id)
-    const to = goals.findIndex((g) => g.presetId === over.id)
+    const from = items.findIndex((i) => i.id === active.id)
+    const to = items.findIndex((i) => i.id === over.id)
     if (from === -1 || to === -1) return
-    reorderGoals(from, to)
+    onReorder(from, to)
   }
+
+  const rows = items.map((item, index) => (
+    <SortableGoalRow
+      key={item.id}
+      item={item}
+      rank={index + 1}
+      alloc={allocById.get(item.id)}
+      advise={computeAdvise(items, monthlyIncome, emergencyBalance, index, allocById.get(item.id))}
+      readOnly={readOnly}
+    />
+  ))
 
   return (
     <div className="space-y-3">
@@ -88,22 +122,13 @@ export function GoalRankList() {
         <p className="text-sm font-medium text-foreground">{t("setupV2.goal.rankTitle")}</p>
         <p className="text-xs text-muted-foreground">{t("setupV2.goal.rankSubtitle")}</p>
       </div>
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={goals.map((g) => g.presetId)} strategy={verticalListSortingStrategy}>
-          <ul className="space-y-2">
-            {goals.map((goal, index) => {
-              const alloc = allocById.get(goal.presetId)
-              return (
-                <SortableGoalRow
-                  key={goal.presetId}
-                  goal={goal}
-                  rank={index + 1}
-                  alloc={alloc}
-                  advise={computeAdvise(goals, monthlyIncome, index, alloc)}
-                />
-              )
-            })}
-          </ul>
+      <DndContext
+        sensors={readOnly ? undefined : sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext items={items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+          <ul className="space-y-2">{rows}</ul>
         </SortableContext>
       </DndContext>
     </div>
@@ -111,22 +136,23 @@ export function GoalRankList() {
 }
 
 function SortableGoalRow({
-  goal,
+  item,
   rank,
   alloc,
   advise,
+  readOnly,
 }: {
-  goal: OnboardingGoal
+  item: RankItem
   rank: number
   alloc: FundAllocation | undefined
   advise: Advise | null
+  readOnly: boolean
 }) {
   const { t } = useTranslation()
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: goal.presetId,
+    id: item.id,
+    disabled: readOnly,
   })
-
-  const displayName = goal.name || t("setupV2.goal.custom.name")
 
   const rankColor =
     rank === 1
@@ -149,15 +175,17 @@ function SortableGoalRow({
         isDragging && "relative z-10 opacity-80",
       )}
     >
-      <button
-        type="button"
-        aria-label={t("setupV2.goal.rankHandleLabel", { name: displayName })}
-        className="flex h-11 min-h-[44px] w-11 shrink-0 touch-none cursor-grab items-center justify-center rounded-[13px] text-muted-foreground hover:text-foreground"
-        {...attributes}
-        {...listeners}
-      >
-        <Icon icon="solar:hamburger-menu-linear" className="text-xl" aria-hidden />
-      </button>
+      {!readOnly && (
+        <button
+          type="button"
+          aria-label={t("setupV2.goal.rankHandleLabel", { name: item.name })}
+          className="flex h-11 min-h-[44px] w-11 shrink-0 touch-none cursor-grab items-center justify-center rounded-[13px] text-muted-foreground hover:text-foreground"
+          {...attributes}
+          {...listeners}
+        >
+          <Icon icon="solar:hamburger-menu-linear" className="text-xl" aria-hidden />
+        </button>
+      )}
       <span
         className={cn(
           "flex h-7 shrink-0 items-center rounded-full px-2.5 text-xs font-semibold",
@@ -167,7 +195,7 @@ function SortableGoalRow({
         {t("setupV2.goal.rankLabel", { rank })}
       </span>
       <div className="min-w-0 flex-1 space-y-0.5">
-        <p className="truncate font-medium text-foreground">{displayName}</p>
+        <p className="truncate font-medium text-foreground">{item.name}</p>
         {finite ? (
           <p className="font-mono text-xs tabular-nums text-muted-foreground">
             {t("setupV2.goal.suggest", { amount: formatVND(finite.amount), months: finite.months })}

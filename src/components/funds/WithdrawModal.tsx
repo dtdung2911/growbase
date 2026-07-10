@@ -60,8 +60,14 @@ function WithdrawFormBody({ fund, onClose }: { fund: Fund; onClose: () => void }
   const withdraw = useFundWithdraw(fund.id)
   const config = FUND_TYPE_CONFIG[fund.fund_type]
 
-  const { control, handleSubmit, watch, setValue, reset } =
-    useForm<FundWithdrawInput>({
+  const {
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm<FundWithdrawInput>({
       resolver: zodResolver(fundWithdrawSchema),
       defaultValues: {
         amount: 0,
@@ -79,7 +85,9 @@ function WithdrawFormBody({ fund, onClose }: { fund: Fund; onClose: () => void }
   }, [accounts, setValue])
 
   const amount = watch("amount")
+  const description = watch("description")
   const exceedsBalance = amount > fund.current_balance
+  const reasonMissing = !description || description.trim().length === 0
 
   const onSubmit = (data: FundWithdrawInput) => {
     if (exceedsBalance) return
@@ -198,20 +206,27 @@ function WithdrawFormBody({ fund, onClose }: { fund: Fund; onClose: () => void }
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="withdraw-desc">{t("funds.note")}</Label>
+          <Label htmlFor="withdraw-desc">{t("funds.withdrawReason")}</Label>
           <Controller
             name="description"
             control={control}
             render={({ field }) => (
               <Input
                 id="withdraw-desc"
-                placeholder={t("funds.notePlaceholder")}
+                placeholder={t("funds.withdrawReasonPlaceholder")}
                 value={field.value ?? ""}
                 onChange={field.onChange}
                 className="min-h-[44px] text-base"
               />
             )}
           />
+          {errors.description && (
+            <p className="text-xs text-destructive">
+              {errors.description.type === "too_big"
+                ? t("funds.withdrawReasonMax")
+                : t("funds.withdrawReasonRequired")}
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-2 pt-1">
@@ -225,7 +240,7 @@ function WithdrawFormBody({ fund, onClose }: { fund: Fund; onClose: () => void }
           </Button>
           <Button
             type="submit"
-            disabled={withdraw.isPending || exceedsBalance}
+            disabled={withdraw.isPending || exceedsBalance || reasonMissing}
             className="min-h-[44px] bg-warning text-white hover:opacity-90"
           >
             {withdraw.isPending && (

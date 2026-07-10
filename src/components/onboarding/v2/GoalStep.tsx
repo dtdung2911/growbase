@@ -39,6 +39,7 @@ export function GoalStep() {
   const monthlyIncome = useOnboardingV2Store((s) => s.monthlyIncome)
   const toggleGoal = useOnboardingV2Store((s) => s.toggleGoal)
   const updateGoalField = useOnboardingV2Store((s) => s.updateGoal)
+  const reorderGoals = useOnboardingV2Store((s) => s.reorderGoals)
   const clearGoals = useOnboardingV2Store((s) => s.clearGoals)
 
   // Nắn chặng = DISPLAY-ONLY (D1/BR-OB-012): state local per presetId, không đổi DB/store.
@@ -381,7 +382,17 @@ export function GoalStep() {
           </p>
         )}
 
-        {goals.length >= 2 && <GoalRankList />}
+        {goals.length >= 2 && (
+          <GoalRankList
+            items={goals.map((g) => ({
+              id: g.presetId,
+              name: g.name || t("setupV2.goal.custom.name"),
+              targetAmount: g.targetAmount,
+            }))}
+            monthlyIncome={monthlyIncome}
+            onReorder={reorderGoals}
+          />
+        )}
 
         <button
           type="button"

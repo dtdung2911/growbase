@@ -22,6 +22,8 @@ import { FirstExpenseCta } from "@/components/dashboard/FirstExpenseCta"
 import { DailyInsightBanner } from "@/components/dashboard/DailyInsightBanner"
 import { MilestoneCelebration } from "@/components/dashboard/MilestoneCelebrationDialog"
 import { InviteCompanionPrompt } from "@/components/dashboard/InviteCompanionPrompt"
+import { StageBadge } from "@/components/dashboard/StageBadge"
+import { StageEventCard } from "@/components/dashboard/StageEventCard"
 import type { BudgetActualLine, DashboardData } from "@/types/app"
 
 function trendPct(current: number, prev: number): number | null {
@@ -52,6 +54,8 @@ export function DashboardView({
 
   return (
     <div className="space-y-6">
+      <StageBadge />
+      <StageEventCard />
       <MilestoneCelebration funds={data.funds} />
 
       {/* Daily insight / first-expense CTA */}

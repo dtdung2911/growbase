@@ -225,3 +225,38 @@ Deviations:
 - funds/[id]/page.tsx: replaced "Back" link with PageHeader breadcrumb (Funds > fund name); removed now-unused Link import
 - transactions/import: PageHeader replaces back-button header; router/useRouter retained (still used for post-import redirect)
 - InvestmentClient/EventBudgetClient: card radius left as rounded-[15px] (not in Task 2 file list; only PageHeader added)
+
+## Story 13.1 — Badge giai đoạn trên dashboard
+✓ Pure helper stageBadgeContent — src/lib/utils/stageBadge.ts — D1: 'còn ~N tháng' từ stage ends; 0/null → plain (phòng thủ)
+✓ StageBadge component — src/components/dashboard/StageBadge.tsx — pill bg-primary/10, số mono span; fallback ẩn (isLoading/isError/plan null/capacity 0+target 0)
+✓ Mount — src/components/dashboard/DashboardView.tsx — 1 dòng đầu wrapper, trước MilestoneCelebration
+✓ i18n — src/lib/i18n/messages/{vi,en}.json — dashboard.stageBadge.* parity 845==845
+✓ Test — src/__tests__/utils/stageBadge.test.ts — 6 cases (stage × end null/0/N); tsc clean; vitest 506/506
+
+## Story 13.3 — Mô tả lý do rút quỹ
+✓ fundWithdrawSchema.description bắt buộc — src/lib/validations/fund.ts — .trim().min(1).max(200), message tiếng Việt
+✓ i18n withdrawReason* (vi+en) — src/lib/i18n/messages/{vi,en}.json — label/placeholder/required/max, parity 854=854
+✓ WithdrawModal label + error + submit disabled — src/components/funds/WithdrawModal.tsx — label t("funds.withdrawReason"), error dưới field (too_big→Max, else→Required), submit disabled khi reasonMissing; ConfirmDialog flow giữ nguyên (không đụng)
+✓ History tab — src/app/(app)/funds/[id]/page.tsx — description ĐÃ hiện sẵn làm dòng chính (desktop table + mobile card), KHÔNG sửa (verify only)
+✓ Tests — src/__tests__/validations/fund.test.ts — thêm description vào validWithdraw fixture; test reject missing/empty/whitespace/>200, accept boundary 200 + trim
+✓ Verify: tsc exit 0 · vitest 529 pass · i18n parity clean
+
+## Story 13.4 — Tada tươi cho member mới
+✓ Route /welcome thin wrapper — src/app/(app)/welcome/page.tsx — server component → <WelcomeRevealClient />
+✓ Offer flow redirect — src/app/invite/[token]/InviteClient.tsx — post-accept push /dashboard → /welcome (1 dòng)
+✓ WelcomeRevealClient reveal 4 stage số hôm nay — src/components/welcome/WelcomeRevealClient.tsx — useLivingPlan + useFunds; STAGE_DELAY_MS 550 + reduced-motion; skeleton khi loading; guard householdId null → replace /dashboard; skip link 44px → /dashboard; CTA "Vào dashboard" 44px sau đủ 4 stage; attribution reuse
+✓ i18n welcome.* — src/lib/i18n/messages/{vi,en}.json — title/subtitle/currentStage/skip/cta/errorTitle/errorDesc parity 861=861
+✓ Verify: tsc exit 0 · vitest 529 pass (38 files) · parity OK
+
+Reuse map thực tế:
+- Constants/keys: BUDGET_SEGMENTS, FLEXIBLE_COST_TYPE_GROUPS, MAX_ALLOCATION_MONTHS, calculateTodayRemaining, sumBudgetPct (budgetTemplate); TADA_REVEAL_STAGES, pickThreeStageKey, TadaRevealStage (tadaReveal); currentStage (currentStage.ts); FUND_TYPE_CONFIG, Fund (types/app)
+- i18n reuse: setupV2.tada.{budgetTitle, budgetLegend.*, perMonth, goalTitle, fundMonthly, fundTimeline, fundTimelineNever, feasibleTitle, capacitySource, threeStage.*, todayRemainingLabel, todayRemainingHint, attribution}
+- COPY (không import TadaStep coupled onboarding store/mutation): ThreeStageLine (block <30 dòng, không đổi logic), TadaBudgetBar→BudgetBar (block <30 dòng, không đổi logic) — theo lesson 11.3/12.3
+- KHÔNG copy/omit: setupV2.tada.hookCallback ("Lúc nãy là ví dụ") — onboarding-specific, member mới chưa thấy ví dụ nào → bỏ khỏi stage todayRemaining
+
+Quyết định / deviation:
+- D1 (theo story): todayRemaining = calculateTodayRemaining(trailingIncome) — income thực thay income khai (member chưa khai income). Comment WHY tại chỗ.
+- Feasibility total dùng capacityThisMonth (đúng story, backtick). Lưu ý: capacityThisMonth = 15% currentMonthIncome (BR-OB-015) khác plan.capacityMonthly (trailing) — goal stage chỉ list per-fund (không total) nên không có 2 total mâu thuẫn cùng màn.
+- Goal stage list = plan.allocations ghép quỹ thật (emergency theo fund_type, goal theo id=fund.id); quỹ sinking/investment/freedom không có allocation → bỏ (không nằm trong kế hoạch 3 GĐ).
+- TadaBudgetBar là function độc lập trong TadaStep NHƯNG chọn COPY thay vì export: import từ TadaStep.tsx sẽ kéo cả onboardingV2Store/useCompleteOnboardingV2/PlanDetailSheet vào bundle /welcome (coupling bundle-level). Copy block <30 dòng thuần (chỉ BUDGET_SEGMENTS + t + formatVND + cn) — khớp lesson "duplication nhỏ > export coupled".
+- Không thêm test mới: không có logic thuần MỚI (fundForAlloc là match trivial inline); pure functions reuse (calculateTodayRemaining/currentStage/pickThreeStageKey) đã có test sẵn. Suite hiện có không vỡ (529 pass).

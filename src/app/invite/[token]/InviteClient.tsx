@@ -8,6 +8,7 @@ import { BrandLogo } from "@/components/brand/BrandLogo"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useAcceptInvite } from "@/lib/hooks/useInvitation"
+import { useAppStore } from "@/lib/stores/appStore"
 import { createClient } from "@/lib/supabase/client"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 
@@ -27,6 +28,7 @@ export function InviteClient({
   const { t } = useTranslation()
   const router = useRouter()
   const accept = useAcceptInvite()
+  const setHouseholdId = useAppStore((s) => s.setHouseholdId)
   const [signingIn, setSigningIn] = useState(false)
 
   if (!invitation) {
@@ -69,11 +71,13 @@ export function InviteClient({
     }
 
     const result = await accept.mutateAsync(token)
+    // Multi-household user joining new household must not see stale household data
+    setHouseholdId(result.household_id)
     toast.success(
       result.alreadyMember ? t("invite.alreadyMember") : t("invite.joined"),
       { duration: 2000 }
     )
-    router.push("/dashboard")
+    router.push("/welcome")
   }
 
   return (

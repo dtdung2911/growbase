@@ -111,6 +111,7 @@ export type Fund = {
   icon: string | null
   is_active: boolean
   priority: number
+  priority_rank: number | null
   per_member: boolean
   amount_per_member: number | null
   sort_order: number

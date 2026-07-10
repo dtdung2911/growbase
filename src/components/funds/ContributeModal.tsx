@@ -37,22 +37,34 @@ type ContributeModalProps = {
   fund: Fund | null
   open: boolean
   onClose: () => void
+  // Gợi ý góp theo kế hoạch tháng (BR-OB-009..011); null = không gợi ý, dùng monthly cũ.
+  suggestedAmount?: number | null
 }
 
-export function ContributeModal({ fund, open, onClose }: ContributeModalProps) {
+export function ContributeModal({ fund, open, onClose, suggestedAmount }: ContributeModalProps) {
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
       <SheetContent
         side="bottom"
         className="max-h-[92vh] overflow-y-auto rounded-t-2xl"
       >
-        {fund && <ContributeForm fund={fund} onClose={onClose} />}
+        {fund && (
+          <ContributeForm fund={fund} onClose={onClose} suggestedAmount={suggestedAmount} />
+        )}
       </SheetContent>
     </Sheet>
   )
 }
 
-function ContributeForm({ fund, onClose }: { fund: Fund; onClose: () => void }) {
+function ContributeForm({
+  fund,
+  onClose,
+  suggestedAmount,
+}: {
+  fund: Fund
+  onClose: () => void
+  suggestedAmount?: number | null
+}) {
   const { t } = useTranslation()
   const { data: accounts = [] } = useAccounts()
   const contribute = useFundContribute(fund.id)
@@ -63,7 +75,7 @@ function ContributeForm({ fund, onClose }: { fund: Fund; onClose: () => void }) 
     useForm<FundContributeInput>({
       resolver: zodResolver(fundContributeSchema),
       defaultValues: {
-        amount: monthly,
+        amount: suggestedAmount ?? monthly,
         account_id: "",
         description: "",
         transaction_date: new Date().toISOString().slice(0, 10),
@@ -138,6 +150,14 @@ function ContributeForm({ fund, onClose }: { fund: Fund; onClose: () => void }) 
               />
             )}
           />
+          {suggestedAmount != null && (
+            <p className="text-xs text-muted-foreground">
+              {t("funds.suggestCaption")}:{" "}
+              <span className="font-mono tabular-nums text-foreground">
+                {formatVND(suggestedAmount)}
+              </span>
+            </p>
+          )}
           <div className="grid grid-cols-3 gap-2 pt-1">
             {presets.map((p) => (
               <button

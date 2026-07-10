@@ -63,6 +63,8 @@ export interface AllocationInput {
   monthlyIncome: number
   goals: AllocationGoalInput[] // thứ tự = hạng (index 0 = hạng cao nhất)
   emergencyBalance?: number
+  // Target quỹ khẩn cấp từ DB (user-editable, BR-OB-014/016). Bỏ trống → estimate theo income (caller cũ).
+  emergencyTarget?: number
 }
 
 export interface FundAllocation {
@@ -106,8 +108,13 @@ export function ladderWeights(n: number): number[] {
 // Engine thuần 3 giai đoạn (BR-OB-009..011): single source of truth cho góp/tháng mọi quỹ.
 export function calculateAllocationPlan(input: AllocationInput): AllocationPlan {
   const capacity = input.monthlyIncome * (sumBudgetPct(["savings_investment"]) / 100)
-  const emergencyTarget = estimateEmergencyTarget(input.monthlyIncome)
-  const stage1Threshold = input.monthlyIncome * (sumBudgetPct(SPENDING_COST_TYPE_GROUPS) / 100)
+  const hasTargetOverride = input.emergencyTarget !== undefined
+  const emergencyTarget = input.emergencyTarget ?? estimateEmergencyTarget(input.monthlyIncome)
+  // Có override (target DB): ngưỡng GĐ derive từ target — target/3 = 1× chi tiêu thiết yếu, nhất quán
+  // currentStage helper 12.2 (BR-OB-016). Không override: giữ estimate income×81% cũ (regression guard).
+  const stage1Threshold = hasTargetOverride
+    ? emergencyTarget / 3
+    : input.monthlyIncome * (sumBudgetPct(SPENDING_COST_TYPE_GROUPS) / 100)
 
   const emergencyInitial = input.emergencyBalance ?? 0
   let emergencyBalance = emergencyInitial

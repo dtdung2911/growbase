@@ -151,6 +151,8 @@ export function useFundContribute(fundId: string) {
         void qc.invalidateQueries({ queryKey: keys.funds(householdId) })
         void qc.invalidateQueries({ queryKey: keys.transactions(householdId, month) })
         void qc.invalidateQueries({ queryKey: keys.fundTransactions(householdId, fundId) })
+        void qc.invalidateQueries({ queryKey: keys.fundDetail(householdId, fundId) })
+        void qc.invalidateQueries({ queryKey: keys.livingPlan(householdId) })
       }
       toast.success("Đã nạp quỹ", { duration: 2000 })
     },
@@ -181,10 +183,50 @@ export function useFundWithdraw(fundId: string) {
         void qc.invalidateQueries({ queryKey: keys.funds(householdId) })
         void qc.invalidateQueries({ queryKey: keys.transactions(householdId, month) })
         void qc.invalidateQueries({ queryKey: keys.fundTransactions(householdId, fundId) })
+        void qc.invalidateQueries({ queryKey: keys.fundDetail(householdId, fundId) })
+        void qc.invalidateQueries({ queryKey: keys.livingPlan(householdId) })
       }
       toast.success("Đã rút quỹ", { duration: 2000 })
     },
     onError: (err: Error) => {
+      toast.error(err.message, { duration: 5000 })
+    },
+  })
+}
+
+// Đổi hạng goal funds: PATCH tuần tự priority_rank = index+1 cho MỌI quỹ theo thứ tự mới —
+// dedup + đóng gaps tự nhiên (trả deferred ghost ranks 12-1). Lỗi giữa chừng → refetch để hoà lại.
+export function useReorderGoalFunds() {
+  const qc = useQueryClient()
+  const { t } = useTranslation()
+  const householdId = useAppStore((s) => s.householdId)
+  const month = useAppStore((s) => s.currentMonth)
+
+  const invalidate = () => {
+    if (!householdId) return
+    void qc.invalidateQueries({ queryKey: keys.funds(householdId) })
+    void qc.invalidateQueries({ queryKey: keys.livingPlan(householdId) })
+    void qc.invalidateQueries({ queryKey: keys.dashboard(householdId, month) })
+  }
+
+  return useMutation({
+    mutationFn: async (orderedIds: string[]) => {
+      for (let i = 0; i < orderedIds.length; i++) {
+        const res = await fetch(`/api/funds/${orderedIds[i]}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ priority_rank: i + 1 }),
+        })
+        const json = await res.json()
+        if (!res.ok) throw new Error(json.error ?? t("funds.plan.rankFailed"))
+      }
+    },
+    onSuccess: () => {
+      invalidate()
+      toast.success(t("funds.plan.rankSaved"), { duration: 2000 })
+    },
+    onError: (err: Error) => {
+      invalidate()
       toast.error(err.message, { duration: 5000 })
     },
   })

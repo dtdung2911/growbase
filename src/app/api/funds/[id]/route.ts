@@ -54,6 +54,25 @@ export async function PATCH(
     )
   }
 
+  // BR-OB-016: rank chỉ áp cho goal fund. Chặn set priority_rank lên emergency/quỹ khác.
+  if (parsed.data.priority_rank !== undefined) {
+    const { data: target } = await auth.supabase
+      .from("funds")
+      .select("fund_type")
+      .eq("id", params.id)
+      .eq("household_id", auth.householdId)
+      .maybeSingle()
+    if (!target) {
+      return NextResponse.json({ data: null, error: "Không tìm thấy quỹ" }, { status: 404 })
+    }
+    if (target.fund_type !== "goal") {
+      return NextResponse.json(
+        { data: null, error: "Chỉ quỹ mục tiêu mới có hạng ưu tiên" },
+        { status: 400 }
+      )
+    }
+  }
+
   const { data, error } = await auth.supabase
     .from("funds")
     .update({ ...parsed.data, updated_at: new Date().toISOString() })
