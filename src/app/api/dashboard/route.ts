@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { withAuth } from "@/lib/supabase/auth-check"
 import { monthRange, todayVN, yesterdayVN } from "@/lib/utils/date"
+import type { BehaviorType, SpendingByBehavior } from "@/types/app"
 
 function prevMonth(month: string) {
   const [y, m] = month.split("-").map(Number)
@@ -106,21 +107,25 @@ export async function GET(request: NextRequest) {
   const savings = totalIncome - totalExpense
   const savingsRate = totalIncome > 0 ? Math.round((savings / totalIncome) * 1000) / 10 : 0
 
-  const BEHAVIOR_ORDER = ["fixed", "essential_variable", "lifestyle", "wasteful", "savings_investment"]
-  const BEHAVIOR_COLORS: Record<string, string> = {
-    fixed: "#0084DB",
-    essential_variable: "#49c8e6",
-    lifestyle: "#9b78ff",
-    wasteful: "#ff917d",
-    savings_investment: "#49d68d",
-  }
-  const spendingByBehavior = BEHAVIOR_ORDER
+  const BEHAVIOR_ORDER: BehaviorType[] = [
+    "fixed",
+    "variable",
+    "wasteful",
+    "debt_repayment",
+    "savings_investment",
+    "loan",
+  ]
+  const behaviorTotal = Array.from(behaviorMap.values()).reduce((a, b) => a + b, 0)
+  const spendingByBehavior: SpendingByBehavior[] = BEHAVIOR_ORDER
     .filter((b) => behaviorMap.has(b))
-    .map((b) => ({
-      behavior: b,
-      amount: behaviorMap.get(b)!,
-      color: BEHAVIOR_COLORS[b] ?? "#a5b1c2",
-    }))
+    .map((b) => {
+      const total = behaviorMap.get(b)!
+      return {
+        behavior_type: b,
+        total,
+        percentage: behaviorTotal > 0 ? Math.round((total / behaviorTotal) * 100) : 0,
+      }
+    })
 
   const topExpenseCategories = Array.from(categoryMap.values())
     .sort((a, b) => b.amount - a.amount)

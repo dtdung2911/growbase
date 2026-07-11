@@ -26,26 +26,30 @@ const BEHAVIOR_COLORS: Record<string, string> = {
 export function SpendingDonut({ data, formatAmount, emptyMessage }: SpendingDonutProps) {
   const { t } = useTranslation()
 
-  const hasData = data.length > 0
+  const safeData = useMemo(
+    () => data.filter((e) => Number.isFinite(e.total)),
+    [data]
+  )
+  const hasData = safeData.length > 0
 
   // Always keep Chart mounted to avoid unmount/resize race condition with ApexCharts
   const series = useMemo(
-    () => (hasData ? data.map((e) => e.total) : [1]),
+    () => (hasData ? safeData.map((e) => e.total) : [1]),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [hasData, data]
+    [hasData, safeData]
   )
   const labels = useMemo(
-    () => (hasData ? data.map((e) => t(`behavior.${e.behavior_type}`)) : [""]),
+    () => (hasData ? safeData.map((e) => t(`behavior.${e.behavior_type}`)) : [""]),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [hasData, data, t]
+    [hasData, safeData, t]
   )
   const colors = useMemo(
     () =>
       hasData
-        ? data.map((e) => BEHAVIOR_COLORS[e.behavior_type] ?? SEMANTIC.info)
+        ? safeData.map((e) => BEHAVIOR_COLORS[e.behavior_type] ?? SEMANTIC.info)
         : ["hsl(var(--border))"],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [hasData, data]
+    [hasData, safeData]
   )
 
   const options = useMemo(
