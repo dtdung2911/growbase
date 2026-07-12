@@ -27,18 +27,19 @@ export async function POST(request: Request, { params }: Params) {
 
   const input = parsed.data
 
-  // D2: Lookup system category "Tiết kiệm"
+  // Fund contributions are recorded against the household's savings_investment category
   const { data: savingsCategory } = await auth.supabase
     .from("categories")
     .select("id")
-    .eq("is_system", true)
-    .eq("name", "Tiết kiệm")
+    .eq("household_id", auth.householdId)
+    .eq("default_behavior_type", "savings_investment")
+    .order("sort_order")
     .limit(1)
     .maybeSingle()
 
   if (!savingsCategory) {
     return NextResponse.json(
-      { data: null, error: "Không tìm thấy danh mục Tiết kiệm" },
+      { data: null, error: "Không tìm thấy danh mục tiết kiệm cho gia đình" },
       { status: 500 }
     )
   }
