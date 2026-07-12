@@ -48,7 +48,69 @@ Chỉ Go-live khi các điều kiện sau đạt:
 - Nginx HTTPS hoạt động.
 - Có phương án rollback về commit trước.
 
-## 3. Chuẩn bị server
+## 3. AWS EC2 — Khởi tạo máy chủ
+
+### 3.1. Launch instance
+
+- AWS Console → EC2 → Launch instance.
+- AMI: Ubuntu Server 24.04 LTS (hoặc 22.04 LTS), 64-bit x86.
+- Instance type: tối thiểu `t3.small` (2GB RAM). `t2.micro`/`t3.micro` (1GB) build Next.js dễ OOM; nếu buộc dùng 1GB thì BẮT BUỘC thêm swap (mục 3.5).
+- Key pair: tạo mới (RSA `.pem`) hoặc chọn key có sẵn — TẢI VỀ và giữ kỹ file `.pem`.
+- Storage: gp3 tối thiểu 20GB.
+- Network: cho phép tạo Security Group mới (cấu hình ở mục 3.2).
+
+### 3.2. Security Group (inbound rules)
+
+BẮT BUỘC cấu hình đúng, nếu sai thì Nginx/certbot/domain đều fail.
+
+| Type | Port | Source | Ghi chú |
+|------|------|--------|---------|
+| SSH | 22 | My IP (khuyến nghị) hoặc `0.0.0.0/0` | truy cập SSH |
+| HTTP | 80 | `0.0.0.0/0` + `::/0` | Nginx + certbot HTTP-01 challenge |
+| HTTPS | 443 | `0.0.0.0/0` + `::/0` | traffic production |
+
+Outbound để mặc định (allow all). Lưu ý: `ufw` trên Ubuntu là tầng thứ 2 — nếu bật `ufw` thì phải allow 22/80/443. Security Group là tầng AWS, bắt buộc mở trước.
+
+### 3.3. Elastic IP
+
+BẮT BUỘC. Nếu không gán, public IP đổi mỗi lần stop/start → vỡ DNS.
+
+- EC2 → Elastic IPs → Allocate → Associate với instance.
+- Ghi lại IP tĩnh này → dùng cho bước trỏ domain (§9).
+
+### 3.4. Kết nối SSH
+
+```bash
+chmod 400 growbase-key.pem
+ssh -i growbase-key.pem ubuntu@<ELASTIC_IP>
+```
+
+User mặc định của Ubuntu AMI là `ubuntu`; chấp nhận host fingerprint ở lần kết nối đầu.
+
+### 3.5. Cập nhật hệ thống + swap
+
+Khuyến nghị mạnh cho server ≤ 2GB RAM.
+
+```bash
+sudo apt update && sudo apt upgrade -y
+# Swap 2GB — tránh OOM khi npm run build
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+free -h   # xác nhận swap đã active
+```
+
+### 3.6. Timezone
+
+App dùng GMT+7 cho logic tháng/hoạt động.
+
+```bash
+sudo timedatectl set-timezone Asia/Ho_Chi_Minh
+```
+
+## 4. Chuẩn bị server
 
 Khuyến nghị server tối thiểu:
 
@@ -106,7 +168,7 @@ git checkout main
 git pull --ff-only
 ```
 
-## 4. Cấu hình biến môi trường
+## 5. Cấu hình biến môi trường
 
 Tạo file env production trên server:
 
@@ -135,9 +197,9 @@ Lưu ý:
 - `SUPABASE_SERVICE_ROLE_KEY` chỉ được dùng ở server. Không expose ra client.
 - Không dùng key Supabase local/staging cho production.
 
-## 5. Chuẩn bị Supabase production
+## 6. Chuẩn bị Supabase production
 
-### 5.1. Tạo project production
+### 6.1. Tạo project production
 
 Trong Supabase dashboard:
 
@@ -154,7 +216,7 @@ Auth URLs cần kiểm tra:
   - `https://<production-domain>/login`
   - `https://<production-domain>/invite/*`
 
-### 5.2. Apply migrations
+### 6.2. Apply migrations
 
 Migrations hiện có:
 
@@ -173,7 +235,24 @@ Migrations hiện có:
 012_lockdown_onboarding_v2_rpc.sql
 013_onboarding_multi_goal.sql
 014_member_activity.sql
+015_member_activity_hardening.sql
+016_onboarding_rpc_hardening.sql
+017_onboarding_fund_icon.sql
+018_priority_rank.sql
+019_budget_actual_income.sql
+020_fix_income_type.sql
 ```
+
+Các migration bổ sung gần đây (vẫn apply theo đúng thứ tự số tăng dần, không đảo):
+
+- `015_member_activity_hardening.sql` — siết RLS ghi hoạt động đúng household + chặn `active_date` tương lai/backdate, default theo giờ VN.
+- `016_onboarding_rpc_hardening.sql` — hardening `complete_onboarding_v2`: advisory lock chống double-submit, giới hạn số quỹ, localize tên do server tạo, trả về `household_id` + `fund_ids`.
+- `017_onboarding_fund_icon.sql` — lưu `funds.icon` chọn ở bước onboarding.
+- `018_priority_rank.sql` — Living Plan: thêm cột `funds.priority_rank` (hạng quỹ sống) + backfill goal funds.
+- `019_budget_actual_income.sql` — Living Plan: `get_budget_with_actuals()` phân bổ ngân sách theo thu nhập THỰC của tháng đang xem.
+- `020_fix_income_type.sql` — Living Plan: backfill các income nhập qua QuickAdd bị lưu nhầm `transaction_type='expense'`.
+
+Ba migration 018/019/020 thuộc nhóm Living Plan (priority_rank, budget theo income thực, fix income type) — bắt buộc apply đủ để dashboard/budget tính đúng.
 
 Khuyến nghị apply bằng Supabase CLI đã link tới production project:
 
@@ -185,7 +264,7 @@ supabase db push
 
 Nếu không dùng CLI, apply thủ công từng file SQL theo đúng thứ tự trong Supabase SQL Editor. Không đảo thứ tự migrations.
 
-### 5.3. Kiểm tra database sau migration
+### 6.3. Kiểm tra database sau migration
 
 Kiểm tra các nhóm chính:
 
@@ -215,7 +294,7 @@ where table_schema = 'public'
 order by ordinal_position;
 ```
 
-## 6. Build và chạy ứng dụng
+## 7. Build và chạy ứng dụng
 
 Cài dependencies:
 
@@ -252,7 +331,7 @@ curl -I http://127.0.0.1:3000/
 
 Nếu OK, dừng process test bằng `Ctrl+C`.
 
-## 7. Chạy bằng PM2
+## 8. Chạy bằng PM2
 
 Tạo file ecosystem:
 
@@ -299,7 +378,42 @@ pm2 startup
 
 Chạy command mà `pm2 startup` in ra với quyền `sudo`.
 
-## 8. Cấu hình Nginx
+## 9. Trỏ domain về server (DNS)
+
+Phải hoàn tất TRƯỚC khi chạy certbot (§11) — Let's Encrypt cần domain resolve đúng về Elastic IP và cổng 80 mở (Security Group, mục 3.2).
+
+### 9.1. Tạo bản ghi A
+
+Trỏ cả domain gốc và `www` về Elastic IP (mục 3.3):
+
+| Loại | Host/Name | Value | TTL |
+|------|-----------|-------|-----|
+| A | `@` (hoặc `growbase.com`) | `<ELASTIC_IP>` | 300 |
+| A | `www` | `<ELASTIC_IP>` | 300 |
+
+**Cách A — Registrar bất kỳ (Namecheap/GoDaddy/Cloudflare...):** vào phần DNS / Advanced DNS của domain → thêm 2 bản ghi A như trên. Với Cloudflare: tắt proxy (mây xám) khi chạy certbot lần đầu, bật lại sau nếu muốn.
+
+**Cách B — AWS Route 53 (khuyến nghị nếu domain quản lý trên AWS):**
+
+- Route 53 → Hosted zones → tạo hosted zone cho domain.
+- Đổi nameservers tại registrar sang 4 NS mà Route 53 cấp.
+- Create record: A record `@` → Elastic IP; A record `www` → Elastic IP (hoặc dùng alias).
+
+### 9.2. Chờ propagation + xác minh
+
+```bash
+dig +short growbase.com          # phải trả về <ELASTIC_IP>
+dig +short www.growbase.com
+# hoặc: nslookup growbase.com
+```
+
+TTL 300 → thường vài phút; đổi nameserver (Route 53) có thể mất tới 24-48h. CHỈ chạy certbot khi lệnh `dig` trả đúng Elastic IP.
+
+### 9.3. Cập nhật server_name
+
+Đảm bảo `server_name` trong Nginx (§10) khớp cả `growbase.com www.growbase.com`.
+
+## 10. Cấu hình Nginx
 
 Tạo config:
 
@@ -330,6 +444,8 @@ server {
 }
 ```
 
+Đảm bảo `server_name` khớp domain đã trỏ DNS ở §9 (gồm cả `www`).
+
 Enable site:
 
 ```bash
@@ -344,7 +460,9 @@ Kiểm tra HTTP:
 curl -I http://<production-domain>/login
 ```
 
-## 9. Bật HTTPS
+## 11. Bật HTTPS
+
+Yêu cầu trước: domain đã resolve đúng về Elastic IP (§9) và Security Group đã mở cổng 80/443 (mục 3.2). Certbot dùng HTTP-01 challenge qua cổng 80, nên nếu DNS chưa trỏ hoặc cổng 80 bị chặn thì việc cấp chứng chỉ sẽ fail.
 
 Cài Certbot:
 
@@ -370,7 +488,7 @@ Kiểm tra HTTPS:
 curl -I https://<production-domain>/login
 ```
 
-## 10. Quy trình deploy release mới
+## 12. Quy trình deploy release mới
 
 Trên server:
 
@@ -403,7 +521,7 @@ Thứ tự khuyến nghị:
 
 Không deploy app mới nếu migration bắt buộc chưa apply.
 
-## 11. Smoke test sau Go-live
+## 13. Smoke test sau Go-live
 
 Chạy kiểm tra kỹ thuật:
 
@@ -447,7 +565,7 @@ order by created_at desc
 limit 20;
 ```
 
-## 12. Checklist Go/No-Go
+## 14. Checklist Go/No-Go
 
 Go-live chỉ tiếp tục nếu tất cả mục dưới đây đạt:
 
@@ -471,7 +589,7 @@ Ghi lại commit release:
 git rev-parse HEAD
 ```
 
-## 13. Rollback
+## 15. Rollback
 
 Rollback app về commit trước:
 
@@ -491,7 +609,7 @@ Nếu migration đã thay đổi schema:
 - Ưu tiên restore Supabase backup/point-in-time recovery nếu schema/data bị lỗi nặng.
 - Nếu lỗi chỉ ở app, rollback app trước và giữ DB nguyên nếu backward-compatible.
 
-## 14. Monitoring vận hành
+## 16. Monitoring vận hành
 
 Theo dõi app:
 
@@ -524,7 +642,7 @@ Supabase cần theo dõi:
 - Slow queries
 - RLS denied requests bất thường
 
-## 15. Các lỗi thường gặp
+## 17. Các lỗi thường gặp
 
 ### App build fail vì env thiếu
 
@@ -580,7 +698,7 @@ order by created_at desc
 limit 20;
 ```
 
-## 16. Go-live sign-off
+## 18. Go-live sign-off
 
 Trước khi thông báo production live, ghi lại:
 
