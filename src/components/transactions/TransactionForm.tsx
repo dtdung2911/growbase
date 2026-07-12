@@ -53,11 +53,13 @@ export function TransactionForm({
       defaultValues: {
         amount: initialData?.amount ?? 0,
         direction: initialData?.direction ?? defaultDirection,
-        transaction_type: initialData?.transaction_type === "income"
-          ? "income"
-          : initialData?.transaction_type === "debt_repayment"
-            ? "debt_repayment"
-            : "expense",
+        transaction_type:
+          initialData?.transaction_type === "income" ||
+          initialData?.transaction_type === "debt_repayment"
+            ? initialData.transaction_type
+            : defaultDirection === "in"
+              ? "income"
+              : "expense",
         category_id: initialData?.category_id ?? "",
         account_id: initialData?.account_id ?? "",
         description: initialData?.description ?? "",
