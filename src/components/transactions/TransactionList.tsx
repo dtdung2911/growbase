@@ -6,6 +6,10 @@ import { vi } from "date-fns/locale"
 import { cn } from "@/lib/utils/cn"
 import { formatVND } from "@/lib/utils/currency"
 import { useTranslation } from "@/lib/i18n/useTranslation"
+import { useCategories } from "@/lib/hooks/useCategories"
+import { useAppStore } from "@/lib/stores/appStore"
+import { Badge } from "@/components/ui/badge"
+import { COST_TYPE_BADGE_VARIANT } from "@/lib/constants/costTypeBadge"
 import { TransactionItem } from "@/components/transactions/TransactionItem"
 import { TransactionEditSheet } from "@/components/transactions/TransactionEditSheet"
 import {
@@ -54,12 +58,24 @@ function groupByDate(txs: TransactionWithJoins[]): DateGroup[] {
 
 export function TransactionList({ transactions }: TransactionListProps) {
   const { t } = useTranslation()
+  const householdId = useAppStore((s) => s.householdId) ?? ""
+  const { data: categoryGroups = [] } = useCategories(householdId)
   const [editTx, setEditTx] = useState<TransactionWithJoins | null>(null)
   const [filters, setFilters] = useState<TransactionFilters>({
     categoryId: null,
     accountId: null,
     direction: null,
+    costTypeCode: null,
   })
+
+  const categoryCostType = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const g of categoryGroups) {
+      if (!g.cost_type_code) continue
+      for (const c of g.categories) map.set(c.id, g.cost_type_code)
+    }
+    return map
+  }, [categoryGroups])
 
   const filtered = useMemo(() => {
     let result = transactions
@@ -72,8 +88,15 @@ export function TransactionList({ transactions }: TransactionListProps) {
     if (filters.accountId) {
       result = result.filter((tx) => tx.account_id === filters.accountId)
     }
+    if (filters.costTypeCode) {
+      result = result.filter(
+        (tx) =>
+          tx.category_id != null &&
+          categoryCostType.get(tx.category_id) === filters.costTypeCode
+      )
+    }
     return result
-  }, [transactions, filters])
+  }, [transactions, filters, categoryCostType])
 
   const groups = useMemo(() => groupByDate(filtered), [filtered])
 
@@ -124,7 +147,21 @@ export function TransactionList({ transactions }: TransactionListProps) {
                     {format(parseISO(tx.transaction_date), "dd/MM")}
                   </TableCell>
                   <TableCell>
-                    <span className="text-sm">{tx.category?.name ?? "—"}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">{tx.category?.name ?? "—"}</span>
+                      {tx.category_id && categoryCostType.get(tx.category_id) && (
+                        <Badge
+                          variant={
+                            COST_TYPE_BADGE_VARIANT[
+                              categoryCostType.get(tx.category_id)!
+                            ] ?? "secondary"
+                          }
+                          className="shrink-0 text-[10px] px-1.5 py-0"
+                        >
+                          {t(`behavior.${categoryCostType.get(tx.category_id)}`)}
+                        </Badge>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="max-w-[200px]">
                     <span className="text-sm text-muted-foreground truncate block">
@@ -166,6 +203,11 @@ export function TransactionList({ transactions }: TransactionListProps) {
                 <TransactionItem
                   key={tx.id}
                   transaction={tx}
+                  costTypeCode={
+                    tx.category_id
+                      ? categoryCostType.get(tx.category_id) ?? null
+                      : null
+                  }
                   onClick={() => setEditTx(tx)}
                 />
               ))}

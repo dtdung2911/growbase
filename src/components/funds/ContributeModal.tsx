@@ -95,10 +95,13 @@ function ContributeForm({
       ? Math.min((balanceAfter / fund.target_amount) * 100, 100)
       : null
 
+  // Onboarding cũ để monthly_contribution=0 → presets nhân ra 3 nút 0đ vô nghĩa.
+  // Ưu tiên số gợi ý theo kế hoạch tháng; presetBase=0 thì ẩn hẳn hàng presets.
+  const presetBase = suggestedAmount ?? monthly
   const presets = [
-    { label: t("funds.preset50"), value: Math.floor(monthly * 0.5) },
-    { label: t("funds.presetStandard"), value: monthly },
-    { label: t("funds.preset2x"), value: monthly * 2 },
+    { label: t("funds.preset50"), value: Math.floor(presetBase * 0.5) },
+    { label: t("funds.presetStandard"), value: presetBase },
+    { label: t("funds.preset2x"), value: presetBase * 2 },
   ]
 
   const onSubmit = (data: FundContributeInput) => {
@@ -158,6 +161,7 @@ function ContributeForm({
               </span>
             </p>
           )}
+          {presetBase > 0 && (
           <div className="grid grid-cols-3 gap-2 pt-1">
             {presets.map((p) => (
               <button
@@ -178,6 +182,7 @@ function ContributeForm({
               </button>
             ))}
           </div>
+          )}
         </div>
 
         <div className="space-y-1.5">

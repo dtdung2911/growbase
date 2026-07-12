@@ -16,14 +16,6 @@ import { BudgetProgressBar } from "@/components/shared/BudgetProgressBar"
 import { SkeletonList } from "@/components/shared/SkeletonList"
 import { EmptyState } from "@/components/shared/EmptyState"
 import { PageHeader } from "@/components/shared/PageHeader"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import type { BudgetActualLine } from "@/types/app"
 
 type StatusLevel = "safe" | "monitor" | "warning" | "over"
@@ -163,48 +155,10 @@ export function BudgetClient() {
         <BudgetProgressBar percentage={totalUsage} className="mt-3" />
       </div>
 
-      {/* Desktop: grouped table */}
-      <div className="hidden md:block rounded-[13px] border border-border/40 bg-card shadow-card overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t("budget.groupName")}</TableHead>
-              <TableHead className="text-center w-[70px]">
-                {t("budget.pct")}
-              </TableHead>
-              <TableHead className="text-right">
-                {t("budget.allocated")}
-              </TableHead>
-              <TableHead className="text-right">{t("budget.spent")}</TableHead>
-              <TableHead className="text-right">
-                {t("budget.remaining")}
-              </TableHead>
-              <TableHead className="text-center w-[70px]">
-                {t("budget.usagePercent")}
-              </TableHead>
-              <TableHead className="text-center w-[100px]">
-                {t("budget.statusLabel")}
-              </TableHead>
-              <TableHead>{t("budget.goal")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {grouped.map((group) => (
-              <CostTypeSection
-                key={group.key}
-                group={group}
-                editingId={editingId}
-                onEdit={setEditingId}
-              />
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Mobile: accordion */}
-      <div className="space-y-3 md:hidden">
+      {/* Grouped cards — cùng UI mọi breakpoint, 2 cột trên desktop */}
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:items-start">
         {grouped.map((group) => (
-          <MobileCostTypeGroup
+          <CostTypeGroupCard
             key={group.key}
             group={group}
             editingId={editingId}
@@ -216,92 +170,7 @@ export function BudgetClient() {
   );
 }
 
-function CostTypeSection({
-  group,
-  editingId,
-  onEdit,
-}: {
-  group: GroupedBudget
-  editingId: string | null
-  onEdit: (id: string | null) => void
-}) {
-  const { t } = useTranslation()
-  const groupStatus = getStatus(group.usagePct)
-  const groupConfig = STATUS_CONFIG[groupStatus]
-
-  return (
-    <>
-      {/* Cost type header row */}
-      <TableRow className="bg-muted/30 font-semibold">
-        <TableCell className="text-sm font-bold">{group.label}</TableCell>
-        <TableCell className="text-center font-mono tabular-nums text-sm">{group.effectivePct}%</TableCell>
-        <TableCell className="text-right font-mono tabular-nums text-sm">{formatVND(group.totalBudget)}</TableCell>
-        <TableCell className="text-right font-mono tabular-nums text-sm">{formatVND(group.totalActual)}</TableCell>
-        <TableCell className="text-right">
-          <span className={cn("font-mono tabular-nums text-sm", group.totalRemaining >= 0 ? "text-income" : "text-expense")}>
-            {formatVND(Math.abs(group.totalRemaining))}
-          </span>
-        </TableCell>
-        <TableCell className="text-center font-mono tabular-nums text-sm">{group.usagePct}%</TableCell>
-        <TableCell className="text-center">
-          <span className={cn("inline-block rounded-full px-2 py-0.5 text-[10px] font-medium", groupConfig.className)}>
-            {t(groupConfig.label)}
-          </span>
-        </TableCell>
-        <TableCell className="text-xs text-muted-foreground italic">{group.goalText}</TableCell>
-      </TableRow>
-
-      {/* Individual budget lines */}
-      {group.lines.map((line) => {
-        const status = getStatus(line.usage_pct ?? 0)
-        const config = STATUS_CONFIG[status]
-        const remaining = line.budget_amount - line.actual_amount
-        const isEditing = editingId === line.cost_type_id
-
-        return (
-          <TableRow key={line.cost_type_id} className="hover:bg-muted/20">
-            <TableCell className="pl-8 text-sm">{line.cost_type_name}</TableCell>
-            <TableCell className="text-center">
-              {isEditing ? (
-                <BudgetOverrideInput
-                  costTypeId={line.cost_type_id}
-                  currentPct={line.effective_pct}
-                  hasOverride={line.override_pct !== null}
-                  onDone={() => onEdit(null)}
-                />
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => onEdit(line.cost_type_id)}
-                  className="text-sm font-mono tabular-nums hover:text-primary transition-colors"
-                  title={t("budget.override")}
-                >
-                  {line.effective_pct}%
-                </button>
-              )}
-            </TableCell>
-            <TableCell className="text-right font-mono tabular-nums text-sm">{formatVND(line.budget_amount)}</TableCell>
-            <TableCell className="text-right font-mono tabular-nums text-sm">{formatVND(line.actual_amount)}</TableCell>
-            <TableCell className="text-right">
-              <span className={cn("font-mono tabular-nums text-sm", remaining >= 0 ? "text-income" : "text-expense")}>
-                {remaining < 0 ? "-" : ""}{formatVND(Math.abs(remaining))}
-              </span>
-            </TableCell>
-            <TableCell className="text-center font-mono tabular-nums text-sm">{Math.round(line.usage_pct ?? 0)}%</TableCell>
-            <TableCell className="text-center">
-              <span className={cn("inline-block rounded-full px-2 py-0.5 text-[10px] font-medium", config.className)}>
-                {t(config.label)}
-              </span>
-            </TableCell>
-            <TableCell className="text-xs text-muted-foreground italic">{line.goalText ?? ""}</TableCell>
-          </TableRow>
-        )
-      })}
-    </>
-  )
-}
-
-function MobileCostTypeGroup({
+function CostTypeGroupCard({
   group,
   editingId,
   onEdit,

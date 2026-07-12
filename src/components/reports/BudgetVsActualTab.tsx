@@ -11,14 +11,6 @@ import {
   COST_TYPE_GROUP_LABELS,
   type CostTypeGroupKey,
 } from "@/lib/constants/budgetTemplate"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import type { BudgetActualLine } from "@/types/app"
 import { BRAND, SEMANTIC } from "@/lib/design-tokens"
 
@@ -73,8 +65,6 @@ export function BudgetVsActualTab({ budgetLines }: BudgetVsActualTabProps) {
       group: g,
       label: locale === "vi" ? COST_TYPE_GROUP_LABELS[g].vi : COST_TYPE_GROUP_LABELS[g].en,
       lines: byGroup.get(g)!,
-      budget: byGroup.get(g)!.reduce((s, l) => s + l.budget_amount, 0),
-      actual: byGroup.get(g)!.reduce((s, l) => s + l.actual_amount, 0),
     }))
   }, [budgetLines, locale])
 
@@ -121,59 +111,41 @@ export function BudgetVsActualTab({ budgetLines }: BudgetVsActualTabProps) {
 
   return (
     <div className="space-y-4">
-      <div className="hidden overflow-hidden rounded-[13px] border border-border/40 bg-card shadow-card md:block">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t("reports.group")}</TableHead>
-              <TableHead className="text-right">{t("reports.budgetPct")}</TableHead>
-              <TableHead className="text-right">{t("budget.allocated")}</TableHead>
-              <TableHead className="text-right">{t("budget.spent")}</TableHead>
-              <TableHead className="text-right">{t("reports.remaining")}</TableHead>
-              <TableHead className="text-right">{t("reports.usagePct")}</TableHead>
-              <TableHead className="text-right">{t("reports.status")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {grouped.map((section) => (
-              <BudgetGroupRows key={section.group} section={section} t={t} />
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      <div className="space-y-3 md:hidden">
+      {/* Card-style groups — cùng UI mọi breakpoint, 2 cột dòng chi tiết trên desktop */}
+      <div className="space-y-3">
         {grouped.map((section) => (
           <div key={section.group} className="space-y-2">
             <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               {section.label}
             </h3>
-            {section.lines.map((line) => {
-              const status = getStatus(line.usage_pct)
-              return (
-                <div
-                  key={line.cost_type_id}
-                  className="rounded-[13px] border border-border/40 bg-card p-4 shadow-card space-y-1"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">{line.cost_type_name}</span>
-                    <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", STATUS_CLASS[status])}>
-                      {Math.round(line.usage_pct)}%
-                    </span>
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+              {section.lines.map((line) => {
+                const status = getStatus(line.usage_pct)
+                return (
+                  <div
+                    key={line.cost_type_id}
+                    className="rounded-[13px] border border-border/40 bg-card p-4 shadow-card space-y-1"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">{line.cost_type_name}</span>
+                      <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", STATUS_CLASS[status])}>
+                        {Math.round(line.usage_pct)}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>
+                        {t("budget.spent")}:{" "}
+                        <span className="font-mono tabular-nums">{formatVND(line.actual_amount)}</span>
+                      </span>
+                      <span>
+                        {t("budget.allocated")}:{" "}
+                        <span className="font-mono tabular-nums">{formatVND(line.budget_amount)}</span>
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>
-                      {t("budget.spent")}:{" "}
-                      <span className="font-mono tabular-nums">{formatVND(line.actual_amount)}</span>
-                    </span>
-                    <span>
-                      {t("budget.allocated")}:{" "}
-                      <span className="font-mono tabular-nums">{formatVND(line.budget_amount)}</span>
-                    </span>
-                  </div>
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
         ))}
       </div>
@@ -188,68 +160,3 @@ export function BudgetVsActualTab({ budgetLines }: BudgetVsActualTabProps) {
   )
 }
 
-type BudgetSection = {
-  group: CostTypeGroupKey
-  label: string
-  lines: BudgetActualLine[]
-  budget: number
-  actual: number
-}
-
-type BudgetGroupRowsProps = {
-  section: BudgetSection
-  t: (key: string, vars?: Record<string, string | number>) => string
-}
-
-const STATUS_LABEL_KEY: Record<BudgetStatus, string> = {
-  safe: "reports.statusSafe",
-  monitor: "reports.statusMonitor",
-  warning: "reports.statusWarning",
-  over: "reports.statusOver",
-}
-
-function BudgetGroupRows({ section, t }: BudgetGroupRowsProps) {
-  return (
-    <>
-      <TableRow className="bg-muted/30">
-        <TableCell className="font-semibold">{section.label}</TableCell>
-        <TableCell />
-        <TableCell className="text-right font-mono tabular-nums font-medium">
-          {formatVND(section.budget)}
-        </TableCell>
-        <TableCell className="text-right font-mono tabular-nums font-medium">
-          {formatVND(section.actual)}
-        </TableCell>
-        <TableCell colSpan={3} />
-      </TableRow>
-      {section.lines.map((line) => {
-        const status = getStatus(line.usage_pct)
-        return (
-          <TableRow key={line.cost_type_id}>
-            <TableCell className="pl-6">{line.cost_type_name}</TableCell>
-            <TableCell className="text-right text-muted-foreground">
-              {Math.round(line.effective_pct)}%
-            </TableCell>
-            <TableCell className="text-right font-mono tabular-nums">
-              {formatVND(line.budget_amount)}
-            </TableCell>
-            <TableCell className="text-right font-mono tabular-nums">
-              {formatVND(line.actual_amount)}
-            </TableCell>
-            <TableCell className="text-right font-mono tabular-nums text-muted-foreground">
-              {formatVND(line.remaining)}
-            </TableCell>
-            <TableCell className="text-right font-mono tabular-nums">
-              {Math.round(line.usage_pct)}%
-            </TableCell>
-            <TableCell className="text-right">
-              <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", STATUS_CLASS[status])}>
-                {t(STATUS_LABEL_KEY[status])}
-              </span>
-            </TableCell>
-          </TableRow>
-        )
-      })}
-    </>
-  )
-}

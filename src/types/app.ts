@@ -305,6 +305,7 @@ export type WeekdaySpending = {
 export type DashboardData = {
   totalIncome: number
   totalExpense: number
+  fundContributions: number
   savingsRate: number
   lastMonthIncome: number
   lastMonthExpense: number

@@ -4,14 +4,16 @@ import { cn } from "@/lib/utils/cn"
 import { formatVND } from "@/lib/utils/currency"
 import { Badge } from "@/components/ui/badge"
 import { useTranslation } from "@/lib/i18n/useTranslation"
+import { COST_TYPE_BADGE_VARIANT } from "@/lib/constants/costTypeBadge"
 import type { TransactionWithJoins, BehaviorType } from "@/types/app"
 
 type TransactionItemProps = {
   transaction: TransactionWithJoins
+  costTypeCode?: string | null
   onClick?: () => void
 }
 
-export function TransactionItem({ transaction: tx, onClick }: TransactionItemProps) {
+export function TransactionItem({ transaction: tx, costTypeCode, onClick }: TransactionItemProps) {
   const { t } = useTranslation()
   const isIncome = tx.direction === "in"
   const categoryName = tx.category?.name ?? t("tx.uncategorized")
@@ -39,11 +41,18 @@ export function TransactionItem({ transaction: tx, onClick }: TransactionItemPro
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
           <span className="truncate text-sm font-extrabold">{categoryName}</span>
-          {behaviorType && (
+          {costTypeCode ? (
+            <Badge
+              variant={COST_TYPE_BADGE_VARIANT[costTypeCode] ?? "secondary"}
+              className="shrink-0 text-[10px] px-1 py-0"
+            >
+              {t(`behavior.${costTypeCode}`)}
+            </Badge>
+          ) : behaviorType ? (
             <Badge variant="outline" className="shrink-0 text-[10px] px-1 py-0">
               {t(`behavior.${behaviorType}`)}
             </Badge>
-          )}
+          ) : null}
         </div>
         {tx.description && (
           <p className="truncate text-xs text-muted-foreground">

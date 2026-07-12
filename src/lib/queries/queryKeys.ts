@@ -19,6 +19,7 @@ export const keys = {
   estimatedExpenses: (hid: string) => ["estimatedExpenses", hid] as const,
   members: (hid: string) => ["members", hid] as const,
   invitations: (hid: string) => ["invitations", hid] as const,
+  pendingInvitations: () => ["pendingInvitations"] as const,
   budgetBaselines: (hid: string) => ["budgetBaselines", hid] as const,
   scheduledPayments: (hid: string) => ["scheduledPayments", hid] as const,
   netWorth: (hid: string, month: string) => ["netWorth", hid, month] as const,

@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { Icon } from "@iconify/react"
 import { cn } from "@/lib/utils/cn"
 import { formatVNDCompact } from "@/lib/utils/currency"
@@ -41,6 +42,7 @@ export function FundCard({ fund, onContribute, onWithdraw }: FundCardProps) {
 
   return (
     <div className="mb-2 rounded-[13px] border border-border/40 bg-card p-4 shadow-card">
+      <Link href={`/funds/${fund.id}`} className="block">
       <div className="flex items-start gap-3">
         <div
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
@@ -117,6 +119,7 @@ export function FundCard({ fund, onContribute, onWithdraw }: FundCardProps) {
           )}
         </div>
       </div>
+      </Link>
 
       <div className="mt-3 flex gap-2 border-t border-border pt-3">
         <button

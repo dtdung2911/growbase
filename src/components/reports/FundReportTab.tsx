@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/table"
 import { SortableTableHead } from "@/components/ui/SortableTableHead"
 import { useSortable } from "@/lib/hooks/useSortable"
-import type { Fund } from "@/types/app"
+import { FUND_TYPE_CONFIG, type Fund } from "@/types/app"
 import { BRAND } from "@/lib/design-tokens"
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false })
@@ -123,7 +123,7 @@ export function FundReportTab({ funds }: FundReportTabProps) {
                 <TableRow key={fund.id}>
                   <TableCell className="font-medium">
                     <span className="flex items-center gap-2">
-                      {fund.icon && <Icon icon={fund.icon} className="h-4 w-4" />}
+                      <Icon icon={fund.icon || FUND_TYPE_CONFIG[fund.fund_type].icon} className="h-4 w-4" />
                       {fund.name}
                     </span>
                   </TableCell>
@@ -165,7 +165,7 @@ export function FundReportTab({ funds }: FundReportTabProps) {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  {fund.icon && <Icon icon={fund.icon} className="h-4 w-4" />}
+                  <Icon icon={fund.icon || FUND_TYPE_CONFIG[fund.fund_type].icon} className="h-4 w-4" />
                   <span className="text-sm font-medium">{fund.name}</span>
                 </div>
                 <span className="text-sm font-medium font-mono tabular-nums">

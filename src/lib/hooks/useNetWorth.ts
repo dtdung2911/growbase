@@ -10,7 +10,7 @@ import type { NetWorthSnapshotInput } from "@/lib/validations/net-worth"
 type NetWorthPageData = {
   snapshot: Record<string, unknown> | null
   systemBalances: SystemBalance[]
-  funds: { id: string; name: string; current_balance: number; fund_type: string }[]
+  funds: { id: string; name: string; current_balance: number; fund_type: string; icon: string | null }[]
 }
 
 export function useNetWorthSnapshot() {

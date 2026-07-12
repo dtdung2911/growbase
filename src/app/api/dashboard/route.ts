@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
   const { data: allTxs, error: txErr } = await supabase
     .from("transactions")
     .select(`
-      id, amount, direction, behavior_type, transaction_date,
+      id, amount, direction, transaction_type, behavior_type, transaction_date,
       exclude_from_budget_report,
       category:categories(id, name, icon)
     `)
@@ -64,25 +64,43 @@ export async function GET(request: NextRequest) {
   // Aggregates
   let totalIncome = 0
   let totalExpense = 0
+  let fundContributions = 0
   let lastMonthIncome = 0
   let lastMonthExpense = 0
   const behaviorMap = new Map<string, number>()
   const categoryMap = new Map<string, { name: string; icon: string | null; amount: number }>()
   const weekdayMap = new Map<number, number>()
 
+  // Phân loại theo transaction_type (không theo direction): góp/rút quỹ đều là direction 'out'
+  // nên direction gộp chúng vào chi tiêu — sai. Chi tiêu thật = expense + debt_repayment;
+  // fund_contribution = tiết kiệm (tách riêng); fund_withdrawal + internal_transfer chỉ luân
+  // chuyển nội bộ (không thu, không chi) → bỏ hoàn toàn khỏi thu/chi.
   for (const tx of currentTxs) {
     const amt = tx.amount as number
-    const dir = tx.direction as string
+    const type = tx.transaction_type as string
 
-    if (dir === "in") {
+    if (type === "income") {
       totalIncome += amt
-    } else {
-      totalExpense += amt
-      // behavior breakdown
-      if (!tx.exclude_from_budget_report && tx.behavior_type) {
-        behaviorMap.set(tx.behavior_type, (behaviorMap.get(tx.behavior_type) ?? 0) + amt)
-      }
-      // top categories
+      continue
+    }
+
+    if (type === "fund_contribution") fundContributions += amt
+
+    const isRealExpense = type === "expense" || type === "debt_repayment"
+    if (isRealExpense) totalExpense += amt
+
+    // Donut phân bổ gồm cả chi tiêu thật lẫn góp quỹ (savings_investment);
+    // fund_withdrawal/internal_transfer đã bị trigger đánh exclude_from_budget_report=true.
+    if (
+      (isRealExpense || type === "fund_contribution") &&
+      !tx.exclude_from_budget_report &&
+      tx.behavior_type
+    ) {
+      behaviorMap.set(tx.behavior_type, (behaviorMap.get(tx.behavior_type) ?? 0) + amt)
+    }
+
+    // Top categories + weekday chỉ tính chi tiêu thật để khớp totalExpense.
+    if (isRealExpense) {
       const cat = tx.category as unknown as { id: string; name: string; icon: string | null } | null
       if (cat) {
         const existing = categoryMap.get(cat.id)
@@ -92,7 +110,6 @@ export async function GET(request: NextRequest) {
           categoryMap.set(cat.id, { name: cat.name, icon: cat.icon, amount: amt })
         }
       }
-      // weekday
       const dow = new Date(tx.transaction_date as string).getDay()
       weekdayMap.set(dow, (weekdayMap.get(dow) ?? 0) + amt)
     }
@@ -100,12 +117,14 @@ export async function GET(request: NextRequest) {
 
   for (const tx of prevTxs) {
     const amt = tx.amount as number
-    if (tx.direction === "in") lastMonthIncome += amt
-    else lastMonthExpense += amt
+    const type = tx.transaction_type as string
+    if (type === "income") lastMonthIncome += amt
+    else if (type === "expense" || type === "debt_repayment") lastMonthExpense += amt
   }
 
-  const savings = totalIncome - totalExpense
-  const savingsRate = totalIncome > 0 ? Math.round((savings / totalIncome) * 1000) / 10 : 0
+  // Tỷ lệ tiết kiệm = phần thu nhập đã góp vào quỹ (không phải thu - chi).
+  const savingsRate =
+    totalIncome > 0 ? Math.min(100, Math.round((fundContributions / totalIncome) * 1000) / 10) : 0
 
   const BEHAVIOR_ORDER: BehaviorType[] = [
     "fixed",
@@ -156,7 +175,7 @@ export async function GET(request: NextRequest) {
   // Funds
   const { data: fundsData, error: fundsErr } = await supabase
     .from("funds")
-    .select("id, name, fund_type, color, target_amount, current_balance, monthly_contribution, created_at, target_date")
+    .select("id, name, fund_type, icon, color, target_amount, current_balance, monthly_contribution, created_at, target_date")
     .eq("household_id", hid)
     .eq("is_active", true)
     .order("sort_order")
@@ -215,6 +234,7 @@ export async function GET(request: NextRequest) {
     data: {
       totalIncome,
       totalExpense,
+      fundContributions,
       savingsRate,
       lastMonthIncome,
       lastMonthExpense,

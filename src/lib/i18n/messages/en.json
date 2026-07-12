@@ -50,7 +50,7 @@
   "dashboard.budget": "Budget",
   "dashboard.funds": "Funds",
   "dashboard.recentTx": "Recent transactions",
-  "dashboard.savings": "Savings",
+  "dashboard.savings": "Saved to funds",
   "dashboard.dailyRemaining": "Remaining today",
   "dashboard.dayZeroEmptyHint": "This picture fills in as you log your first expense.",
   "dashboard.inviteMoment.title": "Invite someone to join you?",
@@ -108,6 +108,7 @@
   "tx.debt": "Debt",
   "tx.selectDebt": "Select debt",
   "tx.directionFilter": "In/Out",
+  "tx.costTypeFilter": "Cost type",
   "budget.title": "Budget",
   "budget.allocated": "Allocated",
   "budget.spent": "Spent",
@@ -859,5 +860,9 @@
   "celebration.milestoneTitle": "New milestone! 🎉",
   "celebration.milestoneBody": "{{goalName}} has reached {{milestone}}% of the way — the whole family is doing great!",
   "celebration.goalCompletedBody": "{{goalName}} made it! You did it together 🎉",
-  "celebration.close": "Awesome"
+  "celebration.close": "Awesome",
+  "setup.invited.title": "You are invited",
+  "setup.invited.subtitle": "You have a pending invitation to join a household",
+  "setup.invited.join": "Join",
+  "setup.invited.createNew": "Create a new household"
 }

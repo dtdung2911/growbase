@@ -50,7 +50,7 @@
   "dashboard.budget": "Ngân sách",
   "dashboard.funds": "Quỹ",
   "dashboard.recentTx": "Giao dịch gần đây",
-  "dashboard.savings": "Tiết kiệm",
+  "dashboard.savings": "Góp quỹ tháng này",
   "dashboard.dailyRemaining": "Còn lại hôm nay",
   "dashboard.dayZeroEmptyHint": "Bức tranh này sẽ đầy dần khi bạn ghi lại khoản chi đầu tiên.",
   "dashboard.inviteMoment.title": "Rủ người đồng hành cùng bạn nhé?",
@@ -108,6 +108,7 @@
   "tx.debt": "Khoản nợ",
   "tx.selectDebt": "Chọn khoản nợ",
   "tx.directionFilter": "Thu/Chi",
+  "tx.costTypeFilter": "Loại chi phí",
   "budget.title": "Ngân sách",
   "budget.allocated": "Phân bổ",
   "budget.spent": "Đã chi",
@@ -859,5 +860,9 @@
   "celebration.milestoneTitle": "Cột mốc mới! 🎉",
   "celebration.milestoneBody": "{{goalName}} đã đạt {{milestone}}% chặng đường — cả nhà đang làm rất tốt!",
   "celebration.goalCompletedBody": "{{goalName}} đã về đích! Cả nhà làm được rồi 🎉",
-  "celebration.close": "Tuyệt vời"
+  "celebration.close": "Tuyệt vời",
+  "setup.invited.title": "Bạn được mời",
+  "setup.invited.subtitle": "Bạn có lời mời tham gia gia đình đang chờ",
+  "setup.invited.join": "Tham gia",
+  "setup.invited.createNew": "Tạo gia đình mới"
 }

@@ -240,11 +240,14 @@ export function buildHookDemoData(t: TFunction, locale: Locale): DashboardData {
   const totalExpense = sumAmount(juneExpenses)
   const lastMonthIncome = sumAmount(may.filter((tx) => tx.direction === "in"))
   const lastMonthExpense = sumAmount(may.filter((tx) => tx.direction === "out"))
+  // Demo không có giao dịch góp quỹ thật → coi phần dư là số đã tiết kiệm để card hiển thị hợp lý.
+  const fundContributions = Math.max(totalIncome - totalExpense, 0)
 
   return {
     totalIncome,
     totalExpense,
-    savingsRate: Math.round(((totalIncome - totalExpense) / totalIncome) * 1000) / 10,
+    fundContributions,
+    savingsRate: totalIncome > 0 ? Math.round((fundContributions / totalIncome) * 1000) / 10 : 0,
     lastMonthIncome,
     lastMonthExpense,
     netWorth: null,

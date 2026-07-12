@@ -5,15 +5,6 @@ import { formatVND } from "@/lib/utils/currency"
 import { MetricCard } from "@/components/shared/MetricCard"
 import { SpendingDonut } from "@/components/shared/SpendingDonut"
 import { BudgetProgressBar } from "@/components/shared/BudgetProgressBar"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import { cn } from "@/lib/utils/cn"
 import { toYearMonth } from "@/lib/utils/date"
 import { FundOverviewCard } from "@/components/dashboard/FundOverviewCard"
 import { RecentTransactionsList } from "@/components/dashboard/RecentTransactionsList"
@@ -47,7 +38,6 @@ export function DashboardView({
   const showInsight =
     data.hasAnyTransactionEver && (insightToday != null || month === toYearMonth(new Date()))
 
-  const savings = data.totalIncome - data.totalExpense
   const incomeDelta = trendPct(data.totalIncome, data.lastMonthIncome)
   const expenseDelta = trendPct(data.totalExpense, data.lastMonthExpense)
   const dayZeroEmptyMessage = !data.hasAnyTransactionEver ? t("dashboard.dayZeroEmptyHint") : undefined
@@ -85,9 +75,9 @@ export function DashboardView({
         />
         <MetricCard
           label={t("dashboard.savings")}
-          amount={savings}
+          amount={data.fundContributions}
           formatAmount={formatVND}
-          trend={savings >= 0 ? "up" : "down"}
+          trend="up"
           icon="lucide:piggy-bank"
         />
         <MetricCard
@@ -160,81 +150,8 @@ export function DashboardView({
           <h2 className="px-5 pb-3 pt-5 text-sm font-semibold">
             {t("dashboard.budget")}
           </h2>
-          {/* Desktop: table */}
-          <div className="hidden md:block">
-            <Table>
-              <TableHeader className="bg-primary-soft">
-                <TableRow>
-                  <TableHead className="text-primary font-bold border-b border-primary">
-                    {t("budget.groupName")}
-                  </TableHead>
-                  <TableHead className="text-right text-primary font-bold border-b border-primary">
-                    {t("budget.spent")}
-                  </TableHead>
-                  <TableHead className="text-right text-primary font-bold border-b border-primary">
-                    {t("budget.allocated")}
-                  </TableHead>
-                  <TableHead className="w-[168px] text-center text-primary font-bold border-b border-primary">
-                    {t("budget.usagePercent")}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {data.budgetLines.map((line: BudgetActualLine) => {
-                  const raw = line.usage_pct;
-                  const usage = Math.round(raw ?? 0);
-                  // Phân loại trên % thô: 100.4% làm tròn thành 100 nhưng vẫn phải đỏ.
-                  // usage_pct null mà đã chi (không có ngân sách) → cảnh báo vàng, không xanh
-                  const tint =
-                    raw == null
-                      ? line.actual_amount > 0 ? "warning" : "success"
-                      : raw > 100
-                        ? "destructive"
-                        : raw > 85
-                          ? "warning"
-                          : "success";
-                  return (
-                    <TableRow
-                      key={line.cost_type_id}
-                      className={cn(
-                        tint === "destructive"
-                          ? "bg-destructive/10"
-                          : tint === "warning"
-                            ? "bg-warning/10"
-                            : "bg-success/10",
-                      )}
-                    >
-                      <TableCell className="text-sm font-medium">
-                        {line.cost_type_name}
-                      </TableCell>
-                      <TableCell className="text-right font-mono tabular-nums text-sm">
-                        {formatVND(line.actual_amount)}
-                      </TableCell>
-                      <TableCell className="text-right font-mono tabular-nums text-sm text-muted-foreground">
-                        {formatVND(line.budget_amount)}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <span
-                          className={cn(
-                            "text-xs font-medium",
-                            tint === "destructive"
-                              ? "text-destructive"
-                              : tint === "warning"
-                                ? "text-warning"
-                                : "text-muted-foreground",
-                          )}
-                        >
-                          {usage}%
-                        </span>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-          {/* Mobile */}
-          <div className="space-y-3 px-4 pb-4 md:hidden">
+          {/* Card-style flat list — cùng UI mọi breakpoint, 2 cột trên desktop */}
+          <div className="grid grid-cols-1 gap-3 px-4 pb-4 md:grid-cols-2 md:gap-x-8">
             {data.budgetLines.map((line: BudgetActualLine) => (
               <div key={line.cost_type_id}>
                 <div className="flex items-center justify-between">

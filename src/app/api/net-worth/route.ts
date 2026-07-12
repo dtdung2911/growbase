@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     auth.supabase.rpc("get_system_balances", { p_household_id: hid }),
     auth.supabase
       .from("funds")
-      .select("id, name, current_balance, fund_type")
+      .select("id, name, current_balance, fund_type, icon")
       .eq("household_id", hid)
       .eq("is_active", true),
   ])

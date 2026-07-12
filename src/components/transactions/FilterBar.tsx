@@ -11,11 +11,13 @@ import { useAccounts } from "@/lib/hooks/useAccounts"
 import { useCategories } from "@/lib/hooks/useCategories"
 import { useAppStore } from "@/lib/stores/appStore"
 import { useTranslation } from "@/lib/i18n/useTranslation"
+import { COST_TYPE_FILTER_CODES } from "@/lib/constants/costTypeBadge"
 
 export type TransactionFilters = {
   categoryId: string | null
   accountId: string | null
   direction: string | null
+  costTypeCode: string | null
 }
 
 type FilterBarProps = {
@@ -51,6 +53,26 @@ export function FilterBar({ filters, onChange }: FilterBarProps) {
           <SelectItem value={ALL}>{t("tx.all")}</SelectItem>
           <SelectItem value="in">{t("tx.incomeShort")}</SelectItem>
           <SelectItem value="out">{t("tx.expenseShort")}</SelectItem>
+        </SelectContent>
+      </Select>
+
+      {/* Cost type */}
+      <Select
+        value={filters.costTypeCode ?? ALL}
+        onValueChange={(v) =>
+          onChange({ ...filters, costTypeCode: v === ALL ? null : v })
+        }
+      >
+        <SelectTrigger className="w-[140px] shrink-0">
+          <SelectValue placeholder={t("tx.costTypeFilter")} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={ALL}>{t("tx.all")}</SelectItem>
+          {COST_TYPE_FILTER_CODES.map((code) => (
+            <SelectItem key={code} value={code}>
+              {t(`behavior.${code}`)}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
 

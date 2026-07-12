@@ -20,6 +20,7 @@ export type NetWorthFundRowData = {
   name: string
   fund_type: string
   current_balance: number
+  icon?: string | null
 }
 
 type NetWorthFundsTableProps = {
@@ -60,7 +61,7 @@ export function NetWorthFundsTable({ rows }: NetWorthFundsTableProps) {
               <TableCell>
                 {config ? (
                   <Badge variant="outline" className="gap-1">
-                    <Icon icon={config.icon} className="h-3.5 w-3.5" style={{ color: config.color }} />
+                    <Icon icon={row.icon || config.icon} className="h-3.5 w-3.5" style={{ color: config.color }} />
                     {locale === "vi" ? config.label : config.labelEn}
                   </Badge>
                 ) : (

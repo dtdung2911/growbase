@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     .from("household_invitations")
     .insert({
       household_id: householdId,
-      email,
+      email: email.toLowerCase().trim(),
       display_name,
       role,
     })

@@ -100,6 +100,7 @@ export function NetWorthClient() {
     name: f.name,
     fund_type: f.fund_type,
     current_balance: f.current_balance,
+    icon: f.icon,
   }))
 
   const handleBalanceChange = (accountId: string, value: number) => {
@@ -173,7 +174,7 @@ export function NetWorthClient() {
                       className="flex items-center justify-between rounded-[13px] border border-border/40 bg-card px-4 py-3 shadow-card"
                     >
                       <div className="flex items-center gap-2">
-                        {config && <Icon icon={config.icon} className="h-4 w-4" style={{ color: config.color }} />}
+                        {config && <Icon icon={f.icon || config.icon} className="h-4 w-4" style={{ color: config.color }} />}
                         <span className="text-sm">{f.name}</span>
                       </div>
                       <span className="font-mono text-sm tabular-nums">{formatVND(f.current_balance)}</span>
