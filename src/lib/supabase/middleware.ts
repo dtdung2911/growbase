@@ -11,7 +11,8 @@ export async function updateSession(request: NextRequest) {
   // ssr@0.5.2 import GenericSchema từ path đã đổi trong supabase-js@2.108 →
   // generic Schema resolve về `any`. Cast tường minh để giữ typed queries.
   const supabase = createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    // Self-host: gọi Supabase nội bộ trong instance (fallback public khi Cloud/dev).
+    process.env.SUPABASE_INTERNAL_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {

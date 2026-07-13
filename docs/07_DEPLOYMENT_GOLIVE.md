@@ -520,11 +520,13 @@ supabase db push --db-url "postgresql://postgres:<POSTGRES_PASSWORD>@localhost:5
 NEXT_PUBLIC_SUPABASE_URL=https://api.growbase.com                     # = API_EXTERNAL_URL/SUPABASE_PUBLIC_URL self-host, KHÔNG phải *.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<ANON_KEY hoặc PUBLISHABLE_KEY self-host>
 SUPABASE_SERVICE_ROLE_KEY=<SERVICE_ROLE_KEY hoặc SECRET_KEY self-host>  # chỉ server, không lộ client
+SUPABASE_INTERNAL_URL=http://localhost:8000                          # (tùy chọn) server gọi Kong nội bộ, không ra internet
 ```
 
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = khoá client sinh ở §7.3 (`ANON_KEY` model cũ hoặc `SUPABASE_PUBLISHABLE_KEY` model mới — verify theo stack).
 - `SUPABASE_SERVICE_ROLE_KEY` = khoá server sinh ở §7.3 (`SERVICE_ROLE_KEY` hoặc `SUPABASE_SECRET_KEY`).
-- Rebuild app để giá trị `NEXT_PUBLIC_*` được nhúng lại (đây là biến build-time):
+- **`SUPABASE_INTERNAL_URL` (tùy chọn — self-host chung máy)**: khi app và Supabase cùng EC2, 3 client server-side (server/admin/middleware) đọc biến này để gọi thẳng Kong `http://localhost:8000` — không ra internet, không tốn TLS, nhanh hơn. KHÔNG có tiền tố `NEXT_PUBLIC_` (chỉ server, browser vẫn dùng `NEXT_PUBLIC_SUPABASE_URL` public cho auth OAuth/refresh — browser ở máy user không tới được localhost). Không set → mọi client dùng public URL như bình thường (Cloud/dev). Cần Site URL / redirect allowlist self-host (§7.3, §7.8) chứa origin app public. Là biến runtime (không cần rebuild khi đổi).
+- Rebuild app để giá trị `NEXT_PUBLIC_*` được nhúng lại (đây là biến build-time; `SUPABASE_INTERNAL_URL` là runtime, không cần rebuild):
 
 ```bash
 cd /var/www/growbase
