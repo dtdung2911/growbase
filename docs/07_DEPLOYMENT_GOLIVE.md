@@ -54,7 +54,7 @@ Chỉ Go-live khi các điều kiện sau đạt:
 
 - AWS Console → EC2 → Launch instance.
 - AMI: Ubuntu Server 24.04 LTS (hoặc 22.04 LTS), 64-bit x86.
-- Instance type: tối thiểu `t3.small` (2GB RAM). `t2.micro`/`t3.micro` (1GB) build Next.js dễ OOM; nếu buộc dùng 1GB thì BẮT BUỘC thêm swap (mục 3.5).
+- Instance type: tối thiểu `t3.small` (2GB RAM). `t2.micro`/`t3.micro` (1GB) build Next.js dễ OOM; nếu buộc dùng 1GB thì BẮT BUỘC thêm swap (mục 3.5). Con số này chỉ đủ cho app Next.js + Nginx (dùng Supabase Cloud §6); nếu self-host Supabase chung máy → RAM này KHÔNG đủ, xem §7.1.
 - Key pair: tạo mới (RSA `.pem`) hoặc chọn key có sẵn — TẢI VỀ và giữ kỹ file `.pem`.
 - Storage: gp3 tối thiểu 20GB.
 - Network: cho phép tạo Security Group mới (cấu hình ở mục 3.2).
@@ -76,7 +76,7 @@ Outbound để mặc định (allow all). Lưu ý: `ufw` trên Ubuntu là tầng
 BẮT BUỘC. Nếu không gán, public IP đổi mỗi lần stop/start → vỡ DNS.
 
 - EC2 → Elastic IPs → Allocate → Associate với instance.
-- Ghi lại IP tĩnh này → dùng cho bước trỏ domain (§9).
+- Ghi lại IP tĩnh này → dùng cho bước trỏ domain (§10).
 
 ### 3.4. Kết nối SSH
 
@@ -199,6 +199,8 @@ Lưu ý:
 
 ## 6. Chuẩn bị Supabase production
 
+(Hoặc tự vận hành Supabase bằng Docker — xem §7. Chọn 1 trong 2.)
+
 ### 6.1. Tạo project production
 
 Trong Supabase dashboard:
@@ -294,7 +296,262 @@ where table_schema = 'public'
 order by ordinal_position;
 ```
 
-## 7. Build và chạy ứng dụng
+## 7. Phương án thay thế: Tự vận hành Supabase (self-host Docker)
+
+**Thay cho §6 (Cloud). Chọn 1 trong 2, KHÔNG dùng cả hai.** Nếu đã theo §6 (Supabase Cloud) thì bỏ qua toàn bộ §7. Ở phương án này ta tự chạy full stack Supabase bằng Docker Compose trên hạ tầng của mình (thường là chính EC2 ở §3, hoặc một instance riêng). Code GrowBase KHÔNG đổi — chỉ đổi giá trị 3 biến env kết nối (§7.7).
+
+**LƯU Ý QUAN TRỌNG — cần verify:** Tài liệu self-host của Supabase thay đổi khá nhanh. Các chi tiết dưới đây đối chiếu với `https://supabase.com/docs/guides/self-hosting/docker` (bản đọc 07-2026). Đáng chú ý: bản mới đã chuyển mô hình khoá API — không còn hướng dẫn tự ký `ANON_KEY`/`SERVICE_ROLE_KEY` bằng `JWT_SECRET` như tài liệu cũ, mà dùng cặp khoá ký JWT bất đối xứng + khoá `SUPABASE_PUBLISHABLE_KEY`/`SUPABASE_SECRET_KEY` sinh bằng script kèm stack. Trước khi chạy production PHẢI đọc lại trang trên + trang key model (`.../self-hosting/self-hosted-auth-keys`) để biết chính xác `.env` phiên bản bạn clone dùng model nào (ảnh hưởng trực tiếp §7.3 và §7.7).
+
+### 7.1. Yêu cầu tài nguyên
+
+Full stack Supabase gồm nhiều container: Postgres, GoTrue (auth), PostgREST (REST API), Realtime, Storage, Kong (API gateway), Studio (dashboard), postgres-meta, imgproxy, cùng cụm Analytics (Logflare) + Vector. Tổng RAM tiêu thụ nặng hơn app Next.js nhiều.
+
+- `t3.small` (2GB) ở §3.1 CHỈ đủ cho app + Nginx (phương án Cloud §6). KHÔNG đủ để chạy chung cả full stack Supabase.
+- Nếu chạy CHUNG một instance với Next.js (§3): nâng lên **tối thiểu `t3.medium` (4GB RAM), khuyến nghị `t3.large` (8GB)** để có headroom cho Postgres + build Next.js. Vẫn giữ swap (§3.5) và tăng disk gp3 lên ≥ 40GB (Docker images + volume Postgres + Storage).
+- Hoặc **tách instance Supabase riêng** (1 máy cho Supabase, 1 máy cho app) — sạch hơn về tài nguyên lẫn bảo mật, nhưng tốn thêm chi phí.
+- Giảm tải: cụm Analytics (Logflare) + Vector là phần nặng và không bắt buộc cho GrowBase — có thể tắt để tiết kiệm RAM (comment service `analytics`/`vector` trong `docker-compose.yml` + biến `LOGFLARE_*`). VERIFY: một số bản compose có service phụ thuộc healthcheck của `analytics`, cần gỡ `depends_on` tương ứng nếu không container khác sẽ không khởi động.
+
+Cross-ref: điều chỉnh lại khuyến nghị instance type ở §3.1 theo mục này.
+
+### 7.2. Cài Docker + Docker Compose
+
+Trên Ubuntu (§3), cài Docker Engine + Compose v2 plugin từ repo chính thức của Docker:
+
+```bash
+# Gỡ bản cũ nếu có
+sudo apt remove -y docker docker-engine docker.io containerd runc 2>/dev/null || true
+
+sudo apt update
+sudo apt install -y ca-certificates curl gnupg
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# Cho user chạy docker không cần sudo (logout/login lại sau lệnh này)
+sudo usermod -aG docker $USER
+
+# Verify — Compose v2 dùng lệnh "docker compose" (KHÔNG phải "docker-compose")
+docker --version
+docker compose version
+```
+
+### 7.3. Lấy stack + cấu hình `.env`
+
+Clone thư mục `docker/` của Supabase (sparse checkout để chỉ tải phần cần) rồi copy sang một project dir riêng (giữ tách khỏi `/var/www/growbase` của app):
+
+```bash
+cd /opt && sudo chown -R $USER:$USER /opt
+git clone --filter=blob:none --no-checkout --depth 1 https://github.com/supabase/supabase
+cd supabase
+git sparse-checkout init --cone
+git sparse-checkout set docker
+git checkout
+cd ..
+
+# Copy stack + env mẫu sang project dir riêng
+mkdir -p supabase-project
+cp -rf supabase/docker/* supabase-project/
+cp supabase/docker/.env.example supabase-project/.env
+cd supabase-project
+docker compose pull
+```
+
+**Sinh secret (KHÔNG dùng giá trị mặc định trong `.env.example` — đây là lỗi bảo mật nghiêm trọng nhất khi self-host).** Cách khuyến nghị hiện hành: chạy script sinh khoá đi kèm stack (đường dẫn theo docs, verify tên/vị trí file):
+
+```bash
+# Trong supabase-project — tên script theo docs bản mới, verify trước khi chạy
+sh utils/generate-keys.sh
+sh utils/add-new-auth-keys.sh
+```
+
+Các biến BẮT BUỘC đổi trong `.env` trước khi khởi động (giá trị mẫu chỉ để dev local):
+
+| Biến | Ý nghĩa | Cách sinh / giá trị |
+|------|---------|---------------------|
+| `POSTGRES_PASSWORD` | Mật khẩu Postgres — dùng cho connection string, psql, migrations §7.6 | mật khẩu mạnh, `openssl rand -base64 24` |
+| `JWT_SECRET` | Secret ký JWT (model cũ) — VERIFY còn dùng ở bản của bạn không | ≥ 32 ký tự ngẫu nhiên |
+| `ANON_KEY` **hoặc** `SUPABASE_PUBLISHABLE_KEY` | Khoá client (public) → map vào `NEXT_PUBLIC_SUPABASE_ANON_KEY` (§7.7) | sinh bằng script; model cũ = JWT ký bằng `JWT_SECRET` |
+| `SERVICE_ROLE_KEY` **hoặc** `SUPABASE_SECRET_KEY` | Khoá server (bypass RLS, bí mật) → map vào `SUPABASE_SERVICE_ROLE_KEY` (§7.7) | sinh bằng script; KHÔNG lộ ra client |
+| `SITE_URL` | Domain app production (gốc redirect Auth mặc định) | `https://growbase.com` |
+| `API_EXTERNAL_URL` | URL API công khai GoTrue dùng dựng callback | `https://api.growbase.com` |
+| `SUPABASE_PUBLIC_URL` | URL gốc truy cập Supabase từ Internet | `https://api.growbase.com` |
+| `DASHBOARD_USERNAME` | User basic-auth vào Studio | đổi khác mặc định `supabase` |
+| `DASHBOARD_PASSWORD` | Mật khẩu Studio (phải chứa ≥ 1 chữ cái) | mật khẩu mạnh |
+| `SECRET_KEY_BASE` | Mã hoá Realtime/Supavisor | ≥ 64 ký tự, `openssl rand -base64 48` |
+| `VAULT_ENC_KEY` | Khoá mã hoá cấu hình Supavisor | đúng 32 ký tự, `openssl rand -hex 16` |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_ADMIN_EMAIL` / `SMTP_SENDER_NAME` | SMTP gửi email Auth (confirm, reset, invite household) | dùng SES/Postmark/SendGrid... |
+| `DISABLE_SIGNUP` | Chặn tự đăng ký nếu chỉ mời nội bộ | `true` để khoá signup (verify tên biến) |
+
+Ngoài ra bản mới còn một số khoá khác cần đổi khỏi giá trị mẫu (VERIFY theo chú thích trong chính `.env` vừa copy): `REALTIME_DB_ENC_KEY` (đúng 16 ký tự, `openssl rand -hex 8`), `PG_META_CRYPTO_KEY` (≥ 32 ký tự), token `LOGFLARE_*`, và `MINIO_ROOT_PASSWORD`/`S3_PROTOCOL_*` nếu dùng Storage backend S3.
+
+Lưu ý env quan trọng cho GrowBase:
+
+- `API_EXTERNAL_URL` và `SUPABASE_PUBLIC_URL` = **subdomain API riêng**, ví dụ `https://api.growbase.com` (bản ghi A trỏ về Elastic IP §3.3 — thêm ở §10 DNS, reverse proxy ở §7.5). ĐÂY KHÔNG PHẢI domain app.
+- `SITE_URL` = **domain app production** `https://growbase.com` (nơi user mở GrowBase). Là gốc redirect Auth mặc định — phải khớp Redirect URLs như §6.1 (Site URL, `/auth/callback`, `/login`, `/invite/*`).
+- Chưa có SMTP thì có thể bật auto-confirm email để test, nhưng production nên có SMTP thật cho luồng invite household.
+
+### 7.4. Khởi động stack
+
+```bash
+cd /opt/supabase-project
+docker compose up -d          # hoặc wrapper: sh ./run.sh start  (= up -d --wait)
+docker compose ps             # mọi container phải ở trạng thái Up ... (healthy)
+```
+
+Xem log nếu có container không healthy:
+
+```bash
+docker compose logs kong
+docker compose logs auth
+docker compose logs db
+```
+
+Sau khi đổi bất kỳ biến trong `.env`, phải **recreate** container mới ăn giá trị mới (restart thường không đủ):
+
+```bash
+docker compose up -d --force-recreate
+```
+
+### 7.5. Reverse proxy + SSL cho Supabase API
+
+Kong lắng nghe HTTP ở cổng **8000** (nên bind `127.0.0.1`). Ta đưa ra Internet qua subdomain API riêng — cùng cơ chế Nginx như app ở §11/§12 nhưng cho `api.growbase.com`. (Kong cũng có cổng HTTPS 8443 ở một số bản, nhưng production khuyến nghị terminate TLS ngay tại Nginx và proxy tới 8000.)
+
+1) DNS — thêm bản ghi A cho subdomain API trỏ về Elastic IP (§3.3), làm cùng chỗ §10 DNS:
+
+| Loại | Host/Name | Value | TTL |
+|------|-----------|-------|-----|
+| A | `api` (→ `api.growbase.com`) | `<ELASTIC_IP>` | 300 |
+
+2) Nginx server block cho subdomain API (proxy tới Kong 8000):
+
+```bash
+sudo nano /etc/nginx/sites-available/growbase-api
+```
+
+```nginx
+server {
+    listen 80;
+    server_name api.growbase.com;
+
+    client_max_body_size 50m;   # cho upload Storage nếu dùng
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;      # Realtime (websocket)
+        proxy_set_header Connection "upgrade";
+    }
+}
+```
+
+```bash
+sudo ln -s /etc/nginx/sites-available/growbase-api /etc/nginx/sites-enabled/growbase-api
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+3) SSL cho subdomain API bằng certbot (giống §12; chạy SAU khi `dig +short api.growbase.com` trả đúng Elastic IP):
+
+```bash
+sudo certbot --nginx -d api.growbase.com
+```
+
+Bảo mật:
+
+- **Studio:** KHÔNG expose cổng 8000 công khai không kiểm soát. Chỉ mở nội bộ qua SSH tunnel (`ssh -L 8000:127.0.0.1:8000 ubuntu@<ELASTIC_IP>`), hoặc thêm server block Nginx riêng cho Studio có HTTP basic auth + giới hạn IP (ngoài basic-auth `DASHBOARD_*` sẵn có).
+- **Postgres:** TUYỆT ĐỐI không mở cổng 5432 ra Security Group public (§3.2 chỉ mở 22/80/443). Postgres chỉ nghe localhost trên EC2; psql/migrations (§7.6) chạy ngay trên máy hoặc qua SSH tunnel.
+
+### 7.6. Áp migrations GrowBase vào self-host DB
+
+Self-host đã có sẵn schema `auth` và `storage` như Cloud → `auth.uid()` hoạt động, RLS chạy y hệt môi trường Cloud, không phải sửa policy. Ta chỉ cần áp các migration `public` của GrowBase.
+
+Danh sách migration 001→020 và ý nghĩa: xem §6.2 (KHÔNG lặp lại ở đây). Áp ĐÚNG THỨ TỰ số tăng dần, tuyệt đối không đảo — đặc biệt nhóm Living Plan 018/019/020. Seed `005_seed.sql` nằm giữa dãy nên chạy đúng vị trí của nó.
+
+Cách A — `psql` từng file (chạy trên chính EC2, Postgres ở localhost):
+
+```bash
+cd /var/www/growbase   # nơi có supabase/migrations
+export PGURL="postgresql://postgres:<POSTGRES_PASSWORD>@localhost:5432/postgres"
+
+for f in $(ls supabase/migrations/*.sql | sort); do
+  echo ">> applying $f"
+  psql "$PGURL" -v ON_ERROR_STOP=1 -f "$f"
+done
+```
+
+(`sort` giữ thứ tự 001→020; `ON_ERROR_STOP=1` dừng ngay khi có lỗi thay vì chạy tiếp file sau.)
+
+Cách B — Supabase CLI push tới self-host:
+
+```bash
+supabase db push --db-url "postgresql://postgres:<POSTGRES_PASSWORD>@localhost:5432/postgres"
+```
+
+Áp xong, kiểm tra như §6.3 (bảng `public`, `member_activity`, RLS bật, RPC onboarding/fund tồn tại, seed 005 đã vào).
+
+### 7.7. Nối GrowBase app vào self-host (`.env.production` trên EC2)
+
+Đổi 3 biến env của app (§5) trỏ về self-host thay cho `*.supabase.co`:
+
+```bash
+# /var/www/growbase/.env.production
+NEXT_PUBLIC_SUPABASE_URL=https://api.growbase.com                     # = API_EXTERNAL_URL/SUPABASE_PUBLIC_URL self-host, KHÔNG phải *.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<ANON_KEY hoặc PUBLISHABLE_KEY self-host>
+SUPABASE_SERVICE_ROLE_KEY=<SERVICE_ROLE_KEY hoặc SECRET_KEY self-host>  # chỉ server, không lộ client
+```
+
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` = khoá client sinh ở §7.3 (`ANON_KEY` model cũ hoặc `SUPABASE_PUBLISHABLE_KEY` model mới — verify theo stack).
+- `SUPABASE_SERVICE_ROLE_KEY` = khoá server sinh ở §7.3 (`SERVICE_ROLE_KEY` hoặc `SUPABASE_SECRET_KEY`).
+- Rebuild app để giá trị `NEXT_PUBLIC_*` được nhúng lại (đây là biến build-time):
+
+```bash
+cd /var/www/growbase
+npm run build
+pm2 restart growbase
+```
+
+### 7.8. OAuth (Google) cho self-host
+
+Khác §6 (Cloud): redirect URI KHÔNG còn trỏ về `*.supabase.co` mà về domain API self-host của bạn. GoTrue self-host dùng path callback `/auth/v1/callback`.
+
+- Trong Google Cloud Console → OAuth 2.0 Client → Authorized redirect URIs, thêm:
+  `https://api.growbase.com/auth/v1/callback`
+- Bật provider Google cho GoTrue self-host qua biến trong `.env` (VERIFY tên biến theo phiên bản, thường dạng `GOTRUE_EXTERNAL_GOOGLE_ENABLED=true`, `..._CLIENT_ID`, `..._SECRET`, `..._REDIRECT_URI=https://api.growbase.com/auth/v1/callback`) rồi recreate container (§7.4). Một số bản cho bật provider trực tiếp trong Studio → Authentication → Providers.
+- `SITE_URL` (§7.3) vẫn là `https://growbase.com` để sau khi đăng nhập redirect về app.
+
+### 7.9. Backup + vận hành
+
+Self-host KHÔNG có PITR (point-in-time recovery) managed như Cloud → phải tự backup.
+
+- `pg_dump` định kỳ bằng cron:
+
+```bash
+# crontab -e — dump 02:00 hằng ngày (tên container verify bằng docker compose ps)
+0 2 * * * docker exec supabase-db pg_dump -U postgres -d postgres | gzip > /var/backups/growbase/db-$(date +\%F).sql.gz
+```
+
+- Backup docker volumes (Postgres data + Storage): backup thư mục `volumes/` trong `supabase-project` + EBS snapshot của EC2. Giữ backup ngoài máy chủ (vd sync lên S3).
+- Update stack:
+
+```bash
+cd /opt/supabase-project
+docker compose pull
+docker compose up -d
+```
+
+- Monitor: RAM/disk là điểm nghẽn chính khi self-host (§7.1). Theo dõi `docker stats`, `df -h`, `free -m` — gộp cùng phần monitoring §17.
+- Rollback DB self-host: restore từ `pg_dump` gần nhất (không có PITR managed) — cân nhắc khi lập kế hoạch rollback §16.
+
+## 8. Build và chạy ứng dụng
 
 Cài dependencies:
 
@@ -331,7 +588,7 @@ curl -I http://127.0.0.1:3000/
 
 Nếu OK, dừng process test bằng `Ctrl+C`.
 
-## 8. Chạy bằng PM2
+## 9. Chạy bằng PM2
 
 Tạo file ecosystem:
 
@@ -378,11 +635,11 @@ pm2 startup
 
 Chạy command mà `pm2 startup` in ra với quyền `sudo`.
 
-## 9. Trỏ domain về server (DNS)
+## 10. Trỏ domain về server (DNS)
 
-Phải hoàn tất TRƯỚC khi chạy certbot (§11) — Let's Encrypt cần domain resolve đúng về Elastic IP và cổng 80 mở (Security Group, mục 3.2).
+Phải hoàn tất TRƯỚC khi chạy certbot (§12) — Let's Encrypt cần domain resolve đúng về Elastic IP và cổng 80 mở (Security Group, mục 3.2).
 
-### 9.1. Tạo bản ghi A
+### 10.1. Tạo bản ghi A
 
 Trỏ cả domain gốc và `www` về Elastic IP (mục 3.3):
 
@@ -399,7 +656,7 @@ Trỏ cả domain gốc và `www` về Elastic IP (mục 3.3):
 - Đổi nameservers tại registrar sang 4 NS mà Route 53 cấp.
 - Create record: A record `@` → Elastic IP; A record `www` → Elastic IP (hoặc dùng alias).
 
-### 9.2. Chờ propagation + xác minh
+### 10.2. Chờ propagation + xác minh
 
 ```bash
 dig +short growbase.com          # phải trả về <ELASTIC_IP>
@@ -409,11 +666,11 @@ dig +short www.growbase.com
 
 TTL 300 → thường vài phút; đổi nameserver (Route 53) có thể mất tới 24-48h. CHỈ chạy certbot khi lệnh `dig` trả đúng Elastic IP.
 
-### 9.3. Cập nhật server_name
+### 10.3. Cập nhật server_name
 
-Đảm bảo `server_name` trong Nginx (§10) khớp cả `growbase.com www.growbase.com`.
+Đảm bảo `server_name` trong Nginx (§11) khớp cả `growbase.com www.growbase.com`.
 
-## 10. Cấu hình Nginx
+## 11. Cấu hình Nginx
 
 Tạo config:
 
@@ -444,7 +701,7 @@ server {
 }
 ```
 
-Đảm bảo `server_name` khớp domain đã trỏ DNS ở §9 (gồm cả `www`).
+Đảm bảo `server_name` khớp domain đã trỏ DNS ở §10 (gồm cả `www`).
 
 Enable site:
 
@@ -460,9 +717,9 @@ Kiểm tra HTTP:
 curl -I http://<production-domain>/login
 ```
 
-## 11. Bật HTTPS
+## 12. Bật HTTPS
 
-Yêu cầu trước: domain đã resolve đúng về Elastic IP (§9) và Security Group đã mở cổng 80/443 (mục 3.2). Certbot dùng HTTP-01 challenge qua cổng 80, nên nếu DNS chưa trỏ hoặc cổng 80 bị chặn thì việc cấp chứng chỉ sẽ fail.
+Yêu cầu trước: domain đã resolve đúng về Elastic IP (§10) và Security Group đã mở cổng 80/443 (mục 3.2). Certbot dùng HTTP-01 challenge qua cổng 80, nên nếu DNS chưa trỏ hoặc cổng 80 bị chặn thì việc cấp chứng chỉ sẽ fail.
 
 Cài Certbot:
 
@@ -488,7 +745,7 @@ Kiểm tra HTTPS:
 curl -I https://<production-domain>/login
 ```
 
-## 12. Quy trình deploy release mới
+## 13. Quy trình deploy release mới
 
 Trên server:
 
@@ -521,7 +778,7 @@ Thứ tự khuyến nghị:
 
 Không deploy app mới nếu migration bắt buộc chưa apply.
 
-## 13. Smoke test sau Go-live
+## 14. Smoke test sau Go-live
 
 Chạy kiểm tra kỹ thuật:
 
@@ -565,7 +822,7 @@ order by created_at desc
 limit 20;
 ```
 
-## 14. Checklist Go/No-Go
+## 15. Checklist Go/No-Go
 
 Go-live chỉ tiếp tục nếu tất cả mục dưới đây đạt:
 
@@ -589,7 +846,7 @@ Ghi lại commit release:
 git rev-parse HEAD
 ```
 
-## 15. Rollback
+## 16. Rollback
 
 Rollback app về commit trước:
 
@@ -609,7 +866,7 @@ Nếu migration đã thay đổi schema:
 - Ưu tiên restore Supabase backup/point-in-time recovery nếu schema/data bị lỗi nặng.
 - Nếu lỗi chỉ ở app, rollback app trước và giữ DB nguyên nếu backward-compatible.
 
-## 16. Monitoring vận hành
+## 17. Monitoring vận hành
 
 Theo dõi app:
 
@@ -642,7 +899,7 @@ Supabase cần theo dõi:
 - Slow queries
 - RLS denied requests bất thường
 
-## 17. Các lỗi thường gặp
+## 18. Các lỗi thường gặp
 
 ### App build fail vì env thiếu
 
@@ -698,7 +955,7 @@ order by created_at desc
 limit 20;
 ```
 
-## 18. Go-live sign-off
+## 19. Go-live sign-off
 
 Trước khi thông báo production live, ghi lại:
 
