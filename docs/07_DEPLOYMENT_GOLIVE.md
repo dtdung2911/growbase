@@ -333,12 +333,25 @@ echo \
 sudo apt update
 sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-# Cho user chạy docker không cần sudo (logout/login lại sau lệnh này)
+# Cho user chạy docker không cần sudo
 sudo usermod -aG docker $USER
 
 # Verify — Compose v2 dùng lệnh "docker compose" (KHÔNG phải "docker-compose")
 docker --version
 docker compose version
+```
+
+**BẮT BUỘC — áp group `docker` trước khi chạy tiếp:** `usermod` KHÔNG có hiệu lực với session SSH đang mở. Nếu chạy lệnh docker ngay sẽ gặp `permission denied while trying to connect to the Docker API at unix:///var/run/docker.sock`. Áp group bằng 1 trong 2 cách:
+
+```bash
+newgrp docker        # áp ngay cho shell hiện tại (nhanh)
+# HOẶC: logout SSH rồi login lại (áp cho mọi session sau)
+```
+
+Xác nhận chạy được không cần `sudo` trước khi sang §7.3:
+
+```bash
+docker run --rm hello-world
 ```
 
 ### 7.3. Lấy stack + cấu hình `.env`
@@ -954,6 +967,22 @@ from member_activity
 order by created_at desc
 limit 20;
 ```
+
+### Docker: permission denied /var/run/docker.sock (self-host §7)
+
+```text
+permission denied while trying to connect to the Docker API at unix:///var/run/docker.sock
+```
+
+User `ubuntu` chưa được áp group `docker` trong session hiện tại — đã chạy `sudo usermod -aG docker $USER` (§7.2) nhưng chưa áp group. Sửa:
+
+```bash
+newgrp docker          # áp ngay cho shell hiện tại
+# HOẶC logout SSH rồi login lại
+docker run --rm hello-world   # verify chạy không cần sudo
+```
+
+Tạm thời có thể `sudo docker compose ...`, nhưng áp group là cách đúng lâu dài.
 
 ## 19. Go-live sign-off
 
