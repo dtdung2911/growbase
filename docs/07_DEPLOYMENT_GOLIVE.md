@@ -191,6 +191,7 @@ Nội dung:
 NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<production-anon-key>
 SUPABASE_SERVICE_ROLE_KEY=<production-service-role-key>
+NEXT_PUBLIC_SITE_URL=https://<app-domain>                       # origin app cho redirect OAuth + link mời, độc lập với Host proxy forward
 ```
 
 Quyền file:
@@ -204,6 +205,7 @@ Lưu ý:
 - `NEXT_PUBLIC_SUPABASE_URL` và `NEXT_PUBLIC_SUPABASE_ANON_KEY` được dùng ở browser và server.
 - `SUPABASE_SERVICE_ROLE_KEY` chỉ được dùng ở server. Không expose ra client.
 - Không dùng key Supabase local/staging cho production.
+- `NEXT_PUBLIC_SITE_URL` = origin công khai của app (vd `https://growbase.com`). Route `/auth/callback`, middleware guard và `/api/household/invite` dùng biến này để dựng URL redirect/link mời. Không set → app đọc host từ `request.url`, mà sau reverse proxy resolve về `localhost:3000` → redirect OAuth + link mời văng ra loopback dù Nginx forward Host đúng (§18). Là biến **build-time** (`NEXT_PUBLIC_`): phải `npm run build` + `pm2 restart growbase` sau khi set/đổi mới ăn.
 
 ## 6. Chuẩn bị Supabase production
 
@@ -557,11 +559,13 @@ NEXT_PUBLIC_SUPABASE_URL=https://api.growbase.com                     # = API_EX
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<ANON_KEY hoặc PUBLISHABLE_KEY self-host>
 SUPABASE_SERVICE_ROLE_KEY=<SERVICE_ROLE_KEY hoặc SECRET_KEY self-host>  # chỉ server, không lộ client
 SUPABASE_INTERNAL_URL=http://localhost:8000                          # (tùy chọn) server gọi Kong nội bộ, không ra internet
+NEXT_PUBLIC_SITE_URL=https://growbase.com                            # origin APP (KHÔNG phải api.*) cho redirect OAuth + link mời sau proxy
 ```
 
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = khoá client sinh ở §7.3 (`ANON_KEY` model cũ hoặc `SUPABASE_PUBLISHABLE_KEY` model mới — verify theo stack).
 - `SUPABASE_SERVICE_ROLE_KEY` = khoá server sinh ở §7.3 (`SERVICE_ROLE_KEY` hoặc `SUPABASE_SECRET_KEY`).
 - **`SUPABASE_INTERNAL_URL` (tùy chọn — self-host chung máy)**: khi app và Supabase cùng EC2, 3 client server-side (server/admin/middleware) đọc biến này để gọi thẳng Kong `http://localhost:8000` — không ra internet, không tốn TLS, nhanh hơn. KHÔNG có tiền tố `NEXT_PUBLIC_` (chỉ server, browser vẫn dùng `NEXT_PUBLIC_SUPABASE_URL` public cho auth OAuth/refresh — browser ở máy user không tới được localhost). Không set → mọi client dùng public URL như bình thường (Cloud/dev). Cần Site URL / redirect allowlist self-host (§7.3, §7.8) chứa origin app public. Là biến runtime (không cần rebuild khi đổi).
+- **`NEXT_PUBLIC_SITE_URL`**: origin công khai của **app** (`https://growbase.com`) — KHÔNG phải domain API (`api.growbase.com`). App dùng để dựng redirect `/auth/callback` + link mời độc lập với Host proxy forward — không set thì host từ `request.url` sau proxy = `localhost:3000` (§5, §18). Là biến build-time → nằm trong nhóm `NEXT_PUBLIC_*` phải rebuild bên dưới.
 - Rebuild app để giá trị `NEXT_PUBLIC_*` được nhúng lại (đây là biến build-time; `SUPABASE_INTERNAL_URL` là runtime, không cần rebuild):
 
 ```bash
@@ -1100,6 +1104,8 @@ Fix: block Nginx app (§11) `location /` phải có `proxy_set_header Host $host
 grep -n "proxy_set_header Host" /etc/nginx/sites-available/growbase   # phải có dòng Host $host
 sudo nginx -t && sudo systemctl reload nginx
 ```
+
+Fix app-side (authoritative, độc lập proxy): set `NEXT_PUBLIC_SITE_URL=https://<app-domain>` (§5/§7.7) rồi `npm run build` + `pm2 restart growbase`. App dựng redirect/link mời từ biến này thay vì `request.url`, nên đúng kể cả khi Host forward chuẩn mà Next vẫn resolve host = loopback. Dùng cách này khi §11 (Host header) đã đúng mà triệu chứng còn.
 
 Điều kiện đủ khác: GoTrue self-host `SITE_URL=https://<app-domain>` + `ADDITIONAL_REDIRECT_URLS` chứa `<app-domain>/auth/callback` (§7.3/§7.8) — nếu `redirect_to` không trong allowlist, GoTrue fallback về `SITE_URL`; SITE_URL mặc định `localhost:3000` cũng gây triệu chứng này.
 

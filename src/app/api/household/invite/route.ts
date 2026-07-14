@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { withAuth, verifyHouseholdMember } from "@/lib/supabase/auth-check"
 import { supabaseAdmin } from "@/lib/supabase/admin"
 import { inviteSchema } from "@/lib/validations/household"
+import { appOrigin } from "@/lib/utils/appOrigin"
 
 export async function POST(request: Request) {
   // AD-1: withAuth() mandatory first call
@@ -59,7 +60,7 @@ export async function POST(request: Request) {
     )
   }
 
-  const origin = new URL(request.url).origin
+  const origin = appOrigin(new URL(request.url).origin)
   return NextResponse.json({
     data: {
       token: invitation.token,

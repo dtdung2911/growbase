@@ -1,18 +1,20 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { appOrigin } from "@/lib/utils/appOrigin"
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
+  const base = appOrigin(origin)
   const code = searchParams.get("code")
 
   if (!code) {
-    return NextResponse.redirect(`${origin}/login`)
+    return NextResponse.redirect(`${base}/login`)
   }
 
   const supabase = createClient()
   const { error } = await supabase.auth.exchangeCodeForSession(code)
   if (error) {
-    return NextResponse.redirect(`${origin}/login`)
+    return NextResponse.redirect(`${base}/login`)
   }
 
   const {
@@ -20,7 +22,7 @@ export async function GET(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return NextResponse.redirect(`${origin}/login`)
+    return NextResponse.redirect(`${base}/login`)
   }
 
   const { data: household } = await supabase
@@ -35,5 +37,5 @@ export async function GET(request: NextRequest) {
   const dest =
     household?.onboarding_completed === true ? "/dashboard" : "/setup"
 
-  return NextResponse.redirect(`${origin}${dest}`)
+  return NextResponse.redirect(`${base}${dest}`)
 }

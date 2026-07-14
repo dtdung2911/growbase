@@ -1,5 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { updateSession } from "@/lib/supabase/middleware"
+import { appOrigin } from "@/lib/utils/appOrigin"
+
+// Dựng redirect từ origin app authoritative (NEXT_PUBLIC_SITE_URL) thay host request.url = loopback sau proxy; giữ nguyên query.
+function redirectTo(request: NextRequest, pathname: string) {
+  const url = new URL(pathname, appOrigin(request.nextUrl.origin))
+  url.search = request.nextUrl.search
+  return NextResponse.redirect(url)
+}
 
 const PUBLIC_PATTERNS = [
   /^\/login$/,
@@ -22,9 +30,7 @@ export async function middleware(request: NextRequest) {
   if (isPublic(pathname)) return response
 
   if (!user) {
-    const url = request.nextUrl.clone()
-    url.pathname = "/login"
-    return NextResponse.redirect(url)
+    return redirectTo(request, "/login")
   }
 
   // Load all active household memberships to determine setup state
@@ -43,18 +49,14 @@ export async function middleware(request: NextRequest) {
 
   if (needsSetup) {
     if (pathname !== "/setup") {
-      const url = request.nextUrl.clone()
-      url.pathname = "/setup"
-      return NextResponse.redirect(url)
+      return redirectTo(request, "/setup")
     }
     return response
   }
 
   // All households complete — fully onboarded. Redirect away from entry pages.
   if (pathname === "/" || pathname === "/login" || pathname === "/setup") {
-    const url = request.nextUrl.clone()
-    url.pathname = "/dashboard"
-    return NextResponse.redirect(url)
+    return redirectTo(request, "/dashboard")
   }
 
   return response
