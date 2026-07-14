@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import { DashboardView } from "@/components/dashboard/DashboardView"
 import { WelcomeModal } from "@/components/onboarding/v2/WelcomeModal"
@@ -19,13 +19,23 @@ export function HookStep() {
   const next = useOnboardingV2Store((s) => s.next)
 
   const demoData = useMemo(() => buildHookDemoData(t, locale), [t, locale])
+  const tourTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(
+    () => () => {
+      if (tourTimeoutRef.current) clearTimeout(tourTimeoutRef.current)
+    },
+    [],
+  )
 
   function handleWelcomeClose() {
     markWelcomeSeen()
     // Chờ modal đóng animation xong mới phủ overlay tour, tránh 2 lớp overlay chồng nhau.
     // Guard step===0: user có thể bấm Next ở footer trong 260ms → khỏi phủ tour lên IncomeStep.
-    window.setTimeout(() => {
-      if (useOnboardingV2Store.getState().step === 0) runDashboardTour(t, next)
+    tourTimeoutRef.current = setTimeout(() => {
+      if (useOnboardingV2Store.getState().step === 0) {
+        runDashboardTour(t, next).catch((err) => console.error("Tour init failed:", err))
+      }
     }, 260)
   }
 
