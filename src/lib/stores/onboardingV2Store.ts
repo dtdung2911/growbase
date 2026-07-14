@@ -11,18 +11,20 @@ interface OnboardingV2State {
   step: number
   goals: OnboardingGoal[]
   monthlyIncome: number | null
+  welcomeSeen: boolean
   toggleGoal: (goal: OnboardingGoal) => void
   updateGoal: (presetId: OnboardingGoal["presetId"], patch: Partial<OnboardingGoal>) => void
   reorderGoals: (fromIndex: number, toIndex: number) => void
   clearGoals: () => void
   setMonthlyIncome: (amount: number | null) => void
+  markWelcomeSeen: () => void
   next: () => void
   prev: () => void
   reset: () => void
   canProceed: () => boolean
 }
 
-const initialState = { step: 0, goals: [] as OnboardingGoal[], monthlyIncome: null }
+const initialState = { step: 0, goals: [] as OnboardingGoal[], monthlyIncome: null, welcomeSeen: false }
 
 export const useOnboardingV2Store = create<OnboardingV2State>()(
   persist(
@@ -52,6 +54,7 @@ export const useOnboardingV2Store = create<OnboardingV2State>()(
         }),
       clearGoals: () => set({ goals: [] }),
       setMonthlyIncome: (monthlyIncome) => set({ monthlyIncome }),
+      markWelcomeSeen: () => set({ welcomeSeen: true }),
       next: () =>
         set((s) => ({ step: Math.min(s.step + 1, ONBOARDING_V2_TOTAL_STEPS - 1) })),
       prev: () => set((s) => ({ step: Math.max(s.step - 1, 0) })),
@@ -68,9 +71,9 @@ export const useOnboardingV2Store = create<OnboardingV2State>()(
     {
       name: "growbase-onboarding-v2",
       storage: createJSONStorage(() => sessionStorage),
-      version: 2,
-      // v0: shape `goal` đơn. v1: step 1=Mục tiêu/2=Thu nhập (đảo so với v2). Session v<2 rehydrate step 2 +
-      // income null → kẹt Tada không nav. Onboarding chưa xong nên reset về initial là an toàn nhất.
+      version: 3,
+      // v0: shape `goal` đơn. v1: step 1=Mục tiêu/2=Thu nhập (đảo so với v2) → v<2 reset là an toàn nhất.
+      // v2→v3 thêm welcomeSeen: giữ nguyên progress, default merge bù welcomeSeen=false (modal welcome hiện lại — an toàn).
       migrate: (persisted, version) =>
         (version < 2 ? initialState : persisted) as unknown as OnboardingV2State,
     }

@@ -281,6 +281,8 @@ src/
 - **`mutateAsync` trong event handler phải có `try/catch`**: Nếu không, unhandled promise rejection lan ra dù `onError` đã có toast. Pattern: `try { await mutate(); navigate() } catch { /* handled by onError */ }`.
 - **`formatVND` output dùng ký hiệu `₫` (U+20AB) không phải `đ`**: Thực tế output là `"1.000.000 ₫"`. Test dùng `.toContain('1.000.000')` để tránh bị break bởi NBSP + ký hiệu currency.
 - **Zustand v5 selector không được trả object/array mới mỗi render**: `useStore((s) => s.stepOrder())` sẽ loop nếu `stepOrder()` tạo `[]` mới. Dùng stable constants, primitive selectors, hoặc shallow equality cho derived arrays/objects.
+- **driver.js (tour onboarding) — CSS phải load TRƯỚC globals.css**: `import "driver.js/dist/driver.css"` đặt trước `import "./globals.css"` trong `app/layout.tsx` để override `.driver-popover` trong globals.css thắng theo source order. JS thì `await import("driver.js")` trong hàm (không import top-level) → SSR-safe + code-split. Bước cuối = popover không `element` (centered); nút Done chạy `popover.onDoneClick` (KHÔNG phải onNextClick), phải tự gọi `tour.destroy()`. Prev ở bước đầu rơi vào nhánh destroy của driver → set `showButtons: ["next","close"]` cho bước đầu.
+- **Tour target = attribute `data-tour` trơ**: gắn thẳng lên `<section>`; component tái sử dụng (vd `MetricCard`) thêm prop `tourId?: string` spread `data-tour={tourId}` (undefined → React bỏ qua, an toàn cho trang thật). Lọc step theo `document.querySelector` lúc chạy để bỏ section không render (StageBadge/StageEventCard/InviteCompanionPrompt gate `householdId` nên vắng ở demo onboarding).
 
 ---
 

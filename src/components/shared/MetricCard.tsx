@@ -12,6 +12,7 @@ type MetricCardProps = {
   icon?: string
   variant?: "default" | "income" | "expense" | "primary"
   className?: string
+  tourId?: string
 }
 
 export function MetricCard({
@@ -23,6 +24,7 @@ export function MetricCard({
   icon,
   variant = "default",
   className,
+  tourId,
 }: MetricCardProps) {
   const isHighlight = variant === "income" || variant === "expense" || variant === "primary"
   const hasTrendPct = trendPct !== null && trendPct !== undefined
@@ -30,6 +32,7 @@ export function MetricCard({
 
   return (
     <div
+      data-tour={tourId}
       className={cn(
         "relative overflow-hidden rounded-[18px] p-4 transition-shadow",
         variant === "default" &&

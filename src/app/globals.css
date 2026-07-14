@@ -505,3 +505,62 @@ tbody > tr:nth-child(n+9) { animation-delay: 240ms; }
     transition-duration: 0.02ms !important;
   }
 }
+
+/* driver.js tour popover (onboarding demo) — khớp brand token, theme-aware.
+   Đặt sau import "driver.js/dist/driver.css" (root layout) để thắng theo source order. */
+.driver-popover {
+  font-family: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  background-color: hsl(var(--card));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+  border-radius: 18px;
+  box-shadow: 0 8px 18px rgba(0, 132, 219, 0.26);
+  max-width: 340px;
+  padding: 20px;
+}
+.driver-popover-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: hsl(var(--ink));
+}
+.driver-popover-description {
+  color: hsl(var(--muted-foreground));
+  font-size: 14px;
+  line-height: 1.6;
+}
+.driver-popover-progress-text {
+  color: hsl(var(--faint));
+  font-size: 12px;
+  font-weight: 600;
+}
+.driver-popover-arrow {
+  border-color: hsl(var(--card));
+}
+.driver-popover-close-btn {
+  color: hsl(var(--muted-foreground));
+  transition: color 200ms ease;
+}
+.driver-popover-close-btn:hover {
+  color: hsl(var(--foreground));
+}
+.driver-popover-footer button {
+  text-shadow: none;
+  border: 0;
+  border-radius: 9999px;
+  min-height: 36px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: filter 200ms ease, background-color 200ms ease;
+}
+.driver-popover-footer button.driver-popover-prev-btn {
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+}
+.driver-popover-footer button.driver-popover-next-btn {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+.driver-popover-footer button.driver-popover-next-btn:hover {
+  filter: brightness(0.85);
+}

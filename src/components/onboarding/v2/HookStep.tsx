@@ -1,8 +1,11 @@
 "use client"
 
 import { useMemo } from "react"
-import { useTranslation } from "@/lib/i18n/useTranslation";
+import { useTranslation } from "@/lib/i18n/useTranslation"
 import { DashboardView } from "@/components/dashboard/DashboardView"
+import { WelcomeModal } from "@/components/onboarding/v2/WelcomeModal"
+import { runDashboardTour } from "@/components/onboarding/v2/dashboardTour"
+import { useOnboardingV2Store } from "@/lib/stores/onboardingV2Store"
 import {
   buildHookDemoData,
   HOOK_DEMO_MONTH,
@@ -11,25 +14,29 @@ import {
 
 export function HookStep() {
   const { t, locale } = useTranslation()
+  const welcomeSeen = useOnboardingV2Store((s) => s.welcomeSeen)
+  const markWelcomeSeen = useOnboardingV2Store((s) => s.markWelcomeSeen)
+  const next = useOnboardingV2Store((s) => s.next)
 
   const demoData = useMemo(() => buildHookDemoData(t, locale), [t, locale])
 
-  return (
-    <div className="space-y-4">
-      <div className="rounded-[13px] border border-primary/30 bg-primary-soft px-4 py-3 text-center">
-        <p className="text-sm font-medium text-primary">
-          {t("setupV2.hook.banner")}
-        </p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          {t("setupV2.hook.mindset")}
-        </p>
-      </div>
+  function handleWelcomeClose() {
+    markWelcomeSeen()
+    // Chờ modal đóng animation xong mới phủ overlay tour, tránh 2 lớp overlay chồng nhau.
+    // Guard step===0: user có thể bấm Next ở footer trong 260ms → khỏi phủ tour lên IncomeStep.
+    window.setTimeout(() => {
+      if (useOnboardingV2Store.getState().step === 0) runDashboardTour(t, next)
+    }, 260)
+  }
 
+  return (
+    <>
+      <WelcomeModal open={!welcomeSeen} onClose={handleWelcomeClose} />
       <DashboardView
         data={demoData}
         month={HOOK_DEMO_MONTH}
         insightToday={HOOK_DEMO_TODAY_REFERENCE}
       />
-    </div>
-  );
+    </>
+  )
 }

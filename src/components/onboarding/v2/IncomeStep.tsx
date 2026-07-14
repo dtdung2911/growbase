@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { Icon } from "@iconify/react"
 import { CurrencyInput } from "@/components/ui/CurrencyInput"
 import { Label } from "@/components/ui/label"
 import { useOnboardingV2Store } from "@/lib/stores/onboardingV2Store"
@@ -34,9 +35,22 @@ export function IncomeStep() {
             setMonthlyIncome(v || null)
           }}
         />
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          {t("setupV2.income.excludeHint")}
+        </p>
         {touched && !incomeValid && (
           <p className="text-sm text-destructive">{t("setupV2.income.error")}</p>
         )}
+      </div>
+
+      <div className="flex gap-3 rounded-[13px] border border-primary/20 bg-primary-soft/60 p-4">
+        <Icon icon="lucide:lightbulb" className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+        <div>
+          <p className="text-sm font-semibold text-ink">{t("setupV2.income.whyFixed.title")}</p>
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+            {t("setupV2.income.whyFixed.body")}
+          </p>
+        </div>
       </div>
 
       {incomeValid && (

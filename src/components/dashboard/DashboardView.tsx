@@ -56,6 +56,7 @@ export function DashboardView({
       {/* Metric tiles */}
       <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
         <MetricCard
+          tourId="metric-income"
           label={t("dashboard.income")}
           amount={data.totalIncome}
           formatAmount={formatVND}
@@ -65,6 +66,7 @@ export function DashboardView({
           variant="income"
         />
         <MetricCard
+          tourId="metric-expense"
           label={t("dashboard.expense")}
           amount={data.totalExpense}
           formatAmount={formatVND}
@@ -74,6 +76,7 @@ export function DashboardView({
           variant="expense"
         />
         <MetricCard
+          tourId="metric-savings"
           label={t("dashboard.savings")}
           amount={data.fundContributions}
           formatAmount={formatVND}
@@ -81,6 +84,7 @@ export function DashboardView({
           icon="lucide:piggy-bank"
         />
         <MetricCard
+          tourId="metric-health"
           label={
             data.netWorth !== null
               ? t("dashboard.netWorth")
@@ -95,7 +99,7 @@ export function DashboardView({
 
       {/* Income vs Expense bar chart + Spending donut */}
       <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
-        <section className="overflow-hidden rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
+        <section data-tour="income-expense" className="overflow-hidden rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
           <h2 className="mb-1 text-sm font-semibold">
             {t("dashboard.incomeVsExpense")}
           </h2>
@@ -111,7 +115,7 @@ export function DashboardView({
           />
         </section>
 
-        <section className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
+        <section data-tour="spending" className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
           <h2 className="mb-3 text-sm font-semibold">
             {t("dashboard.spending")}
           </h2>
@@ -125,7 +129,7 @@ export function DashboardView({
 
       {/* Top expense categories + Weekday spending */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
+        <section data-tour="top-expenses" className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
           <h2 className="mb-4 text-sm font-semibold">
             {t("dashboard.topExpenses")}
           </h2>
@@ -136,7 +140,7 @@ export function DashboardView({
           />
         </section>
 
-        <section className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
+        <section data-tour="weekday" className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
           <h2 className="mb-3 text-sm font-semibold">
             {t("dashboard.weekdaySpending")}
           </h2>
@@ -146,7 +150,7 @@ export function DashboardView({
 
       {/* Budget */}
       {data.budgetLines.length > 0 && (
-        <section className="overflow-hidden rounded-[13px] border border-border/40 bg-card shadow-card">
+        <section data-tour="budget" className="overflow-hidden rounded-[13px] border border-border/40 bg-card shadow-card">
           <h2 className="px-5 pb-3 pt-5 text-sm font-semibold">
             {t("dashboard.budget")}
           </h2>
@@ -182,7 +186,7 @@ export function DashboardView({
 
       {/* Funds */}
       {data.funds.length > 0 && (
-        <section>
+        <section data-tour="funds">
           <h2 className="mb-3 text-sm font-semibold">{t("dashboard.funds")}</h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {data.funds.map((fund) => (
@@ -193,7 +197,7 @@ export function DashboardView({
       )}
 
       {/* Recent transactions */}
-      <section>
+      <section data-tour="recent-tx">
         <h2 className="mb-3 text-sm font-semibold">
           {t("dashboard.recentTx")}
         </h2>
