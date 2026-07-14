@@ -2,6 +2,7 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr"
 import type { SupabaseClient } from "@supabase/supabase-js"
 import { cookies } from "next/headers"
 import type { Database } from "@/types/database"
+import { SUPABASE_STORAGE_KEY } from "./constants"
 
 // TODO: Remove CookieToSet alias when database.ts is generated from Supabase
 // (self-defined here vì database.ts hiện là placeholder).
@@ -18,6 +19,7 @@ export const createClient = (): SupabaseClient<Database> => {
     process.env.SUPABASE_INTERNAL_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      auth: { storageKey: SUPABASE_STORAGE_KEY },
       cookies: {
         getAll() {
           return cookieStore.getAll()
