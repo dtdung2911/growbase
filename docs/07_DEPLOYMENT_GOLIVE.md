@@ -741,7 +741,8 @@ server {
     location / {
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
-        proxy_set_header Host $host;
+        proxy_set_header Host $host;                 # BẮT BUỘC: thiếu dòng này → Next dựng redirect về localhost:3000
+        proxy_set_header X-Forwarded-Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
@@ -751,6 +752,8 @@ server {
     }
 }
 ```
+
+> ⚠️ `proxy_set_header Host $host` là **bắt buộc**. Callback OAuth (`/auth/callback`), middleware guard, và link mời (`/api/household/invite`) dựng URL từ `request.url` — nếu Nginx không forward `Host` thật, Next thấy host = `127.0.0.1:3000` (đích proxy_pass) → redirect/link ra `localhost:3000`. Xem troubleshooting §18.
 
 Đảm bảo `server_name` khớp domain đã trỏ DNS ở §10 (gồm cả `www`).
 
@@ -1086,6 +1089,19 @@ FATAL: (ENOIDENTIFIER) no tenant identifier provided (external_id or sni_hostnam
 ```
 
 Port 5432 trên host của stack self-host là **Supavisor (pooler)**, không phải Postgres trực tiếp → username `postgres` trơn bị pooler từ chối. Sửa: dùng **Cách A docker exec** (§7.6, nối thẳng Postgres trong container, không qua pooler); hoặc nếu buộc dùng host psql thì username kèm tenant `postgres.<POOLER_TENANT_ID>` (§7.6 Cách B). Lưu ý: đây chỉ ảnh hưởng bước migration — app runtime nối Supabase qua REST API Kong (:8000), không nối Postgres trực tiếp.
+
+### OAuth/redirect về localhost:3000 sau khi login (proxy thiếu Host header)
+
+Sau khi đăng nhập Google xong app văng về `https://localhost:3000/login` (hoặc link mời ra `localhost:3000`). GoTrue đã redirect đúng về app domain, nhưng route `/auth/callback`, middleware guard và `/api/household/invite` của app dựng URL từ `request.url` — sau `proxy_pass http://127.0.0.1:3000`, nếu Nginx **không forward `Host`** thì Next thấy host = loopback → dựng ra `localhost:3000`.
+
+Fix: block Nginx app (§11) `location /` phải có `proxy_set_header Host $host;` (+ `X-Forwarded-Host $host;`, `X-Forwarded-Proto $scheme;`). Kiểm + reload:
+
+```bash
+grep -n "proxy_set_header Host" /etc/nginx/sites-available/growbase   # phải có dòng Host $host
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+Điều kiện đủ khác: GoTrue self-host `SITE_URL=https://<app-domain>` + `ADDITIONAL_REDIRECT_URLS` chứa `<app-domain>/auth/callback` (§7.3/§7.8) — nếu `redirect_to` không trong allowlist, GoTrue fallback về `SITE_URL`; SITE_URL mặc định `localhost:3000` cũng gây triệu chứng này.
 
 ## 19. Go-live sign-off
 
