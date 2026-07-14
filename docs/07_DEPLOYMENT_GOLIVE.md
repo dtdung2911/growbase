@@ -499,38 +499,18 @@ Self-host đã có sẵn schema `auth` và `storage` như Cloud → `auth.uid()`
 
 Danh sách migration 001→020 và ý nghĩa: xem §6.2 (KHÔNG lặp lại ở đây). Áp ĐÚNG THỨ TỰ số tăng dần, tuyệt đối không đảo — đặc biệt nhóm Living Plan 018/019/020. Seed `005_seed.sql` nằm giữa dãy nên chạy đúng vị trí của nó.
 
-Cách A — `psql` từng file (chạy trên chính EC2, Postgres ở localhost). `psql` KHÔNG có sẵn trên Ubuntu 24.04 trắng → cài `postgresql-client` trước, rồi test kết nối:
+> ⚠️ **QUAN TRỌNG — port 5432 trên host là Supavisor (pooler), KHÔNG phải Postgres trực tiếp.** Nối bằng `psql "postgresql://postgres:...@localhost:5432/..."` (username `postgres` trơn) sẽ lỗi `FATAL: (ENOIDENTIFIER) no tenant identifier provided`. Vì vậy **Cách A (docker exec) là khuyến nghị** — nối thẳng Postgres trong container, không qua pooler, không cần tenant id.
+
+Cách A (KHUYẾN NGHỊ) — `docker exec` vào container Postgres. KHÔNG cần cài gì trên host, KHÔNG đụng pooler:
 
 ```bash
-# Cài client psql (chưa có sẵn trên server trắng)
-sudo apt install -y postgresql-client
-
 cd /var/www/growbase   # nơi có supabase/migrations
-# <POSTGRES_PASSWORD> = giá trị đã đặt trong .env self-host (§7.3)
-export PGURL="postgresql://postgres:<POSTGRES_PASSWORD>@localhost:5432/postgres"
 
-# Test kết nối TRƯỚC khi áp — phải in "You are connected to database postgres ..."
-psql "$PGURL" -c '\conninfo'
-
-for f in $(ls supabase/migrations/*.sql | sort); do
-  echo ">> applying $f"
-  psql "$PGURL" -v ON_ERROR_STOP=1 -f "$f"
-done
-```
-
-(`sort` giữ thứ tự 001→020; `ON_ERROR_STOP=1` dừng ngay khi có lỗi thay vì chạy tiếp file sau.)
-
-Cách B — Supabase CLI push tới self-host (chỉ khi đã cài Supabase CLI — xem ghi chú Supabase CLI ở §6.2):
-
-```bash
-supabase db push --db-url "postgresql://postgres:<POSTGRES_PASSWORD>@localhost:5432/postgres"
-```
-
-Cách C — `docker exec` vào container Postgres (KHÔNG cần cài gì trên host — dùng `psql` có sẵn TRONG container):
-
-```bash
-# Xác nhận tên container Postgres trước (thường là "supabase-db")
+# Xác nhận tên container Postgres (thường là "supabase-db")
 docker ps --format '{{.Names}}' | grep db
+
+# Test kết nối trước
+docker exec -it supabase-db psql -U postgres -d postgres -c '\conninfo'
 
 # File trên host KHÔNG mount vào container → PHẢI pipe qua stdin "<" (KHÔNG dùng -f)
 for f in $(ls supabase/migrations/*.sql | sort); do
@@ -539,11 +519,32 @@ for f in $(ls supabase/migrations/*.sql | sort); do
 done
 ```
 
+(`sort` giữ thứ tự 001→020; `ON_ERROR_STOP=1` dừng ngay khi có lỗi thay vì chạy tiếp file sau.)
+
+Cách B — `psql` từ host (nếu muốn dùng PGURL). `psql` chưa có trên Ubuntu 24.04 trắng → cài `postgresql-client`; và vì 5432 là pooler nên username PHẢI kèm tenant id `postgres.<POOLER_TENANT_ID>` (lấy `POOLER_TENANT_ID` trong `.env` self-host §7.3):
+
+```bash
+sudo apt install -y postgresql-client
+cd /var/www/growbase
+# username = postgres.<POOLER_TENANT_ID> (KHÔNG phải "postgres" trơn) — nếu không → lỗi ENOIDENTIFIER
+export PGURL="postgresql://postgres.<POOLER_TENANT_ID>:<POSTGRES_PASSWORD>@127.0.0.1:5432/postgres"
+psql "$PGURL" -c '\conninfo'
+for f in $(ls supabase/migrations/*.sql | sort); do
+  echo ">> applying $f"
+  psql "$PGURL" -v ON_ERROR_STOP=1 -f "$f"
+done
+```
+
+Cách C — Supabase CLI push tới self-host (chỉ khi đã cài Supabase CLI — xem ghi chú ở §6.2). Cũng dùng connection string qua pooler nên username kèm tenant như Cách B:
+
+```bash
+supabase db push --db-url "postgresql://postgres.<POOLER_TENANT_ID>:<POSTGRES_PASSWORD>@127.0.0.1:5432/postgres"
+```
+
 Áp xong, kiểm tra như §6.3 (bảng `public`, `member_activity`, RLS bật, RPC onboarding/fund tồn tại, seed 005 đã vào). Verify nhanh seed đã nạp — `cost_types` phải trả về **7**:
 
 ```bash
-psql "$PGURL" -c 'select count(*) from cost_types;'        # = 7
-# hoặc qua container: docker exec -i supabase-db psql -U postgres -d postgres -c 'select count(*) from cost_types;'
+docker exec -it supabase-db psql -U postgres -d postgres -c 'select count(*) from cost_types;'   # = 7
 ```
 
 ### 7.7. Nối GrowBase app vào self-host (`.env.production` trên EC2)
@@ -1076,6 +1077,15 @@ docker run --rm hello-world   # verify chạy không cần sudo
 ```
 
 Tạm thời có thể `sudo docker compose ...`, nhưng áp group là cách đúng lâu dài.
+
+### psql: ENOIDENTIFIER no tenant identifier (self-host §7.6)
+
+```text
+psql: error: connection to server at "127.0.0.1", port 5432 failed:
+FATAL: (ENOIDENTIFIER) no tenant identifier provided (external_id or sni_hostname required)
+```
+
+Port 5432 trên host của stack self-host là **Supavisor (pooler)**, không phải Postgres trực tiếp → username `postgres` trơn bị pooler từ chối. Sửa: dùng **Cách A docker exec** (§7.6, nối thẳng Postgres trong container, không qua pooler); hoặc nếu buộc dùng host psql thì username kèm tenant `postgres.<POOLER_TENANT_ID>` (§7.6 Cách B). Lưu ý: đây chỉ ảnh hưởng bước migration — app runtime nối Supabase qua REST API Kong (:8000), không nối Postgres trực tiếp.
 
 ## 19. Go-live sign-off
 
