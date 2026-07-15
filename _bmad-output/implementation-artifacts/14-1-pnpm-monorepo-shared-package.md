@@ -2,8 +2,11 @@
 story_id: "14.1"
 story_key: "14-1-pnpm-monorepo-shared-package"
 epic: "Epic 14 — Foundation & Monorepo (mobile)"
-status: ready-for-dev
+status: done
 created: 2026-07-15
+baseline_revision: 6b396f0ad5c81b2547c101d8d45a932a985f13b2
+final_revision: a7cc911bf30f80fdc10646916254630dca9e8877
+followup_review_recommended: false
 inputs:
   - _bmad-output/planning-artifacts/epics-growbase-mobile.md
   - _bmad-output/specs/spec-growbase-mobile/SPEC.md
@@ -113,9 +116,54 @@ growbase/
 - Non-negotiable rules (fund atomic RPC, behavior_type trigger, is_system immutable, auth-first, keys from factory) — giữ nguyên.
 
 ## Completion Status
-Status: **ready-for-dev**. Ultimate context engine analysis completed — comprehensive developer guide created.
+Status: **done**. Migration implemented, reviewed (2 adversarial passes), all gates green.
 
 ## Questions for PM (giải quyết sau, không chặn)
 1. `src/_workspace*` folders (workspace tạm agent cũ) — xóa hay giữ ngoài shared? Đề xuất: không đưa vào apps/web/shared, dọn riêng.
 2. Có muốn thêm Turborepo caching ngay hay để sau? Đề xuất: sau (không cần cho migration).
 3. Sprint-status.yaml hiện scope web — có muốn thêm mobile epics vào cùng file hay tách file sprint mobile? (ảnh hưởng tracking, không chặn dev).
+
+## Review Triage Log
+
+### 2026-07-16 — Review pass
+- intent_gap: 0
+- bad_spec: 0
+- patch: 0
+- defer: 0
+- reject: 6: (low 6)
+- addressed_findings:
+  - none
+
+Both adversarial passes (Blind Hunter `bmad-review-adversarial-general`, Edge Case Hunter `bmad-review-edge-case-hunter`) found **zero correctness defects**. Full mechanical scan of all rename+edit hunks: no accidental logic change, dropped export, or wrong import target. All 6 findings were latent/low resolution-surface edges with no current consumer that triggers them, so all rejected as noise for this migration:
+- shared package has no own `lint`/`test` script (all shared tests live in web, coverage intact) — low, not AC-required.
+- shared publishes raw TS — works for every current consumer (Next `transpilePackages`, vitest, tsc `bundler`); not a defect.
+- `exports "./*": "./src/*.ts"` does not map directory-subpath imports (`@growbase/shared/schemas`) — no consumer imports dir subpaths; all 37 imports are file-level.
+- wildcard matches only `.ts` (not `.json`/`.tsx`) — no such consumer.
+- no RN/Metro export condition — explicitly scoped to future story M1.2 (this story's AC3 only requires no React/Next/DOM imports, verified clean).
+- vitest has no explicit `@growbase/shared` inline guard — incidental-pass via in-repo symlink; no failure.
+
+## Auto Run Result
+
+Status: done
+
+### Summary
+Converted the single-package npm repo into a pnpm workspace: moved the entire Next.js 14 app into `apps/web/`, and extracted a framework-agnostic `packages/shared` (`@growbase/shared`) holding types, Zod schemas, pure business rules, shared constants, and the `keys.*` query-key factory. `apps/web` now consumes these from `@growbase/shared` (single source of truth); no duplicate definitions remain. Runtime behavior is unchanged.
+
+### Files changed (grouped; ~483 path entries, mostly `git mv` renames)
+- **Root**: `pnpm-workspace.yaml` (new), `pnpm-lock.yaml` (new), `package.json` (workspace root, scripts delegate to `pnpm --filter web`), `package-lock.json` removed.
+- **apps/web/**: entire Next.js app moved here (`src/`, `next.config.mjs` + `transpilePackages: ["@growbase/shared"]`, `tailwind.config.ts`, `postcss.config.mjs`, `vitest.config.ts`, `tsconfig.json`, `components.json`, `public/`, `package.json` with `@growbase/shared: workspace:*`). ~39 files renamed + import-rewritten (`@/...` → `@growbase/shared/...`); `vi.mock()` specifiers updated to match.
+- **packages/shared/**: new `@growbase/shared` — `package.json`, `tsconfig.json`, `src/{index.ts, queryKeys.ts, types/, schemas/, constants/, rules/}`.
+- **apps/web/src/__tests__/shared-smoke.test.ts**: new smoke test for `@growbase/shared`.
+- Kept at root untouched: `supabase/`, `docs/`, `CLAUDE.md`.
+
+### Verification
+- `pnpm install` — clean; `pnpm-lock.yaml` generated, `@growbase/shared` symlinked into `apps/web`.
+- `pnpm --filter @growbase/shared type-check` — PASS (independently re-run).
+- `pnpm --filter web exec tsc --noEmit` — PASS, EXIT=0 (independently re-run).
+- `pnpm --filter web exec vitest run` — PASS, 532 tests / 39 files (incl. new smoke test).
+- `pnpm --filter web build` — PASS (all routes + `/api/*` compiled; needed a gitignored placeholder `.env.local` only to run the gate — pre-existing env absence, not migration-caused, not committed).
+- Guardrails verified: `@growbase/shared` imports no React/Next/DOM/Node APIs (grep clean); `keys.*` factory shape preserved (A-4); `@/` alias + vitest alias resolve; auth (`withAuth`, `supabaseAdmin`, middleware) logic unchanged.
+
+### Residual risks
+- `@growbase/shared` ships raw TS via a `./*` → `./src/*.ts` wildcard export; safe for all current consumers (transpiled), but a future RN/Metro consumer (story M1.2) will need react-native export conditions / Metro package-exports — out of scope here.
+- Directory-subpath and `.json/.tsx` imports from `@growbase/shared` are not covered by the exports map; no current consumer uses them.
