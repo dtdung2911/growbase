@@ -138,7 +138,7 @@ development_status:
 # Action items committed during retrospectives (section created by the retrospective workflow)
   # --- Mobile initiative (GrowBase Mobile, RN companion) — epics 14-18 ---
   epic-14: in-progress
-  14-1-pnpm-monorepo-shared-package: ready-for-dev
+  14-1-pnpm-monorepo-shared-package: done
   14-2-scaffold-expo-app: backlog
   14-3-api-fetch-client: backlog
   14-4-backend-touches: backlog
