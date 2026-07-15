@@ -516,7 +516,7 @@ tbody > tr:nth-child(n+9) { animation-delay: 240ms; }
   border-radius: 18px;
   box-shadow: 0 8px 18px rgba(0, 132, 219, 0.26);
   max-width: 340px;
-  padding: 20px;
+  padding: 22px;
 }
 .driver-popover-title {
   font-size: 16px;
@@ -524,17 +524,17 @@ tbody > tr:nth-child(n+9) { animation-delay: 240ms; }
   color: hsl(var(--ink));
 }
 .driver-popover-description {
-  color: hsl(var(--muted-foreground));
-  font-size: 14px;
+  color: hsl(var(--primary));
+  font-size: 16px;
   line-height: 1.6;
+}
+.driver-popover-arrow {
+  border-color: hsl(var(--card));
 }
 .driver-popover-progress-text {
   color: hsl(var(--faint));
   font-size: 12px;
   font-weight: 600;
-}
-.driver-popover-arrow {
-  border-color: hsl(var(--card));
 }
 .driver-popover-close-btn {
   color: hsl(var(--muted-foreground));

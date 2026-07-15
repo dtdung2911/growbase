@@ -26,7 +26,12 @@ export function WelcomeModal({ open, onClose }: WelcomeModalProps) {
   const { t } = useTranslation()
 
   return (
-    <Dialog open={open} onOpenChange={(next) => { if (!next) onClose() }}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
+    >
       <DialogContent className="max-h-[90dvh] max-w-md overflow-y-auto">
         <div className="flex flex-col items-center gap-5 text-center">
           <span className="grid h-14 w-14 place-items-center rounded-2xl bg-primary-soft text-primary">
@@ -38,7 +43,10 @@ export function WelcomeModal({ open, onClose }: WelcomeModalProps) {
           </DialogTitle>
 
           <figure className="relative w-full rounded-[18px] border border-primary/15 bg-primary-soft/60 px-5 py-4 text-left">
-            <span aria-hidden className="pointer-events-none absolute -top-3 left-3 font-serif text-6xl leading-none text-primary/25">
+            <span
+              aria-hidden
+              className="pointer-events-none absolute -top-3 left-3 font-serif text-6xl leading-none text-primary/25"
+            >
               &ldquo;
             </span>
             <blockquote className="relative pl-4 text-[15px] font-medium italic leading-relaxed text-ink">
@@ -49,14 +57,20 @@ export function WelcomeModal({ open, onClose }: WelcomeModalProps) {
             </figcaption>
           </figure>
 
-          <DialogDescription className="text-center text-sm leading-relaxed text-muted-foreground">
+          <DialogDescription className="text-center text-sm font-bold leading-relaxed text-primary">
             {t("setupV2.hook.welcome.body")}
           </DialogDescription>
 
           <ul className="w-full space-y-1 rounded-[15px] bg-primary-soft/50 p-1.5">
             {ASPECTS.map((aspect) => (
-              <li key={aspect.key} className="flex items-center gap-3 rounded-[11px] px-3 py-2 text-left">
-                <Icon icon={aspect.icon} className="h-5 w-5 shrink-0 text-primary" />
+              <li
+                key={aspect.key}
+                className="flex items-center gap-3 rounded-[11px] px-3 py-2 text-left"
+              >
+                <Icon
+                  icon={aspect.icon}
+                  className="h-5 w-5 shrink-0 text-primary"
+                />
                 <span className="text-sm text-foreground">
                   {t(`setupV2.hook.welcome.aspect.${aspect.key}`)}
                 </span>
@@ -71,5 +85,5 @@ export function WelcomeModal({ open, onClose }: WelcomeModalProps) {
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
