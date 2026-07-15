@@ -86,7 +86,7 @@ Skip this section if `{spec_file}` is not set.
 
 #### Determine new status based on review outcome
 
-- If all `decision-needed` and `patch` findings were resolved (fixed or dismissed) AND no unresolved HIGH/MEDIUM issues remain: set `{new_status}` = `done`. Update the story file Status section to `done`.
+- If all `decision-needed` and `patch` findings were resolved (fixed or dismissed) AND no unresolved `high`/`medium` findings remain: set `{new_status}` = `done`. Update the story file Status section to `done`.
 - If `patch` findings were left as action items, or unresolved issues remain: set `{new_status}` = `in-progress`. Update the story file Status section to `in-progress`.
 
 Save the story file.
@@ -113,19 +113,6 @@ If `{sprint_status}` file does not exist, note that story status was updated in 
 > **Action Items Created:** <action_count>
 > **Deferred:** <W>
 > **Dismissed:** <R>
-
-### 6.5 TL;DR bắt buộc cho {user_name}
-
-**Luôn thực hiện bước này**, kể cả khi `{spec_file}` không được set và kể cả khi đi theo "Clean review shortcut" ở mục 1 (zero findings). Đây không phải bản tóm tắt lại — mục đích là để `{user_name}` chỉ cần đọc đúng khối này là đủ, không phải đọc lại toàn bộ findings phía trên.
-
-Viết khối `**TL;DR cho {user_name}:**` gồm đúng 3-5 dòng, bằng {communication_language}:
-
-- Rủi ro cao nhất trong review này (1 dòng) — ưu tiên finding severity cao nhất còn `defer`/chưa fix; nếu không còn rủi ro nào (mọi thứ đã fix/dismiss hợp lý), nói rõ "Không có rủi ro đáng kể" thay vì bỏ dòng này
-- Rủi ro thứ 2 nếu có (bỏ qua nếu không có)
-- Điểm CẦN `{user_name}` tự xác nhận bằng tay (VD: 1 quyết định `decision-needed` vừa chọn có đúng ý định nghiệp vụ không, 1 item `defer` có thật sự an toàn để hoãn không, 1 patch áp dụng hàng loạt có cần double-check bằng mắt không)
-- Nếu zero findings: vẫn phải nói rõ phạm vi đã review (file/diff nào) để `{user_name}` biết review đã bao phủ đúng phạm vi mong đợi hay chưa
-
-Đặt khối này ngay sau "Completion summary" (hoặc ngay sau thông báo ở mục 1 nếu đi theo Clean review shortcut), trước khi sang mục 7.
 
 ### 7. Next steps
 

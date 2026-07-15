@@ -1,26 +1,26 @@
 installation:
-  version: 6.9.0
+  version: 6.10.0
   installDate: 2026-06-25T16:31:14.935Z
-  lastUpdated: 2026-06-25T16:31:14.935Z
+  lastUpdated: 2026-07-15T16:12:01.418Z
 modules:
   - name: core
-    version: 6.9.0
+    version: 6.10.0
     installDate: 2026-06-25T16:31:14.549Z
-    lastUpdated: 2026-06-25T16:31:14.930Z
+    lastUpdated: 2026-07-15T16:12:01.409Z
     source: built-in
     npmPackage: null
     repoUrl: null
   - name: bmm
-    version: 6.9.0
+    version: 6.10.0
     installDate: 2026-06-25T16:31:14.523Z
-    lastUpdated: 2026-06-25T16:31:14.930Z
+    lastUpdated: 2026-07-15T16:12:01.409Z
     source: built-in
     npmPackage: null
     repoUrl: null
   - name: tea
     version: v1.19.0
     installDate: 2026-06-25T16:31:14.787Z
-    lastUpdated: 2026-06-25T16:31:14.931Z
+    lastUpdated: 2026-07-15T16:12:01.411Z
     source: external
     npmPackage: bmad-method-test-architecture-enterprise
     repoUrl: https://github.com/bmad-code-org/bmad-method-test-architecture-enterprise
@@ -29,7 +29,7 @@ modules:
   - name: bmb
     version: v2.1.0
     installDate: 2026-06-25T16:31:14.831Z
-    lastUpdated: 2026-06-25T16:31:14.932Z
+    lastUpdated: 2026-07-15T16:12:01.412Z
     source: external
     npmPackage: bmad-builder
     repoUrl: https://github.com/bmad-code-org/bmad-builder
@@ -38,16 +38,16 @@ modules:
   - name: automator
     version: main
     installDate: 2026-06-25T16:31:14.866Z
-    lastUpdated: 2026-06-25T16:31:14.934Z
+    lastUpdated: 2026-07-15T16:12:01.415Z
     source: external
     npmPackage: bmad-story-automator
     repoUrl: https://github.com/bmad-code-org/bmad-automator
     channel: next
-    sha: f332173a692ffbabb24734c31dedadfcf78b9ed1
+    sha: 0b94fd7bec8672f5bc384123f1f76e1daae1dc2b
   - name: cis
     version: v0.2.1
     installDate: 2026-06-25T16:31:14.878Z
-    lastUpdated: 2026-06-25T16:31:14.935Z
+    lastUpdated: 2026-07-15T16:12:01.418Z
     source: external
     npmPackage: bmad-creative-intelligence-suite
     repoUrl: https://github.com/bmad-code-org/bmad-module-creative-intelligence-suite
