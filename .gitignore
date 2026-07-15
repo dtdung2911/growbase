@@ -35,3 +35,5 @@ yarn-error.log*
 # supabase CLI cache
 supabase/.temp/
 *.swp
+.bmad-loop/runs/
+.bmad-loop/cache/
