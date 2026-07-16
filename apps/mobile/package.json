@@ -7,6 +7,7 @@
     "@tanstack/react-query": "^5.101.2",
     "expo": "~56.0.16",
     "expo-constants": "~56.0.21",
+    "expo-crypto": "~56.0.4",
     "expo-linking": "~56.0.15",
     "expo-router": "~56.2.15",
     "expo-splash-screen": "~56.0.13",
@@ -22,13 +23,15 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "vitest": "^2.1.9"
   },
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "vitest run"
   },
   "private": true
 }

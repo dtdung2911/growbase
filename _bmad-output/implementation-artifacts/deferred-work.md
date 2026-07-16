@@ -112,3 +112,6 @@ Nguồn: brainstorm-tada-dashboard-continuity-2026-07-10 + sprint-change-proposa
 - source_spec: `_bmad-output/implementation-artifacts/spec-14-2-scaffold-expo-app.md`
   summary: Exports map của packages/shared (`"./*": "./src/*.ts"`) chỉ cover single-file .ts — subpath tới directory index hoặc file .tsx sẽ fail khi `unstable_enablePackageExports` bật (pre-existing từ 14.1).
   evidence: packages/shared/package.json exports không có pattern `./src/*/index.ts` hay `.tsx`; Metro mobile resolve theo exports map nghiêm ngặt.
+- source_spec: `_bmad-output/implementation-artifacts/14-3-api-fetch-client.md`
+  summary: API envelope `{ data, error }` không có machine-readable error code — client (mobile lẫn web) buộc phải string-match message tiếng Việt đã localize nếu muốn branch theo loại lỗi.
+  evidence: Toàn bộ routes apps/web/src/app/api/**/route.ts trả `error: string` free-text (pattern có trước story 14.3); mobile `ApiError` giờ chỉ mang `status` + `message`, không có field code để phân biệt lỗi validation/business một cách bền vững.
