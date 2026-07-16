@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { withAuth } from "@/lib/supabase/auth-check"
+import { withIdempotency } from "@/lib/api/idempotency"
 import { createTransactionSchema } from "@growbase/shared/schemas/transaction"
 import { monthRange } from "@growbase/shared/rules/date"
 
@@ -43,39 +44,41 @@ export async function GET(request: NextRequest) {
 export async function POST(request: Request) {
   const auth = await withAuth()
   if (auth.error) return auth.error
+  return withIdempotency(auth.supabase, auth.user.id, request, async () => {
 
-  const body = await request.json().catch(() => null)
-  const parsed = createTransactionSchema.safeParse(body)
-  if (!parsed.success) {
-    return NextResponse.json(
-      { data: null, error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ" },
-      { status: 400 }
-    )
-  }
+    const body = await request.json().catch(() => null)
+    const parsed = createTransactionSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json(
+        { data: null, error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ" },
+        { status: 400 }
+      )
+    }
 
-  const input = parsed.data
+    const input = parsed.data
 
-  const { data, error } = await auth.supabase
-    .from("transactions")
-    .insert({
-      household_id: auth.householdId,
-      member_id: auth.memberId,
-      amount: input.amount,
-      direction: input.direction,
-      transaction_type: input.transaction_type,
-      category_id: input.category_id,
-      account_id: input.account_id,
-      description: input.description ?? null,
-      transaction_date: input.transaction_date,
-      is_unusual_income: input.is_unusual_income,
-      debt_entry_id: input.debt_entry_id ?? null,
-    })
-    .select("id")
-    .single()
+    const { data, error } = await auth.supabase
+      .from("transactions")
+      .insert({
+        household_id: auth.householdId,
+        member_id: auth.memberId,
+        amount: input.amount,
+        direction: input.direction,
+        transaction_type: input.transaction_type,
+        category_id: input.category_id,
+        account_id: input.account_id,
+        description: input.description ?? null,
+        transaction_date: input.transaction_date,
+        is_unusual_income: input.is_unusual_income,
+        debt_entry_id: input.debt_entry_id ?? null,
+      })
+      .select("id")
+      .single()
 
-  if (error) {
-    return NextResponse.json({ data: null, error: error.message }, { status: 500 })
-  }
+    if (error) {
+      return NextResponse.json({ data: null, error: error.message }, { status: 500 })
+    }
 
-  return NextResponse.json({ data: { id: data.id }, error: null }, { status: 201 })
+    return NextResponse.json({ data: { id: data.id }, error: null }, { status: 201 })
+  })
 }

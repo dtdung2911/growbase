@@ -1,12 +1,39 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
-import type { SupabaseClient } from "@supabase/supabase-js"
+import { headers } from "next/headers"
+import { createClient, createBearerClient } from "@/lib/supabase/server"
+import type { SupabaseClient, User } from "@supabase/supabase-js"
+import type { Database } from "@growbase/shared/types/database"
 
-export async function withAuthUser() {
+// Đọc `Authorization: Bearer <token>` (mobile, không cookie). Nếu có token → trả về client mang
+// Authorization header đó cho MỌI query sau (RLS resolve đúng user); nếu không → cookie client cũ.
+// QUAN TRỌNG: client trả về khi có Bearer phải LÀ createBearerClient(token), không chỉ dùng token
+// để verify identity rồi trả về cookie client (bug review trước: household lookup + query trong route
+// dùng lại supabase này, cookie client không có cookie cho mobile → RLS chặn hết dù getUser đã pass).
+async function resolveAuthContext(): Promise<{
+  supabase: SupabaseClient<Database>
+  user: User | null
+}> {
+  const authorization = headers().get("authorization")
+  const match = authorization?.match(/^Bearer\s+(.+)$/i)
+
+  if (match) {
+    const token = match[1]
+    const supabase = createBearerClient(token)
+    const {
+      data: { user },
+    } = await supabase.auth.getUser(token)
+    return { supabase, user }
+  }
+
   const supabase = createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
+  return { supabase, user }
+}
+
+export async function withAuthUser() {
+  const { supabase, user } = await resolveAuthContext()
 
   if (!user) {
     return {
@@ -23,10 +50,7 @@ export async function withAuthUser() {
 }
 
 export async function withAuth() {
-  const supabase = createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { supabase, user } = await resolveAuthContext()
 
   if (!user) {
     return {

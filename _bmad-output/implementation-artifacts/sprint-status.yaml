@@ -141,7 +141,7 @@ development_status:
   14-1-pnpm-monorepo-shared-package: done
   14-2-scaffold-expo-app: done
   14-3-api-fetch-client: done
-  14-4-backend-touches: backlog
+  14-4-backend-touches: done
   epic-14-retrospective: optional
   epic-15: backlog
   15-1-auth-login-secure-session: backlog
