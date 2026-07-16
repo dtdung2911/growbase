@@ -159,6 +159,16 @@ export async function GET(request: NextRequest) {
     amount: weekdayMap.get(i) ?? 0,
   }))
 
+  // Thu/chi mỗi tháng từ đầu năm → tháng đang xem, cho chart "Thu nhập vs Chi tiêu"
+  const year = month.split("-")[0]
+  const currentMonthNum = Number(month.split("-")[1])
+  const { data: yearTxs, error: yearTxErr } = await supabase
+    .from("transactions")
+    .select("transaction_date, amount, transaction_type")
+    .eq("household_id", hid)
+    .gte("transaction_date", `${year}-01-01`)
+    .lte("transaction_date", to)
+
   // Budget lines
   const { data: budgetData, error: budgetErr } = await supabase.rpc("get_budget_with_actuals", {
     p_household_id: hid,
@@ -216,7 +226,7 @@ export async function GET(request: NextRequest) {
     .maybeSingle()
 
   // Lỗi fetch phải nổ ra 500, không được im lặng biến thành "day-zero" giả
-  const fetchErr = budgetErr ?? countErr ?? fundsErr ?? recentErr ?? nwErr
+  const fetchErr = budgetErr ?? countErr ?? fundsErr ?? recentErr ?? nwErr ?? yearTxErr
   if (fetchErr) {
     return NextResponse.json({ data: null, error: fetchErr.message }, { status: 500 })
   }
@@ -229,6 +239,21 @@ export async function GET(request: NextRequest) {
   const netWorth = nwSnapshot
     ? ((nwSnapshot.total_recorded as number) || (nwSnapshot.total_system as number) || null)
     : null
+
+  const monthlyIncomeExpense = Array.from({ length: currentMonthNum }, (_, i) => ({
+    month: `${year}-${String(i + 1).padStart(2, "0")}`,
+    income: 0,
+    expense: 0,
+  }))
+  for (const tx of yearTxs ?? []) {
+    const idx = Number((tx.transaction_date as string).slice(5, 7)) - 1
+    const bucket = monthlyIncomeExpense[idx]
+    if (!bucket) continue
+    const amt = tx.amount as number
+    const type = tx.transaction_type as string
+    if (type === "income") bucket.income += amt
+    else if (type === "expense" || type === "debt_repayment") bucket.expense += amt
+  }
 
   return NextResponse.json({
     data: {
@@ -245,6 +270,7 @@ export async function GET(request: NextRequest) {
       recentTransactions: recentTxs ?? [],
       topExpenseCategories,
       weekdaySpending,
+      monthlyIncomeExpense,
       hasAnyTransactionEver: (transactionCount ?? 0) > 0,
       yesterdayTransactions,
       activeDaysLast7: activeDaysLast7 ?? 0,

@@ -243,6 +243,18 @@ export function buildHookDemoData(t: TFunction, locale: Locale): DashboardData {
   // Demo không có giao dịch góp quỹ thật → coi phần dư là số đã tiết kiệm để card hiển thị hợp lý.
   const fundContributions = Math.max(totalIncome - totalExpense, 0)
 
+  const year = HOOK_DEMO_MONTH.split("-")[0]
+  const demoMonthNum = Number(HOOK_DEMO_MONTH.split("-")[1])
+  const monthlyIncomeExpense = Array.from({ length: demoMonthNum }, (_, i) => {
+    const key = `${year}-${String(i + 1).padStart(2, "0")}`
+    const txs = SEED_TRANSACTIONS.filter((tx) => tx.month === key)
+    return {
+      month: key,
+      income: sumAmount(txs.filter((tx) => tx.transactionType === "income")),
+      expense: sumAmount(txs.filter((tx) => tx.transactionType === "expense")),
+    }
+  })
+
   return {
     totalIncome,
     totalExpense,
@@ -257,6 +269,7 @@ export function buildHookDemoData(t: TFunction, locale: Locale): DashboardData {
     recentTransactions: buildTransactions(t),
     topExpenseCategories: buildTopExpenseCategories(juneExpenses, totalExpense),
     weekdaySpending: buildWeekdaySpending(juneExpenses),
+    monthlyIncomeExpense,
     hasAnyTransactionEver: true,
     // Demo phải có "hôm qua" dưới kế hoạch — banner khoe insight tích cực,
     // không phải copy "chưa có ghi chép nào"

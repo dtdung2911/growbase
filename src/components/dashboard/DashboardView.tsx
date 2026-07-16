@@ -104,15 +104,9 @@ export function DashboardView({
             {t("dashboard.incomeVsExpense")}
           </h2>
           <p className="mb-3 text-xs text-muted-foreground">
-            {t("dashboard.vsLastMonth")}
+            {t("dashboard.sinceJanuary")}
           </p>
-          <IncomeExpenseBar
-            income={data.totalIncome}
-            expense={data.totalExpense}
-            lastIncome={data.lastMonthIncome}
-            lastExpense={data.lastMonthExpense}
-            month={month}
-          />
+          <IncomeExpenseBar monthly={data.monthlyIncomeExpense} />
         </section>
 
         <section data-tour="spending" className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card">

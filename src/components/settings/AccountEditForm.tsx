@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useUpdateAccount } from "@/lib/hooks/useAccountMutations"
+import { useCreateAccount, useUpdateAccount } from "@/lib/hooks/useAccountMutations"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import type { Account, AccountType } from "@/types/app"
 import { BRAND } from "@/lib/design-tokens"
@@ -35,13 +35,15 @@ const ACCOUNT_TYPE_VALUES: AccountType[] = [
 ]
 
 type AccountEditFormProps = {
-  account: Account
+  account?: Account | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
 export function AccountEditForm({ account, open, onOpenChange }: AccountEditFormProps) {
   const { t } = useTranslation()
+  const isCreate = !account
+  const createMutation = useCreateAccount()
   const updateMutation = useUpdateAccount()
 
   const [name, setName] = useState("")
@@ -52,6 +54,15 @@ export function AccountEditForm({ account, open, onOpenChange }: AccountEditForm
   const [color, setColor] = useState("")
 
   useEffect(() => {
+    if (!account) {
+      setName("")
+      setBankName("")
+      setAccountType("bank")
+      setOwnerName("")
+      setIsCreditCard(false)
+      setColor("")
+      return
+    }
     setName(account.name)
     setBankName(account.bank_name ?? "")
     setAccountType(account.account_type)
@@ -60,32 +71,39 @@ export function AccountEditForm({ account, open, onOpenChange }: AccountEditForm
     setColor(account.color ?? "")
   }, [account])
 
-  const isPending = updateMutation.isPending
+  const isPending = createMutation.isPending || updateMutation.isPending
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim()) return
 
-    updateMutation.mutate(
-      {
-        id: account.id,
-        name: name.trim(),
-        bank_name: bankName || undefined,
-        account_type: accountType,
-        owner_name: ownerName || undefined,
-        is_credit_card: isCreditCard,
-        color: color || undefined,
-      },
-      { onSuccess: () => onOpenChange(false) }
-    )
+    const input = {
+      name: name.trim(),
+      bank_name: bankName || undefined,
+      account_type: accountType,
+      owner_name: ownerName || undefined,
+      is_credit_card: isCreditCard,
+      color: color || undefined,
+    }
+    const close = { onSuccess: () => onOpenChange(false) }
+
+    if (isCreate) {
+      createMutation.mutate(input, close)
+    } else {
+      updateMutation.mutate({ id: account.id, ...input }, close)
+    }
   }
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto rounded-t-2xl">
         <SheetHeader>
-          <SheetTitle>{t("settings.accounts.editTitle")}</SheetTitle>
-          <SheetDescription>{t("settings.accounts.editDesc")}</SheetDescription>
+          <SheetTitle>
+            {t(isCreate ? "settings.accounts.addTitle" : "settings.accounts.editTitle")}
+          </SheetTitle>
+          <SheetDescription>
+            {t(isCreate ? "settings.accounts.addDesc" : "settings.accounts.editDesc")}
+          </SheetDescription>
         </SheetHeader>
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
@@ -181,7 +199,9 @@ export function AccountEditForm({ account, open, onOpenChange }: AccountEditForm
             {isPending && (
               <Icon icon="lucide:loader-2" className="mr-1.5 h-4 w-4 animate-spin" />
             )}
-            {isPending ? t("common.saving") : t("settings.categories.saveChanges")}
+            {isPending
+              ? t("common.saving")
+              : t(isCreate ? "settings.accounts.addLabel" : "settings.categories.saveChanges")}
           </Button>
         </form>
       </SheetContent>
