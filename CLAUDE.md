@@ -6,9 +6,9 @@ GrowBase — family finance web app (Next.js 14 + Supabase + TypeScript)
 
 ## Monorepo
 pnpm workspace: `apps/web` (Next.js) · `apps/mobile` (Expo SDK 56, thin client — data only via web `/api`) · `packages/shared` (`@growbase/shared`: types, Zod schemas, rules, query keys — consumed as source)
-- Run mobile: `pnpm --filter @growbase/mobile start` (Expo Go / simulator)
+- Run mobile: `pnpm --filter @growbase/mobile start` (scripts dùng `--dev-client`; cần dev build, không phải Expo Go)
 - Root `.pnpmfile.cjs` injects optional `@types/react` peer → mỗi app link đúng React types major (web 18, mobile 19). Package types-only mới dùng React types mà không peer `react` → thêm vào `EXTRA_PACKAGES`/`EXTRA_PREFIXES` trong file đó
-- react-native-mmkv: installed, KHÔNG import runtime cho tới khi có dev build (vỡ Expo Go)
+- react-native-mmkv: import runtime OK — app chạy qua dev client (`expo-dev-client`) từ Epic 15.1 (MMKV lưu blob session mã hóa)
 
 ## Docs
 | File | Read when |
