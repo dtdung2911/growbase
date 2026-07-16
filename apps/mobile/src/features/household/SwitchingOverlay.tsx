@@ -1,16 +1,18 @@
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native"
 import { useTranslation } from "@/lib/i18n/TranslationProvider"
+import { useTheme } from "@/lib/theme/ThemeProvider"
 import { useAppStore } from "@/store/appStore"
 
 export function SwitchingOverlay() {
   const { t } = useTranslation()
+  const { colors } = useTheme()
   const isSwitching = useAppStore((s) => s.isSwitchingHousehold)
   if (!isSwitching) return null
 
   return (
-    <View style={styles.overlay}>
-      <ActivityIndicator size="large" color="#0084DB" />
-      <Text style={styles.label}>{t("household.switching")}</Text>
+    <View style={[styles.overlay, { backgroundColor: colors.background }]}>
+      <ActivityIndicator size="large" color={colors.primary} />
+      <Text style={[styles.label, { color: colors.textInk }]}>{t("household.switching")}</Text>
     </View>
   )
 }
@@ -26,11 +28,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 16,
-    backgroundColor: "#eef5fb",
   },
   label: {
     fontSize: 16,
-    color: "#1d2737",
     fontWeight: "600",
   },
 })
