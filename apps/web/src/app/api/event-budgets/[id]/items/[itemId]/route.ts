@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { withAuth } from "@/lib/supabase/auth-check"
+import { withIdempotency } from "@/lib/api/idempotency"
 import { updateEventBudgetItemSchema } from "@growbase/shared/schemas/event-budget"
 
 async function assertOwnsEvent(
@@ -22,65 +23,69 @@ export async function PUT(
 ) {
   const auth = await withAuth()
   if (auth.error) return auth.error
-  const { id, itemId } = await params
+  return withIdempotency(auth.supabase, auth.user.id, request, async () => {
+    const { id, itemId } = await params
 
-  const body = await request.json().catch(() => null)
-  const parsed = updateEventBudgetItemSchema.safeParse(body)
-  if (!parsed.success) {
-    return NextResponse.json(
-      { data: null, error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ" },
-      { status: 400 }
-    )
-  }
+    const body = await request.json().catch(() => null)
+    const parsed = updateEventBudgetItemSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json(
+        { data: null, error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ" },
+        { status: 400 }
+      )
+    }
 
-  const owns = await assertOwnsEvent(auth.supabase, id, auth.householdId)
-  if (owns.error) {
-    return NextResponse.json({ data: null, error: owns.error.message }, { status: 500 })
-  }
-  if (!owns.ok) {
-    return NextResponse.json({ data: null, error: "Không tìm thấy sự kiện" }, { status: 404 })
-  }
+    const owns = await assertOwnsEvent(auth.supabase, id, auth.householdId)
+    if (owns.error) {
+      return NextResponse.json({ data: null, error: owns.error.message }, { status: 500 })
+    }
+    if (!owns.ok) {
+      return NextResponse.json({ data: null, error: "Không tìm thấy sự kiện" }, { status: 404 })
+    }
 
-  const { data, error } = await auth.supabase
-    .from("event_budget_items")
-    .update(parsed.data)
-    .eq("id", itemId)
-    .eq("event_budget_id", id)
-    .select()
-    .single()
+    const { data, error } = await auth.supabase
+      .from("event_budget_items")
+      .update(parsed.data)
+      .eq("id", itemId)
+      .eq("event_budget_id", id)
+      .select()
+      .single()
 
-  if (error) {
-    return NextResponse.json({ data: null, error: error.message }, { status: 500 })
-  }
+    if (error) {
+      return NextResponse.json({ data: null, error: error.message }, { status: 500 })
+    }
 
-  return NextResponse.json({ data, error: null })
+    return NextResponse.json({ data, error: null })
+  })
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string; itemId: string }> }
 ) {
   const auth = await withAuth()
   if (auth.error) return auth.error
-  const { id, itemId } = await params
+  return withIdempotency(auth.supabase, auth.user.id, request, async () => {
+    const { id, itemId } = await params
 
-  const owns = await assertOwnsEvent(auth.supabase, id, auth.householdId)
-  if (owns.error) {
-    return NextResponse.json({ data: null, error: owns.error.message }, { status: 500 })
-  }
-  if (!owns.ok) {
-    return NextResponse.json({ data: null, error: "Không tìm thấy sự kiện" }, { status: 404 })
-  }
+    const owns = await assertOwnsEvent(auth.supabase, id, auth.householdId)
+    if (owns.error) {
+      return NextResponse.json({ data: null, error: owns.error.message }, { status: 500 })
+    }
+    if (!owns.ok) {
+      return NextResponse.json({ data: null, error: "Không tìm thấy sự kiện" }, { status: 404 })
+    }
 
-  const { error } = await auth.supabase
-    .from("event_budget_items")
-    .delete()
-    .eq("id", itemId)
-    .eq("event_budget_id", id)
+    const { error } = await auth.supabase
+      .from("event_budget_items")
+      .delete()
+      .eq("id", itemId)
+      .eq("event_budget_id", id)
 
-  if (error) {
-    return NextResponse.json({ data: null, error: error.message }, { status: 500 })
-  }
+    if (error) {
+      return NextResponse.json({ data: null, error: error.message }, { status: 500 })
+    }
 
-  return NextResponse.json({ data: { id: itemId }, error: null })
+    return NextResponse.json({ data: { id: itemId }, error: null })
+  })
 }

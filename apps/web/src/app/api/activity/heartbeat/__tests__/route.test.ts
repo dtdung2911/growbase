@@ -25,7 +25,9 @@ describe("POST /api/activity/heartbeat", () => {
       error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
     })
 
-    const res = await POST()
+    const res = await POST(
+      new Request("http://localhost/api/activity/heartbeat", { method: "POST" })
+    )
 
     expect(res.status).toBe(401)
   })
@@ -43,7 +45,9 @@ describe("POST /api/activity/heartbeat", () => {
       householdId: "hh-1",
     })
 
-    const res = await POST()
+    const res = await POST(
+      new Request("http://localhost/api/activity/heartbeat", { method: "POST" })
+    )
 
     expect(res.status).toBe(200)
     expect(supabase.from).toHaveBeenCalledWith("member_activity")
@@ -70,7 +74,9 @@ describe("POST /api/activity/heartbeat", () => {
       householdId: "hh-1",
     })
 
-    const res = await POST()
+    const res = await POST(
+      new Request("http://localhost/api/activity/heartbeat", { method: "POST" })
+    )
     expect(res.status).toBe(500)
   })
 })

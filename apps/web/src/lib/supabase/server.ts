@@ -1,5 +1,5 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr"
-import type { SupabaseClient } from "@supabase/supabase-js"
+import { createClient as createSupabaseClient, type SupabaseClient } from "@supabase/supabase-js"
 import { cookies } from "next/headers"
 import type { Database } from "@growbase/shared/types/database"
 import { SUPABASE_STORAGE_KEY } from "./constants"
@@ -38,4 +38,18 @@ export const createClient = (): SupabaseClient<Database> => {
   )
 
   return client as unknown as SupabaseClient<Database>
+}
+
+// Client cho request mang `Authorization: Bearer <token>` (mobile, không cookie).
+// Dùng plain createClient (KHÔNG @supabase/ssr) + anon key, gắn Authorization header vào
+// MỌI request PostgREST tiếp theo → auth.uid() resolve đúng user của token dưới RLS.
+export const createBearerClient = (token: string): SupabaseClient<Database> => {
+  return createSupabaseClient<Database>(
+    process.env.SUPABASE_INTERNAL_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    }
+  )
 }

@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { withIdempotency } from "@/lib/api/idempotency"
 
 type Params = { params: { token: string } }
 
-export async function POST(_request: Request, { params }: Params) {
+// Route ngoại lệ: KHÔNG dùng withAuth() vì user chấp nhận lời mời chưa là household member
+// (withAuth sẽ 403). Tự guard bằng createClient() + getUser() như trước; chỉ bọc withIdempotency
+// để dedupe mutation (accept_invitation) khi mobile retry.
+export async function POST(request: Request, { params }: Params) {
   const supabase = createClient()
   const {
     data: { user },
@@ -13,6 +17,7 @@ export async function POST(_request: Request, { params }: Params) {
     return NextResponse.json({ data: null, error: "Chưa đăng nhập" }, { status: 401 })
   }
 
+  return withIdempotency(supabase, user.id, request, async () => {
   const { token } = params
 
   // Pre-check: nếu user đã là member của household trong lời mời → alreadyMember.
@@ -69,5 +74,6 @@ export async function POST(_request: Request, { params }: Params) {
       alreadyMember: false,
     },
     error: null,
+  })
   })
 }

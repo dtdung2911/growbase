@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { withAuth } from "@/lib/supabase/auth-check"
+import { withIdempotency } from "@/lib/api/idempotency"
 import { netWorthSnapshotSchema } from "@growbase/shared/schemas/net-worth"
 
 export async function GET(request: NextRequest) {
@@ -52,40 +53,42 @@ export async function GET(request: NextRequest) {
 export async function POST(request: Request) {
   const auth = await withAuth()
   if (auth.error) return auth.error
+  return withIdempotency(auth.supabase, auth.user.id, request, async () => {
 
-  const body = await request.json().catch(() => null)
-  const parsed = netWorthSnapshotSchema.safeParse(body)
-  if (!parsed.success) {
-    return NextResponse.json(
-      { data: null, error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ" },
-      { status: 400 }
-    )
-  }
+    const body = await request.json().catch(() => null)
+    const parsed = netWorthSnapshotSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json(
+        { data: null, error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ" },
+        { status: 400 }
+      )
+    }
 
-  const input = parsed.data
+    const input = parsed.data
 
-  const { data, error } = await auth.supabase
-    .from("net_worth_snapshots")
-    .upsert(
-      {
-        household_id: auth.householdId,
-        snapshot_month: input.snapshot_month,
-        items: JSON.parse(JSON.stringify(input.items)),
-        total_recorded: input.total_recorded,
-        total_system: input.total_system,
-        notes: input.notes ?? null,
-      },
-      { onConflict: "household_id,snapshot_month" }
-    )
-    .select()
-    .single()
+    const { data, error } = await auth.supabase
+      .from("net_worth_snapshots")
+      .upsert(
+        {
+          household_id: auth.householdId,
+          snapshot_month: input.snapshot_month,
+          items: JSON.parse(JSON.stringify(input.items)),
+          total_recorded: input.total_recorded,
+          total_system: input.total_system,
+          notes: input.notes ?? null,
+        },
+        { onConflict: "household_id,snapshot_month" }
+      )
+      .select()
+      .single()
 
-  if (error) {
-    return NextResponse.json(
-      { data: null, error: error.message },
-      { status: 500 }
-    )
-  }
+    if (error) {
+      return NextResponse.json(
+        { data: null, error: error.message },
+        { status: 500 }
+      )
+    }
 
-  return NextResponse.json({ data, error: null })
+    return NextResponse.json({ data, error: null })
+  })
 }

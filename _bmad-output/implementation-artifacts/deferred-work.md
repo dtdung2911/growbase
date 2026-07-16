@@ -115,3 +115,36 @@ Nguồn: brainstorm-tada-dashboard-continuity-2026-07-10 + sprint-change-proposa
 - source_spec: `_bmad-output/implementation-artifacts/14-3-api-fetch-client.md`
   summary: API envelope `{ data, error }` không có machine-readable error code — client (mobile lẫn web) buộc phải string-match message tiếng Việt đã localize nếu muốn branch theo loại lỗi.
   evidence: Toàn bộ routes apps/web/src/app/api/**/route.ts trả `error: string` free-text (pattern có trước story 14.3); mobile `ApiError` giờ chỉ mang `status` + `message`, không có field code để phân biệt lỗi validation/business một cách bền vững.
+- source_spec: `_bmad-output/implementation-artifacts/spec-14-4-backend-touches.md`
+  summary: `idempotency_keys` uniqueness is `(key, user_id)` only, with no route/method or request-body hash — same-user key reuse across two different endpoints (or with a different body) silently replays the wrong cached response.
+  evidence: `supabase/migrations/021_idempotency_keys.sql` unique constraint; confirmed by two independent reviewers (adversarial + edge-case) as a real cross-route/body-mismatch gap, mitigated in practice by the mobile client generating a fresh UUID per logical request, but not enforced server-side.
+- source_spec: `_bmad-output/implementation-artifacts/spec-14-4-backend-touches.md`
+  summary: `idempotency_keys` has no `expires_at`/TTL column and no cleanup job — the table grows unbounded and a given key is unusable forever for that user.
+  evidence: migration `021_idempotency_keys.sql` has no expiry column or pruning logic anywhere in the diff.
+- source_spec: `_bmad-output/implementation-artifacts/spec-14-4-backend-touches.md`
+  summary: No unit tests were added for `withIdempotency()` (cache-hit/miss/reserve-conflict branches) or for the new Bearer branch in `withAuth()`/`withAuthUser()` — the riskiest new logic in this story has no dedicated test coverage.
+  evidence: implementation report listed only regression-test pass counts; no new test files for `apps/web/src/lib/api/idempotency.ts` or the bearer path in `auth-check.test.ts`.
+- source_spec: `_bmad-output/implementation-artifacts/spec-14-4-backend-touches.md`
+  summary: On idempotency cache-insert failure, the code assumes it's always a unique-violation race and silently re-fetches; any other insert failure (RLS denial, connection error) falls through the same path with no logging, so a real failure to apply idempotency guarantees is invisible.
+  evidence: `apps/web/src/lib/api/idempotency.ts` insert-error branch has no error-type check or logging.
+- source_spec: `_bmad-output/implementation-artifacts/spec-14-4-backend-touches.md`
+  summary: If a wrapped route ever returns a non-JSON body (e.g. 204, redirect, stream), `withIdempotency`'s `response.clone().json()` catch silently skips caching with no diagnostic trace.
+  evidence: `apps/web/src/lib/api/idempotency.ts` catch block returns the response uncached with no logging; no current route hits this today but it is an unguarded gap for future routes.
+- source_spec: `_bmad-output/implementation-artifacts/spec-14-4-backend-touches.md`
+  summary: `idempotency_keys.response` stores full response bodies (amounts, account/member IDs for fund/transaction endpoints) verbatim and indefinitely, with no size bound or redaction — a data-retention/PII surface never discussed in scope.
+  evidence: migration `021_idempotency_keys.sql` `response jsonb` column, no redaction logic in `withIdempotency()`.
+- source_spec: `_bmad-output/implementation-artifacts/spec-14-4-backend-touches.md`
+  summary: A wrapped route returning a non-JSON/204/redirect response is never cached (falls into the clone().json() catch), so a client retry with the same key re-executes the mutation for those response types, defeating dedupe for that class of response.
+  evidence: `apps/web/src/lib/api/idempotency.ts` — same catch block as above; no current route returns such a response but the gap is unguarded.
+- source_spec: `_bmad-output/implementation-artifacts/spec-14-4-backend-touches.md`
+  summary: No unit tests for `withIdempotency()` (reserve-before-execute, cache hit, 409-in-flight, 5xx release, exception release) despite it having had a HIGH-severity race bug in review pass 1.
+  evidence: `apps/web/src/lib/api/idempotency.ts` has no adjacent `__tests__` file.
+- source_spec: `_bmad-output/implementation-artifacts/spec-14-4-backend-touches.md`
+  summary: No test coverage for the Bearer-token branch of `resolveAuthContext()` in `auth-check.ts` — the exact code path that had the HIGH-severity RLS-bypass bug in review pass 1.
+  evidence: existing `auth-check.test.ts` only covers `verifyHouseholdMember`; no test drives the `Authorization: Bearer` branch.
+- source_spec: `_bmad-output/implementation-artifacts/spec-14-4-backend-touches.md`
+  summary: The placeholder-release `DELETE` (on 5xx or on `run()` throwing) and the finalize `UPDATE` in `withIdempotency()` don't check for a Supabase error — a failed release/finalize write leaves the row stuck in "pending" with no log signal, causing permanent `409`s for that key with no way to diagnose why.
+  evidence: `apps/web/src/lib/api/idempotency.ts`, the `.delete(...)` and `.update(...)` calls don't inspect their returned `error`.
+- source_spec: `_bmad-output/implementation-artifacts/spec-14-4-backend-touches.md`
+  summary: If the reservation `INSERT` fails for a reason other than a unique-violation (e.g. transient RLS/connection error), `withIdempotency()` fails open and calls `run()` without any lock — a deliberate "don't block legitimate requests on a DB hiccup" tradeoff, but it silently drops dedupe protection for that request with no log signal.
+  evidence: `apps/web/src/lib/api/idempotency.ts`, `if (insertError.code !== PG_UNIQUE_VIOLATION) return run()`.

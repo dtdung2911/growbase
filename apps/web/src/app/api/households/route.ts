@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { withAuthUser } from "@/lib/supabase/auth-check"
+import { withIdempotency } from "@/lib/api/idempotency"
 import { createClient } from "@/lib/supabase/server"
 import { supabaseAdmin } from "@/lib/supabase/admin"
 import { z } from "zod"
@@ -52,46 +53,48 @@ export async function GET() {
 export async function POST(req: Request) {
   const auth = await withAuthUser()
   if (auth.error) return auth.error
-  const { user } = auth
+  return withIdempotency(auth.supabase, auth.user.id, req, async () => {
+    const { user } = auth
 
-  const body = await req.json()
-  const parsed = createHouseholdSchema.safeParse(body)
-  if (!parsed.success) {
-    return NextResponse.json(
-      { data: null, error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ" },
-      { status: 400 }
-    )
-  }
+    const body = await req.json()
+    const parsed = createHouseholdSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json(
+        { data: null, error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ" },
+        { status: 400 }
+      )
+    }
 
-  const { name } = parsed.data
+    const { name } = parsed.data
 
-  const { data: household, error: householdErr } = await supabaseAdmin
-    .from("households")
-    .insert({
-      name,
-      currency: "VND",
+    const { data: household, error: householdErr } = await supabaseAdmin
+      .from("households")
+      .insert({
+        name,
+        currency: "VND",
+      })
+      .select("id, name")
+      .single()
+
+    if (householdErr || !household) {
+      return NextResponse.json(
+        { data: null, error: householdErr?.message ?? "Không tạo được hộ gia đình" },
+        { status: 500 }
+      )
+    }
+
+    const { error: memberErr } = await supabaseAdmin.from("household_members").insert({
+      household_id: household.id,
+      user_id: user.id,
+      display_name: user.user_metadata?.full_name ?? user.email ?? "Owner",
+      role: "owner",
+      is_active: true,
     })
-    .select("id, name")
-    .single()
 
-  if (householdErr || !household) {
-    return NextResponse.json(
-      { data: null, error: householdErr?.message ?? "Không tạo được hộ gia đình" },
-      { status: 500 }
-    )
-  }
+    if (memberErr) {
+      return NextResponse.json({ data: null, error: memberErr.message }, { status: 500 })
+    }
 
-  const { error: memberErr } = await supabaseAdmin.from("household_members").insert({
-    household_id: household.id,
-    user_id: user.id,
-    display_name: user.user_metadata?.full_name ?? user.email ?? "Owner",
-    role: "owner",
-    is_active: true,
+    return NextResponse.json({ data: household, error: null }, { status: 201 })
   })
-
-  if (memberErr) {
-    return NextResponse.json({ data: null, error: memberErr.message }, { status: 500 })
-  }
-
-  return NextResponse.json({ data: household, error: null }, { status: 201 })
 }
