@@ -1,4 +1,5 @@
 export const keys = {
+  households: () => ["households"] as const,
   household: (id: string) => ["household", id] as const,
   transactions: (hid: string, month: string) =>
     ["transactions", hid, month] as const,

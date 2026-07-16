@@ -388,3 +388,9 @@ export type EventBudgetItem = {
 export type EventBudgetWithItems = EventBudget & {
   items: EventBudgetItem[]
 }
+
+export type HouseholdSummary = {
+  id: string
+  name: string
+  role: "owner" | "member"
+}

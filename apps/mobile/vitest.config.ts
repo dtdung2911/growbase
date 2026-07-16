@@ -9,6 +9,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": resolve(__dirname, "./src"),
+      "react-native-mmkv": resolve(__dirname, "./src/test/mmkvStub.ts"),
     },
   },
 });

@@ -146,7 +146,7 @@ development_status:
   epic-15: backlog
   15-1-auth-login-secure-session: done
   15-2-faceid-unlock: done
-  15-3-household-month-context: backlog
+  15-3-household-month-context: done
   15-4-nav-shell-i18n-theme: backlog
   epic-15-retrospective: optional
   epic-16: backlog
