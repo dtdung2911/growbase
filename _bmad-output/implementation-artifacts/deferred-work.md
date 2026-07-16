@@ -96,3 +96,19 @@ Nguồn: brainstorm-tada-dashboard-continuity-2026-07-10 + sprint-change-proposa
 - `withAuth()` chọn membership joined_at ASC — user đa hộ luôn thấy data hộ đầu tiên bất kể appStore (systemic; cần household context param trong API).
 - StageEventCard: cached plan + background refetch error → event consumed nhưng card ẩn (hiếm, per-device).
 - Copy BudgetBar/ThreeStageLine ở /welcome — đổi TadaStep keys/logic phải sửa cả 2 chỗ.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-14-2-scaffold-expo-app.md`
+  summary: apps/mobile thiếu `ios.bundleIdentifier` + `android.package` — cần quyết định naming (vd com.growbase.mobile) trước mọi native build/EAS.
+  evidence: app.json hiện không có 2 field này; expo prebuild/EAS build sẽ fail hoặc tự sinh giá trị không chủ đích.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-14-2-scaffold-expo-app.md`
+  summary: Root export `@growbase/shared` kéo `@supabase/supabase-js` vào bundle Hermes — mobile cần URL polyfill (react-native-url-polyfill) trước khi import root thay vì subpath (thuộc scope story 14.3).
+  evidence: packages/shared/src/index.ts re-export mọi module; supabase-js dùng URL/fetch APIs mà Hermes không có đủ; story này chỉ verify subpath `rules/currency`.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-14-2-scaffold-expo-app.md`
+  summary: Mobile app đang dùng nguyên bộ nhận diện template Expo (icon expo.icon, splash #208AEF, adaptiveIcon #E6F4FE, thiếu dark splash variant) — cần thay bằng brand GrowBase (#0084DB) trước release.
+  evidence: assets/ và app.json giữ nguyên template; style guide docs/06 có đủ tokens nhưng chưa áp dụng.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-14-2-scaffold-expo-app.md`
+  summary: Exports map của packages/shared (`"./*": "./src/*.ts"`) chỉ cover single-file .ts — subpath tới directory index hoặc file .tsx sẽ fail khi `unstable_enablePackageExports` bật (pre-existing từ 14.1).
+  evidence: packages/shared/package.json exports không có pattern `./src/*/index.ts` hay `.tsx`; Metro mobile resolve theo exports map nghiêm ngặt.
