@@ -23,6 +23,12 @@
       "expo-router",
       "expo-secure-store",
       [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "GrowBase sử dụng Face ID để mở khóa ứng dụng nhanh chóng và an toàn."
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "backgroundColor": "#208AEF",
