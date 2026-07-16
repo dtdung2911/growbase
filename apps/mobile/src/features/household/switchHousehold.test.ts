@@ -23,7 +23,14 @@ beforeEach(() => {
   blob.clear()
   purge.mockReset()
   purge.mockResolvedValue(undefined)
-  useAppStore.setState({ householdId: "A", isSwitchingHousehold: false })
+  useAppStore.setState({
+    householdId: "A",
+    isSwitchingHousehold: false,
+    allHouseholds: [
+      { id: "A", name: "A", role: "owner" },
+      { id: "B", name: "B", role: "member" },
+    ],
+  })
 })
 
 describe("switchHousehold", () => {
@@ -52,6 +59,20 @@ describe("switchHousehold", () => {
 
     await expect(switchHousehold("B")).rejects.toThrow("boom")
 
+    expect(useAppStore.getState().householdId).toBe("A")
+    expect(useAppStore.getState().isSwitchingHousehold).toBe(false)
+  })
+
+  it("ignores a second call while a switch is already in flight", async () => {
+    useAppStore.setState({ isSwitchingHousehold: true })
+    await switchHousehold("B")
+    expect(purge).not.toHaveBeenCalled()
+    expect(useAppStore.getState().householdId).toBe("A")
+  })
+
+  it("is a no-op for an id not in allHouseholds", async () => {
+    await switchHousehold("Z")
+    expect(purge).not.toHaveBeenCalled()
     expect(useAppStore.getState().householdId).toBe("A")
     expect(useAppStore.getState().isSwitchingHousehold).toBe(false)
   })

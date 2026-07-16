@@ -11,10 +11,12 @@ import {
 } from "react-native";
 import Toast from "react-native-toast-message";
 import { useTranslation } from "@/lib/i18n/TranslationProvider";
+import { useTheme } from "@/lib/theme/ThemeProvider";
 import { supabase } from "@/lib/supabase/client";
 
 export function LoginScreen() {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isPending, setIsPending] = useState(false);
@@ -46,26 +48,27 @@ export function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <View style={styles.card}>
-        <Text style={styles.title}>GrowBase</Text>
+      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <Text style={[styles.title, { color: colors.textInk }]}>GrowBase</Text>
 
-        <Text style={styles.label}>{t("login.email")}</Text>
+        <Text style={[styles.label, { color: colors.textBody }]}>{t("login.email")}</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { borderColor: colors.border, color: colors.textInk, backgroundColor: colors.card }]}
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
           autoComplete="email"
           keyboardType="email-address"
           editable={!isPending}
+          placeholderTextColor={colors.textFaint}
         />
 
-        <Text style={styles.label}>{t("login.password")}</Text>
+        <Text style={[styles.label, { color: colors.textBody }]}>{t("login.password")}</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { borderColor: colors.border, color: colors.textInk, backgroundColor: colors.card }]}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
@@ -73,17 +76,18 @@ export function LoginScreen() {
           autoComplete="password"
           textContentType="password"
           editable={!isPending}
+          placeholderTextColor={colors.textFaint}
         />
 
         <Pressable
-          style={[styles.button, !canSubmit && styles.buttonDisabled]}
+          style={[styles.button, { backgroundColor: colors.primary }, !canSubmit && styles.buttonDisabled]}
           onPress={handleSubmit}
           disabled={!canSubmit}
         >
           {isPending ? (
-            <ActivityIndicator color="#ffffff" />
+            <ActivityIndicator color={colors.onPrimary} />
           ) : (
-            <Text style={styles.buttonText}>{t("login.submit")}</Text>
+            <Text style={[styles.buttonText, { color: colors.onPrimary }]}>{t("login.submit")}</Text>
           )}
         </Pressable>
       </View>
@@ -96,41 +100,32 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     padding: 24,
-    backgroundColor: "#eef5fb",
   },
   card: {
-    backgroundColor: "#ffffff",
     borderRadius: 15,
     borderWidth: 1,
-    borderColor: "#e5edf6",
     padding: 24,
     gap: 8,
   },
   title: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#1d2737",
     marginBottom: 16,
   },
   label: {
     fontSize: 14,
-    color: "#2a3445",
     marginTop: 8,
   },
   input: {
     height: 48,
     borderWidth: 1,
-    borderColor: "#e5edf6",
     borderRadius: 18,
     paddingHorizontal: 16,
     fontSize: 16,
-    color: "#1d2737",
-    backgroundColor: "#ffffff",
   },
   button: {
     minHeight: 48,
     borderRadius: 999,
-    backgroundColor: "#0084DB",
     alignItems: "center",
     justifyContent: "center",
     marginTop: 20,
@@ -139,7 +134,6 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   buttonText: {
-    color: "#ffffff",
     fontSize: 16,
     fontWeight: "600",
   },
