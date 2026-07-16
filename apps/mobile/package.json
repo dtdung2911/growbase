@@ -5,7 +5,9 @@
   "dependencies": {
     "@growbase/shared": "workspace:*",
     "@supabase/supabase-js": "^2.46.1",
+    "@tanstack/query-sync-storage-persister": "^5.101.2",
     "@tanstack/react-query": "^5.101.2",
+    "@tanstack/react-query-persist-client": "^5.101.2",
     "aes-js": "^3.1.2",
     "expo": "~56.0.16",
     "expo-constants": "~56.0.21",

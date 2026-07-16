@@ -11,4 +11,7 @@ export const en: Record<keyof typeof vi, string> = {
   "unlock.faceId.prompt": "Authenticate to unlock GrowBase",
   "unlock.password.cta": "Enter password",
   "unlock.error.failed": "Authentication failed. Please try again",
+  "household.switching": "Switching household…",
+  "household.switchError": "Couldn't switch household. Please try again",
+  "auth.logout": "Log out",
 };

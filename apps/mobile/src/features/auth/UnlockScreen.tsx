@@ -1,16 +1,13 @@
 import * as LocalAuthentication from "expo-local-authentication";
-import { useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { signOutAndPurge } from "@/features/auth/signOut";
 import { useTranslation } from "@/lib/i18n/TranslationProvider";
-import { supabase } from "@/lib/supabase/client";
 import { useAppStore } from "@/store/appStore";
 
 export function UnlockScreen() {
   const { t } = useTranslation();
   const unlock = useAppStore((s) => s.unlock);
-  const clearUser = useAppStore((s) => s.clearUser);
-  const router = useRouter();
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [failed, setFailed] = useState(false);
   const [isPending, setIsPending] = useState(false);
@@ -66,16 +63,7 @@ export function UnlockScreen() {
 
   async function handlePassword() {
     setIsPending(true);
-    try {
-      await supabase.auth.signOut();
-    } catch {
-      // Sign-out failing must not trap the user behind the lock screen —
-      // force the store into a state AuthGate will route away from.
-      clearUser();
-      unlock();
-    } finally {
-      router.replace("/login");
-    }
+    await signOutAndPurge();
   }
 
   return (

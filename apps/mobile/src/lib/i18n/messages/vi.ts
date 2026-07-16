@@ -9,4 +9,7 @@ export const vi = {
   "unlock.faceId.prompt": "Xác thực để mở khóa GrowBase",
   "unlock.password.cta": "Nhập mật khẩu",
   "unlock.error.failed": "Xác thực không thành công. Vui lòng thử lại",
+  "household.switching": "Đang chuyển hộ gia đình…",
+  "household.switchError": "Không thể chuyển hộ gia đình. Vui lòng thử lại",
+  "auth.logout": "Đăng xuất",
 };
