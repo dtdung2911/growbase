@@ -130,8 +130,17 @@ export function OverviewTab({ data }: OverviewTabProps) {
         xaxis: {
           categories,
           labels: { style: { fontSize: "10px" } },
-          axisBorder: { show: false },
+          axisBorder: { show: true },
           axisTicks: { show: false },
+        },
+        plotOptions: {
+          bar: {
+            horizontal: false,
+            columnWidth: "18px",
+            borderRadius: 0,
+            borderRadiusApplication: "around", // 'around', 'end'
+            borderRadiusWhenStacked: "all", // 'all', 'last'
+          },
         },
         yaxis: {
           labels: {
