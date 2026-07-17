@@ -75,6 +75,13 @@ export default function MenuScreen() {
           </View>
           <Ionicons name="chevron-forward" size={20} color={colors.textFaint} />
         </Pressable>
+        <Pressable style={styles.row} accessibilityRole="button" onPress={() => router.push("/budget")}>
+          <View style={styles.rowLead}>
+            <Ionicons name="pie-chart-outline" size={20} color={colors.textInk} />
+            <Text style={[styles.rowLabel, { color: colors.textInk }]}>{t("menu.budget")}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={colors.textFaint} />
+        </Pressable>
       </View>
 
       <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>{t("settings.appearance")}</Text>
