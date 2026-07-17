@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table"
 import type { MonthlySummaryRow } from "@/lib/hooks/useMonthlyReport"
 import { BRAND, SEMANTIC } from "@/lib/design-tokens"
+import { incomeExpenseComboChart } from "@/lib/charts/incomeExpenseChart"
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false })
 
@@ -46,60 +47,13 @@ export function OverviewTab({ data }: OverviewTabProps) {
 
   const categories = useMemo(() => data.map((r) => toMonthLabel(r.month)), [data])
 
-  // Grouped bar: income vs expense
-  const incomeExpenseOptions = useMemo(
-    () => ({
-      chart: {
-        toolbar: { show: false },
-        fontFamily: "inherit",
-      },
-      colors: [SEMANTIC.success, SEMANTIC.error] as string[],
-      plotOptions: {
-        bar: {
-          horizontal: false,
-          borderRadius: 5,
-          columnWidth: "60%",
-        },
-      },
-      dataLabels: { enabled: false },
-      stroke: { show: false },
-      xaxis: {
-        categories,
-        labels: { style: { fontSize: "10px" } },
-        axisBorder: { show: false },
-        axisTicks: { show: false },
-      },
-      yaxis: {
-        labels: {
-          style: { fontSize: "10px" },
-          formatter: (v: number) => `${Math.round(v / 1_000_000)}M`,
-        },
-      },
-      tooltip: { y: { formatter: (v: number) => formatVND(v) } },
-      legend: {
-        show: true,
-        position: "top",
-        horizontalAlign: "right",
-        fontSize: "12px",
-        markers: { width: 8, height: 8, radius: 4 },
-      },
-      grid: {
-        borderColor: "hsl(var(--border))",
-        strokeDashArray: 4,
-        yaxis: { lines: { show: true } },
-        xaxis: { lines: { show: false } },
-      },
-    }) as ApexOptions,
-    [categories]
-  )
-
-  const incomeExpenseSeries = useMemo(
-    () => [
-      { name: t("reports.income"), data: data.map((r) => r.totalIncome) },
-      { name: t("reports.spending"), data: data.map((r) => r.totalExpense) },
-    ],
-    [data, t]
-  )
+  const { options: incomeExpenseOptions, series: incomeExpenseSeries } =
+    incomeExpenseComboChart(
+      categories,
+      data.map((r) => r.totalIncome),
+      data.map((r) => r.totalExpense),
+      { income: t("reports.income"), expense: t("reports.spending"), net: t("reports.net") },
+    )
 
   // Smooth area line: savings rate
   const savingsRateOptions = useMemo(
@@ -320,7 +274,7 @@ export function OverviewTab({ data }: OverviewTabProps) {
           <div className="h-64">
             <Chart
               key={`ie-${categories.join(",")}`}
-              type="bar"
+              type="line"
               height="100%"
               width="100%"
               options={incomeExpenseOptions}

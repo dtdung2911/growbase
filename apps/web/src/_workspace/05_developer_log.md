@@ -260,3 +260,8 @@ Quyết định / deviation:
 - Goal stage list = plan.allocations ghép quỹ thật (emergency theo fund_type, goal theo id=fund.id); quỹ sinking/investment/freedom không có allocation → bỏ (không nằm trong kế hoạch 3 GĐ).
 - TadaBudgetBar là function độc lập trong TadaStep NHƯNG chọn COPY thay vì export: import từ TadaStep.tsx sẽ kéo cả onboardingV2Store/useCompleteOnboardingV2/PlanDetailSheet vào bundle /welcome (coupling bundle-level). Copy block <30 dòng thuần (chỉ BUDGET_SEGMENTS + t + formatVND + cn) — khớp lesson "duplication nhỏ > export coupled".
 - Không thêm test mới: không có logic thuần MỚI (fundForAlloc là match trivial inline); pure functions reuse (calculateTodayRemaining/currentStage/pickThreeStageKey) đã có test sẵn. Suite hiện có không vỡ (529 pass).
+
+✓ Helper combo chart chung — src/lib/charts/incomeExpenseChart.ts (mới) — pure fn, colors [SEMANTIC.success, SEMANTIC.error, BRAND.primary], series column+column+line
+✓ Dashboard IncomeExpenseBar dùng helper — src/components/dashboard/DashboardCharts.tsx — bỏ options/series useMemo cũ, Chart type bar→line, gỡ import SEMANTIC (không còn dùng)
+✓ Reports incomeVsExpense dùng helper — src/components/reports/OverviewTab.tsx — chỉ chart này, giữ key i18n reports.income/reports.spending, Chart type bar→line, các chart khác không đụng
+✓ i18n net keys — src/lib/i18n/messages/{vi,en}.json — dashboard.net + reports.net (Chênh lệch/Net)

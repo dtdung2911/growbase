@@ -1,6 +1,8 @@
 "use client"
 
 import { useState } from "react"
+import { Icon } from "@iconify/react"
+import { Button } from "@/components/ui/button"
 import { SkeletonList } from "@/components/shared/SkeletonList"
 import { EmptyState } from "@/components/shared/EmptyState"
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog"
@@ -18,37 +20,49 @@ export function AccountsManager() {
 
   const [editingAccount, setEditingAccount] = useState<Account | null>(null)
   const [deactivateTarget, setDeactivateTarget] = useState<Account | null>(null)
+  const [isCreating, setIsCreating] = useState(false)
 
   if (isLoading) {
     return <SkeletonList count={3} />
   }
 
-  if (!accounts || accounts.length === 0) {
-    return (
-      <EmptyState
-        icon="lucide:wallet"
-        title={t("settings.accounts.empty")}
-        description={t("settings.accounts.emptyDesc")}
-      />
-    )
-  }
+  const isEmpty = !accounts || accounts.length === 0
 
   return (
     <>
-      <p className="text-xs text-muted-foreground">
-        {t("settings.accounts.adminNote")}
-      </p>
+      <Button
+        className="w-full rounded-full"
+        onClick={() => setIsCreating(true)}
+      >
+        <Icon icon="lucide:plus" className="mr-1.5 h-4 w-4" />
+        {t("settings.accounts.addLabel")}
+      </Button>
 
-      <div className="space-y-3">
-        {accounts.map((acc) => (
-          <AccountSettingsCard
-            key={acc.id}
-            account={acc}
-            onEdit={() => setEditingAccount(acc)}
-            onDeactivate={() => setDeactivateTarget(acc)}
-          />
-        ))}
-      </div>
+      {isEmpty ? (
+        <EmptyState
+          icon="lucide:wallet"
+          title={t("settings.accounts.empty")}
+          description={t("settings.accounts.emptyDesc")}
+        />
+      ) : (
+        <div className="space-y-3">
+          {accounts.map((acc) => (
+            <AccountSettingsCard
+              key={acc.id}
+              account={acc}
+              onEdit={() => setEditingAccount(acc)}
+              onDeactivate={() => setDeactivateTarget(acc)}
+            />
+          ))}
+        </div>
+      )}
+
+      {isCreating && (
+        <AccountEditForm
+          open={isCreating}
+          onOpenChange={setIsCreating}
+        />
+      )}
 
       {editingAccount && (
         <AccountEditForm

@@ -6,7 +6,8 @@ import type { ApexOptions } from "apexcharts"
 import { Icon } from "@iconify/react"
 import { formatVND } from "@growbase/shared/rules/currency"
 import { useTranslation } from "@/lib/i18n/useTranslation"
-import { BRAND, SEMANTIC } from "@/lib/design-tokens"
+import { BRAND } from "@/lib/design-tokens"
+import { incomeExpenseComboChart } from "@/lib/charts/incomeExpenseChart"
 import type { TopExpenseCategory, WeekdaySpending } from "@growbase/shared/types/app"
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false })
@@ -22,84 +23,27 @@ const WEEKDAY_KEYS = [
 ]
 
 type IncomeExpenseBarProps = {
-  income: number
-  expense: number
-  lastIncome: number
-  lastExpense: number
-  month: string
+  monthly: { month: string; income: number; expense: number }[]
 }
 
-export function IncomeExpenseBar({ income, expense, lastIncome, lastExpense, month }: IncomeExpenseBarProps) {
+export function IncomeExpenseBar({ monthly }: IncomeExpenseBarProps) {
   const { t, locale } = useTranslation()
 
-  const [y, m] = month.split("-").map(Number)
-  const prevLabel = new Date(y, m - 2, 1).toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US", { month: "short" })
-  const curLabel = new Date(y, m - 1, 1).toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US", { month: "short" })
+  const categories = monthly.map((x) => {
+    const [y, m] = x.month.split("-").map(Number)
+    return new Date(y, m - 1, 1).toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US", { month: "short" })
+  })
 
-  const options = useMemo(
-    () =>
-      ({
-        chart: {
-          toolbar: { show: false },
-          fontFamily: "inherit",
-          type: "bar",
-          stacked: true,
-          stackType: "100%",
-        },
-        stroke: {
-          width: 2,
-          colors: ["#fff"],
-        },
-        colors: [SEMANTIC.info, SEMANTIC.error],
-        plotOptions: {
-          bar: {
-            horizontal: false,
-            borderRadius: 8,
-            borderRadiusApplication: "around",
-            columnWidth: "20px",
-          },
-        },
-        dataLabels: { enabled: false },
-        xaxis: {
-          categories: [prevLabel, curLabel],
-          labels: { style: { fontSize: "11px", fontWeight: 600 } },
-          axisBorder: { show: false },
-          axisTicks: { show: false },
-        },
-        yaxis: {
-          labels: {
-            style: { fontSize: "10px" },
-            formatter: (v: number) => `${Math.round(v / 1_000_000)}M`,
-          },
-        },
-        tooltip: { y: { formatter: (v: number) => formatVND(v) } },
-        legend: {
-          show: true,
-          position: "top",
-          horizontalAlign: "right",
-          fontSize: "12px",
-          markers: { width: 8, height: 8, radius: 4 },
-        },
-        grid: {
-          borderColor: "hsl(var(--border))",
-          strokeDashArray: 4,
-          yaxis: { lines: { show: true } },
-          xaxis: { lines: { show: false } },
-        },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-      }) as ApexOptions,
-    [locale, prevLabel, curLabel],
-  );
-
-  const series = useMemo(() => [
-    { name: t("dashboard.income"), data: [lastIncome, income] },
-    { name: t("dashboard.expense"), data: [lastExpense, expense] },
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  ], [income, expense, lastIncome, lastExpense, t])
+  const { options, series } = incomeExpenseComboChart(
+    categories,
+    monthly.map((x) => x.income),
+    monthly.map((x) => x.expense),
+    { income: t("dashboard.income"), expense: t("dashboard.expense"), net: t("dashboard.net") },
+  )
 
   return (
     <div className="h-56">
-      <Chart type="bar" height="100%" width="100%" options={options} series={series} />
+      <Chart type="line" height="100%" width="100%" options={options} series={series} />
     </div>
   )
 }

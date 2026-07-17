@@ -316,6 +316,7 @@ export type DashboardData = {
   recentTransactions: TransactionWithJoins[]
   topExpenseCategories: TopExpenseCategory[]
   weekdaySpending: WeekdaySpending[]
+  monthlyIncomeExpense: { month: string; income: number; expense: number }[]
   hasAnyTransactionEver: boolean
   yesterdayTransactions: Pick<TransactionWithJoins, "amount" | "direction" | "behavior_type">[]
   activeDaysLast7: number
