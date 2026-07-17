@@ -5,6 +5,7 @@
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
     "@growbase/shared": "workspace:*",
+    "@react-native-community/netinfo": "^11.4.1",
     "@supabase/supabase-js": "^2.46.1",
     "@tanstack/query-sync-storage-persister": "^5.101.2",
     "@tanstack/react-query": "^5.101.2",
