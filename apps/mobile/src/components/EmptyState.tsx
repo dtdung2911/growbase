@@ -1,15 +1,16 @@
 import { Ionicons } from "@expo/vector-icons"
 import type { ComponentProps } from "react"
-import { StyleSheet, Text, View } from "react-native"
+import { Pressable, StyleSheet, Text, View } from "react-native"
 import { useTheme } from "@/lib/theme/ThemeProvider"
 
 type EmptyStateProps = {
   icon?: ComponentProps<typeof Ionicons>["name"]
   title: string
   message?: string
+  action?: { label: string; onPress: () => void }
 }
 
-export function EmptyState({ icon = "receipt-outline", title, message }: EmptyStateProps) {
+export function EmptyState({ icon = "receipt-outline", title, message, action }: EmptyStateProps) {
   const { colors } = useTheme()
   return (
     <View style={styles.container}>
@@ -18,6 +19,17 @@ export function EmptyState({ icon = "receipt-outline", title, message }: EmptySt
       </View>
       <Text style={[styles.title, { color: colors.textInk }]}>{title}</Text>
       {message ? <Text style={[styles.message, { color: colors.textMuted }]}>{message}</Text> : null}
+      {action ? (
+        <Pressable
+          onPress={action.onPress}
+          accessibilityRole="button"
+          accessibilityLabel={action.label}
+          style={[styles.action, { backgroundColor: colors.primary }]}
+        >
+          <Ionicons name="add" size={18} color={colors.onPrimary} />
+          <Text style={[styles.actionText, { color: colors.onPrimary }]}>{action.label}</Text>
+        </Pressable>
+      ) : null}
     </View>
   )
 }
@@ -47,4 +59,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 21,
   },
+  action: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 8,
+    paddingHorizontal: 20,
+    minHeight: 44,
+    borderRadius: 999,
+  },
+  actionText: { fontSize: 15, fontWeight: "700" },
 })
