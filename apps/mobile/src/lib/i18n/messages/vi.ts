@@ -66,4 +66,10 @@ export const vi = {
   "transactions.delete.cancel": "Hủy",
   "transactions.delete.success": "Đã xóa",
   "transactions.error.generic": "Đã có lỗi xảy ra. Vui lòng thử lại",
+  "sync.pending": "Đang chờ",
+  "sync.synced": "Đã đồng bộ",
+  "sync.error": "Đồng bộ lỗi",
+  "sync.retry": "Thử lại",
+  "offline.banner": "Vẫn ghi được — sẽ đồng bộ khi có lại mạng",
+  "offline.dataAsOf": "Số liệu tính đến {time}",
 };

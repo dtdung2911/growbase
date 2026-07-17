@@ -158,7 +158,7 @@ development_status:
   16-1-quick-add-transaction: done
   16-2-transaction-list-edit-delete: done
   16-3-offline-queue-sync: done
-  16-4-sync-status-cached-read: backlog
+  16-4-sync-status-cached-read: done
   epic-16-retrospective: optional
   epic-17: backlog
   17-1-home-glance: backlog

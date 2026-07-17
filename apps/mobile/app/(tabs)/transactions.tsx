@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons"
 import type { UpdateTransactionInput } from "@growbase/shared/schemas/transaction"
 import type { TransactionWithJoins } from "@growbase/shared/types/app"
 import { useState } from "react"
@@ -15,16 +16,23 @@ import { useMyMemberId } from "@/features/transactions/useMyMemberId"
 import { useTransactions } from "@/features/transactions/useTransactions"
 import { useUpdateTransaction } from "@/features/transactions/useUpdateTransaction"
 import { useTranslation } from "@/lib/i18n/TranslationProvider"
+import { useIsOnline } from "@/lib/network/useIsOnline"
 import { useTheme } from "@/lib/theme/ThemeProvider"
 import { useAppStore } from "@/store/appStore"
+
+function formatTime(ms: number): string {
+  const d = new Date(ms)
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`
+}
 
 export default function TransactionsScreen() {
   const { colors } = useTheme()
   const { t } = useTranslation()
   const insets = useSafeAreaInsets()
   const currentMonth = useAppStore((s) => s.currentMonth)
+  const isOnline = useIsOnline()
 
-  const { data: transactions, isPending, isError } = useTransactions()
+  const { data: transactions, isPending, isError, dataUpdatedAt } = useTransactions()
   const { data: myMemberId = null } = useMyMemberId()
   const updateMutation = useUpdateTransaction()
   const deleteMutation = useDeleteTransaction()
@@ -67,6 +75,19 @@ export default function TransactionsScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
       <Text style={[styles.heading, { color: colors.textInk }]}>{t("nav.transactions")}</Text>
+
+      {!isOnline ? (
+        <View style={[styles.banner, { backgroundColor: colors.primarySoft }]}>
+          <Ionicons name="cloud-offline-outline" size={16} color={colors.primary} />
+          <Text style={[styles.bannerText, { color: colors.primary }]}>{t("offline.banner")}</Text>
+        </View>
+      ) : null}
+
+      {!isOnline && dataUpdatedAt > 0 ? (
+        <Text style={[styles.cachedAs, { color: colors.textMuted }]}>
+          {t("offline.dataAsOf").replace("{time}", formatTime(dataUpdatedAt))}
+        </Text>
+      ) : null}
 
       {isPending ? (
         <View>
@@ -127,6 +148,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 12,
+  },
+  banner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginHorizontal: 16,
+    marginBottom: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  bannerText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  cachedAs: {
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+    fontSize: 12,
   },
   separator: {
     height: StyleSheet.hairlineWidth,
