@@ -1,26 +1,34 @@
 import { keys } from "@growbase/shared/queryKeys"
-import type { UpdateTransactionInput } from "@growbase/shared/schemas/transaction"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { apiFetch } from "@/api/client"
+import { updateTransactionSchema, type UpdateTransactionInput } from "@growbase/shared/schemas/transaction"
+import { useMutation } from "@tanstack/react-query"
+import { queryClient } from "@/lib/query/queryClient"
+import { enqueueAndSync } from "@/lib/sync/dispatch"
+import { hasUnsyncedCreate } from "@/lib/sync/mutationQueue"
 import { useAppStore } from "@/store/appStore"
+import { mutateCache } from "./optimisticCache"
 
 export function useUpdateTransaction() {
-  const queryClient = useQueryClient()
   const householdId = useAppStore((s) => s.householdId)
   const currentMonth = useAppStore((s) => s.currentMonth)
 
   return useMutation({
-    mutationFn: (input: UpdateTransactionInput) =>
-      apiFetch<{ id: string }>(`/api/transactions/${input.id}`, {
+    mutationFn: async (input: UpdateTransactionInput) => {
+      if (!householdId) throw new Error("Chưa chọn hộ gia đình")
+      const body = updateTransactionSchema.parse(input)
+      if (hasUnsyncedCreate(householdId, body.id)) {
+        throw new Error("Giao dịch chưa đồng bộ xong, thử lại sau")
+      }
+      const item = enqueueAndSync({
+        householdId,
+        kind: "update",
+        path: `/api/transactions/${body.id}`,
         method: "PUT",
-        body: input,
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: keys.transactions(householdId ?? "", currentMonth),
+        body: { ...body },
       })
-      queryClient.invalidateQueries({ queryKey: keys.budget(householdId ?? "", currentMonth) })
-      queryClient.invalidateQueries({ queryKey: keys.accounts(householdId ?? "") })
+      await mutateCache(queryClient, keys.transactions(householdId, currentMonth), (rows) =>
+        rows.map((row) => (row.id === body.id ? { ...row, ...body } : row))
+      )
+      return item
     },
   })
 }

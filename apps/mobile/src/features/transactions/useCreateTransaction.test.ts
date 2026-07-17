@@ -1,60 +1,66 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-const apiFetch = vi.hoisted(() => vi.fn())
-const invalidateQueries = vi.hoisted(() => vi.fn())
+const enqueueAndSync = vi.hoisted(() => vi.fn())
+const mutateCache = vi.hoisted(() => vi.fn())
 const storeRef = vi.hoisted(() => ({ state: { householdId: "h1", currentMonth: "2026-07" } }))
 
-vi.mock("@/api/client", () => ({ apiFetch }))
-vi.mock("@/lib/query/queryClient", () => ({ queryClient: { invalidateQueries } }))
+vi.mock("@/lib/sync/dispatch", () => ({ enqueueAndSync }))
+vi.mock("./optimisticCache", () => ({ mutateCache }))
+vi.mock("@/lib/query/queryClient", () => ({ queryClient: {} }))
 vi.mock("@/store/appStore", () => ({
   useAppStore: (selector: (s: typeof storeRef.state) => unknown) => selector(storeRef.state),
 }))
 vi.mock("@tanstack/react-query", () => ({ useMutation: (options: unknown) => options }))
 
-import { type NewTransaction, useCreateTransaction } from "@/features/transactions/useCreateTransaction"
+import type { CreateTransactionInput } from "@growbase/shared/schemas/transaction"
+import { useCreateTransaction } from "@/features/transactions/useCreateTransaction"
 
 type CapturedMutation = {
-  mutationFn: (body: NewTransaction) => Promise<{ id: string }>
-  onSuccess: (data: unknown, body: NewTransaction) => void
+  mutationFn: (input: CreateTransactionInput) => Promise<unknown>
 }
 
-const body: NewTransaction = {
+const input: CreateTransactionInput = {
   amount: 50000,
   direction: "out",
   transaction_type: "expense",
-  category_id: "c1",
-  account_id: "a1",
+  category_id: "11111111-1111-1111-1111-111111111111",
+  account_id: "22222222-2222-2222-2222-222222222222",
   transaction_date: "2026-07-17",
+  is_unusual_income: false,
 }
 
 beforeEach(() => {
-  apiFetch.mockReset()
-  invalidateQueries.mockReset()
+  enqueueAndSync.mockReset()
+  mutateCache.mockReset()
   storeRef.state = { householdId: "h1", currentMonth: "2026-07" }
 })
 
 describe("useCreateTransaction", () => {
-  it("POSTs the body to /api/transactions", async () => {
-    apiFetch.mockResolvedValue({ id: "t1" })
+  it("enqueues a create mutation and returns the queued item", async () => {
+    enqueueAndSync.mockReturnValue({ id: "q1" })
+    mutateCache.mockResolvedValue(undefined)
     const m = useCreateTransaction() as unknown as CapturedMutation
-    await expect(m.mutationFn(body)).resolves.toEqual({ id: "t1" })
-    expect(apiFetch).toHaveBeenCalledWith("/api/transactions", { method: "POST", body })
+
+    await expect(m.mutationFn(input)).resolves.toEqual({ id: "q1" })
+
+    expect(enqueueAndSync).toHaveBeenCalledWith({
+      householdId: "h1",
+      kind: "create",
+      path: "/api/transactions",
+      method: "POST",
+      body: input,
+    })
   })
 
-  it("invalidates transactions, dashboard, budget and accounts on success", () => {
-    ;(useCreateTransaction() as unknown as CapturedMutation).onSuccess(undefined, body)
-    expect(invalidateQueries).toHaveBeenCalledTimes(4)
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ["transactions", "h1", "2026-07"] })
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ["dashboard", "h1", "2026-07"] })
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ["budget", "h1", "2026-07"] })
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ["accounts", "h1"] })
-  })
-
-  it("also invalidates the transaction's month when it differs from currentMonth", () => {
+  it("optimistically prepends the new row keyed by the queued item id", async () => {
+    enqueueAndSync.mockReturnValue({ id: "q1" })
+    mutateCache.mockResolvedValue(undefined)
     const m = useCreateTransaction() as unknown as CapturedMutation
-    m.onSuccess(undefined, { ...body, transaction_date: "2026-06-30" })
-    expect(invalidateQueries).toHaveBeenCalledTimes(7)
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ["transactions", "h1", "2026-06"] })
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ["transactions", "h1", "2026-07"] })
+
+    await m.mutationFn(input)
+
+    expect(mutateCache).toHaveBeenCalledWith({}, ["transactions", "h1", "2026-07"], expect.any(Function))
+    const transform = mutateCache.mock.calls[0][2] as (rows: unknown[]) => unknown[]
+    expect(transform([])).toEqual([{ ...input, id: "q1" }])
   })
 })

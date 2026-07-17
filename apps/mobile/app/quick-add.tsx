@@ -84,6 +84,7 @@ export default function QuickAddScreen() {
         account_id: selectedAccountId,
         description: note.trim() || undefined,
         transaction_date: date,
+        is_unusual_income: false,
       })
       pushRecent(categoryId)
       Toast.show({ type: "success", text1: t("tx.saved"), visibilityTime: 2000 })

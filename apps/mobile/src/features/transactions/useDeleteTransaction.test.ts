@@ -1,46 +1,66 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-const apiFetch = vi.hoisted(() => vi.fn())
-const invalidateQueries = vi.hoisted(() => vi.fn())
+const enqueueAndSync = vi.hoisted(() => vi.fn())
+const mutateCache = vi.hoisted(() => vi.fn())
+const hasUnsyncedCreate = vi.hoisted(() => vi.fn())
 const storeRef = vi.hoisted(() => ({ state: { householdId: "h1", currentMonth: "2026-07" } }))
 
-vi.mock("@/api/client", () => ({ apiFetch }))
+vi.mock("@/lib/sync/dispatch", () => ({ enqueueAndSync }))
+vi.mock("@/lib/sync/mutationQueue", () => ({ hasUnsyncedCreate }))
+vi.mock("./optimisticCache", () => ({ mutateCache }))
+vi.mock("@/lib/query/queryClient", () => ({ queryClient: {} }))
 vi.mock("@/store/appStore", () => ({
-  useAppStore: (selector: (s: unknown) => unknown) => selector(storeRef.state),
+  useAppStore: (selector: (s: typeof storeRef.state) => unknown) => selector(storeRef.state),
 }))
-vi.mock("@tanstack/react-query", () => ({
-  useMutation: (opts: unknown) => opts,
-  useQueryClient: () => ({ invalidateQueries }),
-}))
+vi.mock("@tanstack/react-query", () => ({ useMutation: (options: unknown) => options }))
 
 import { useDeleteTransaction } from "@/features/transactions/useDeleteTransaction"
 
 type CapturedMutation = {
   mutationFn: (id: string) => Promise<unknown>
-  onSuccess: () => void
 }
 
 beforeEach(() => {
-  apiFetch.mockReset()
-  invalidateQueries.mockReset()
+  enqueueAndSync.mockReset()
+  mutateCache.mockReset()
+  hasUnsyncedCreate.mockReset()
+  hasUnsyncedCreate.mockReturnValue(false)
+  storeRef.state = { householdId: "h1", currentMonth: "2026-07" }
 })
 
 describe("useDeleteTransaction", () => {
-  it("DELETEs the transaction id endpoint", async () => {
-    apiFetch.mockResolvedValue({ id: "t1" })
-    const mutation = useDeleteTransaction() as unknown as CapturedMutation
+  it("enqueues a delete mutation for the transaction id", async () => {
+    enqueueAndSync.mockReturnValue({ id: "q1" })
+    mutateCache.mockResolvedValue(undefined)
+    const m = useDeleteTransaction() as unknown as CapturedMutation
 
-    await mutation.mutationFn("t1")
+    await expect(m.mutationFn("t1")).resolves.toEqual({ id: "q1" })
 
-    expect(apiFetch).toHaveBeenCalledWith("/api/transactions/t1", { method: "DELETE" })
+    expect(enqueueAndSync).toHaveBeenCalledWith({
+      householdId: "h1",
+      kind: "delete",
+      path: "/api/transactions/t1",
+      method: "DELETE",
+    })
   })
 
-  it("invalidates the current-month transactions cache on success", () => {
-    const mutation = useDeleteTransaction() as unknown as CapturedMutation
-    mutation.onSuccess()
+  it("optimistically removes the row from the cache", async () => {
+    enqueueAndSync.mockReturnValue({ id: "q1" })
+    mutateCache.mockResolvedValue(undefined)
+    const m = useDeleteTransaction() as unknown as CapturedMutation
 
-    expect(invalidateQueries).toHaveBeenCalledWith({
-      queryKey: ["transactions", "h1", "2026-07"],
-    })
+    await m.mutationFn("t1")
+
+    expect(mutateCache).toHaveBeenCalledWith({}, ["transactions", "h1", "2026-07"], expect.any(Function))
+    const transform = mutateCache.mock.calls[0][2] as (rows: { id: string }[]) => unknown[]
+    expect(transform([{ id: "t1" }, { id: "t2" }])).toEqual([{ id: "t2" }])
+  })
+
+  it("refuses to delete a transaction that has an unsynced create pending", async () => {
+    hasUnsyncedCreate.mockReturnValue(true)
+    const m = useDeleteTransaction() as unknown as CapturedMutation
+
+    await expect(m.mutationFn("t1")).rejects.toThrow("Giao dịch chưa đồng bộ xong, thử lại sau")
+    expect(enqueueAndSync).not.toHaveBeenCalled()
   })
 })
