@@ -56,44 +56,55 @@ export function WeekdayChart({ data }: WeekdayChartProps) {
   const { t } = useTranslation()
   const maxVal = Math.max(...data.map((d) => d.amount), 1)
 
-  const options = useMemo(() => ({
-    chart: { toolbar: { show: false }, fontFamily: "inherit" },
-    colors: data.map((d) =>
-      d.amount === Math.max(...data.map((x) => x.amount))
-        ? BRAND.primary
-        : `${BRAND.primary}55`
-    ),
-    plotOptions: {
-      bar: {
-        distributed: true,
-        horizontal: false,
-        borderRadius: 6,
-        columnWidth: "60%",
-      },
-    },
-    dataLabels: { enabled: false },
-    xaxis: {
-      categories: WEEKDAY_KEYS.map((k) => t(k)),
-      labels: { style: { fontSize: "10px" } },
-      axisBorder: { show: false },
-      axisTicks: { show: false },
-    },
-    yaxis: {
-      labels: {
-        style: { fontSize: "10px" },
-        formatter: (v: number) => `${Math.round(v / 1_000_000)}M`,
-      },
-    },
-    tooltip: { y: { formatter: (v: number) => formatVND(v) } },
-    legend: { show: false },
-    grid: {
-      borderColor: "hsl(var(--border))",
-      strokeDashArray: 4,
-      yaxis: { lines: { show: true } },
-      xaxis: { lines: { show: false } },
-    },
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }) as ApexOptions, [data, t])
+  const options = useMemo(
+    () =>
+      ({
+        chart: {
+          type: "bar",
+          stacked: true,
+          toolbar: {
+            show: false,
+          },
+          fontFamily: "inherit",
+        },
+        colors: data.map((d) =>
+          d.amount === Math.max(...data.map((x) => x.amount))
+            ? BRAND.primary
+            : `${BRAND.primary}55`,
+        ),
+        plotOptions: {
+          bar: {
+            distributed: true,
+            horizontal: false,
+            borderRadius: 6,
+            columnWidth: "60%",
+          },
+        },
+        dataLabels: { enabled: false },
+        xaxis: {
+          categories: WEEKDAY_KEYS.map((k) => t(k)),
+          labels: { style: { fontSize: "10px" } },
+          axisBorder: { show: false },
+          axisTicks: { show: false },
+        },
+        yaxis: {
+          labels: {
+            style: { fontSize: "10px" },
+            formatter: (v: number) => `${Math.round(v / 1_000_000)}M`,
+          },
+        },
+        tooltip: { y: { formatter: (v: number) => formatVND(v) } },
+        legend: { show: false },
+        grid: {
+          borderColor: "hsl(var(--border))",
+          strokeDashArray: 4,
+          yaxis: { lines: { show: true } },
+          xaxis: { lines: { show: false } },
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }) as ApexOptions,
+    [data, t],
+  );
 
   const series = useMemo(() => [
     { name: t("dashboard.expense"), data: data.map((d) => d.amount) },

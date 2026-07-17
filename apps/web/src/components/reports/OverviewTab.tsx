@@ -118,54 +118,48 @@ export function OverviewTab({ data }: OverviewTabProps) {
   }
 
   const behaviorOptions = useMemo(
-    () => ({
-      chart: {
-        stacked: true,
-        toolbar: { show: false },
-        fontFamily: "inherit",
-      },
-      colors: BEHAVIORS.map((b) => BEHAVIOR_COLORS[b]) as string[],
-      plotOptions: {
-        bar: {
-          horizontal: false,
-          borderRadius: 5,
-          columnWidth: "55%",
+    () =>
+      ({
+        chart: {
+          stacked: true,
+          toolbar: { show: false },
+          fontFamily: "inherit",
         },
-      },
-      dataLabels: { enabled: false },
-      xaxis: {
-        categories,
-        labels: { style: { fontSize: "10px" } },
-        axisBorder: { show: false },
-        axisTicks: { show: false },
-      },
-      yaxis: {
-        labels: {
-          style: { fontSize: "10px" },
-          formatter: (v: number) => `${Math.round(v / 1_000_000)}M`,
+        colors: BEHAVIORS.map((b) => BEHAVIOR_COLORS[b]) as string[],
+        dataLabels: { enabled: false },
+        xaxis: {
+          categories,
+          labels: { style: { fontSize: "10px" } },
+          axisBorder: { show: false },
+          axisTicks: { show: false },
         },
-      },
-      tooltip: {
-        shared: true,
-        intersect: false,
-        y: { formatter: (v: number) => formatVND(v) },
-      },
-      legend: {
-        show: true,
-        position: "bottom",
-        fontSize: "11px",
-        markers: { width: 8, height: 8, radius: 4 },
-      },
-      grid: {
-        borderColor: "hsl(var(--border))",
-        strokeDashArray: 4,
-        yaxis: { lines: { show: true } },
-        xaxis: { lines: { show: false } },
-      },
-    }) as ApexOptions,
+        yaxis: {
+          labels: {
+            style: { fontSize: "10px" },
+            formatter: (v: number) => `${Math.round(v / 1_000_000)}M`,
+          },
+        },
+        tooltip: {
+          shared: true,
+          intersect: false,
+          y: { formatter: (v: number) => formatVND(v) },
+        },
+        legend: {
+          show: true,
+          position: "bottom",
+          fontSize: "11px",
+          markers: { width: 8, height: 8, radius: 4 },
+        },
+        grid: {
+          borderColor: "hsl(var(--border))",
+          strokeDashArray: 4,
+          yaxis: { lines: { show: true } },
+          xaxis: { lines: { show: false } },
+        },
+      }) as ApexOptions,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [categories, t]
-  )
+    [categories, t],
+  );
 
   const behaviorSeries = useMemo(
     () =>

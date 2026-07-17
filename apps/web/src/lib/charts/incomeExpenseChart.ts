@@ -17,18 +17,39 @@ export function incomeExpenseComboChart(
   ]
 
   const options = {
-    chart: { toolbar: { show: false }, fontFamily: "inherit", stacked: false },
-    colors: [SEMANTIC.success, SEMANTIC.error, BRAND.primary],
-    plotOptions: { bar: { horizontal: false, borderRadius: 6, columnWidth: "60%" } },
-    stroke: { width: [0, 0, 3], curve: "smooth" },
-    markers: { size: [0, 0, 4], strokeWidth: 0 },
+    chart: { toolbar: { show: true }, fontFamily: "inherit", stacked: true },
+    colors: [BRAND.primary, SEMANTIC.error, SEMANTIC.warning],
+    // plotOptions: { bar: { horizontal: false, borderRadius: 6, columnWidth: "20%" } },
+    stroke: { width: [2, 2, 2], curve: "smooth" },
+    markers: { size: [2, 2, 4], strokeWidth: 1 },
     dataLabels: { enabled: false },
     xaxis: {
       categories,
-      labels: { style: { fontSize: "11px", fontWeight: 600 } },
-      axisBorder: { show: false },
+      axisBorder: { show: true },
       axisTicks: { show: false },
     },
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        columnWidth: "18%",
+        borderRadius: 10,
+        borderRadiusApplication: 'around', // 'around', 'end'
+        borderRadiusWhenStacked: 'all', // 'all', 'last'
+        isFunnel3d: true
+      },
+    },
+    responsive: [
+      {
+        breakpoint: 480,
+        options: {
+          legend: {
+            position: 'bottom',
+            offsetX: -10,
+            offsetY: 0,
+          },
+        },
+      },
+    ],
     yaxis: {
       labels: {
         style: { fontSize: "10px" },
@@ -42,12 +63,6 @@ export function incomeExpenseComboChart(
       horizontalAlign: "right",
       fontSize: "12px",
       markers: { width: 8, height: 8, radius: 4 },
-    },
-    grid: {
-      borderColor: "hsl(var(--border))",
-      strokeDashArray: 4,
-      yaxis: { lines: { show: true } },
-      xaxis: { lines: { show: false } },
     },
   } as ApexOptions
 
