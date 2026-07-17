@@ -68,4 +68,10 @@ export const en: Record<keyof typeof vi, string> = {
   "transactions.delete.cancel": "Cancel",
   "transactions.delete.success": "Deleted",
   "transactions.error.generic": "Something went wrong. Please try again",
+  "sync.pending": "Pending",
+  "sync.synced": "Synced",
+  "sync.error": "Sync failed",
+  "sync.retry": "Retry",
+  "offline.banner": "Still saving — will sync when you're back online",
+  "offline.dataAsOf": "Data as of {time}",
 };
