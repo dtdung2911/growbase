@@ -257,3 +257,25 @@ source_spec: `spec-15-4-nav-shell-i18n-theme.md`
 - source_spec: `17-1-home-glance.md`
   summary: [17-1] `isFlexibleBudgetLine` matches flexible cost types by template name/label — households that renamed their flexible cost types get `flexible=[]`, silently hiding the daily-allowance card and zeroing `calculateDailyRemaining`.
   evidence: `packages/shared/src/rules/dailyRemaining.ts:6-18` matches `cost_type_name` against `COST_TYPE_GROUP_LABELS`; pre-existing shared-rule limitation surfaced by first UI consumer. Fix: match by `cost_type_code` or a stable flag instead of display name.
+
+## Deferred from: code review of story 17-3-funds-view (18-07-2026)
+
+- source_spec: `spec-17-3-funds-view.md`
+  summary: [17-3] Freedom (and emergency-by-months) funds show only a bare balance with no progress indicator, diverging from web `FundCard` which renders a monthly-cap / months-of-expense bar.
+  evidence: `apps/mobile/src/features/funds/fundsGroup.ts` `deriveFundStatus` special-cases only `goal`; other types fall to `target_amount>0` and freedom funds have `target_amount=null` + `reset_monthly=true`. Spec Design Notes intentionally scoped v1 to "read-only tối giản" (no urgent/months/monthly-cap derivation), so this is a deliberate v1 gap, not a bug. Web parity ref: `apps/web/src/components/funds/FundCard.tsx` (`freedomProgress = current_balance / (amount_per_member ?? monthly_contribution)`). Fix later: port the freedom monthly-cap + emergency `target_months_expense` derivation.
+
+- source_spec: `spec-17-3-funds-view.md`
+  summary: [17-3] Goal cards on mobile are sorted by `priority_rank` (asc, null-last) while the web funds list renders its goal group in API order (`priority`, `sort_order`) — same household shows goals in a different order across surfaces.
+  evidence: `apps/mobile/src/features/funds/fundsGroup.ts` `compareGoal`; spec Boundaries mandated the `priority_rank` sort. Web `apps/web/src/components/funds/FundList.tsx` uses an unsorted `funds.filter(type==="goal")`; `priority_rank` sort on web is applied only to the plan strip / rank sheet, not the displayed cards. Minor UX inconsistency; pick one canonical order in a focused parity pass.
+
+- source_spec: `spec-17-3-funds-view.md`
+  summary: [17-3] Offline banner on read-only glance screens reuses the capture-screen copy `offline.banner` ("still saving — will sync"), which is inaccurate for a screen that never writes.
+  evidence: `apps/mobile/app/funds.tsx` renders `t("offline.banner")`; this is the established app-wide pattern — `apps/mobile/app/(tabs)/stats.tsx` (and home) use the same key. Epic-17 context specifies read-only screens should show only a cached-as-of indicator. App-wide, not caused by this story. Fix: introduce a neutral read-only offline key and apply across stats/funds/home together.
+
+- source_spec: `spec-17-3-funds-view.md`
+  summary: [17-3] Funds screen shows an indefinite skeleton when `useFunds` is disabled (no household selected or app locked), because a disabled react-query v5 query stays `isPending=true`/`isPaused=false`.
+  evidence: `apps/mobile/app/funds.tsx` skeleton gate `query.isPending && !query.isPaused`; `useFunds` `enabled: !!user && !!householdId && !isLocked`. This gate pattern is app-wide (`useDashboard`, `useTransactions`, stats/home screens share it) and reachable only via the rare no-household state; not caused by this story. Fix systemically: treat `fetchStatus==="idle"` (disabled) as a non-skeleton state across the read screens.
+
+- source_spec: `spec-17-3-funds-view.md`
+  summary: [17-3] A refetch error while online with stale cache present renders stale funds silently — no error/retry cue (only the no-cache error path shows an EmptyState).
+  evidence: `apps/mobile/app/funds.tsx` handles `query.isError` only under `!funds`; matches the established mobile read-screen pattern (stats uses EmptyState-on-no-data, no toast). Offline-first behavior is acceptable but the missing cue is a minor app-wide UX gap. Fix later alongside a shared stale-error indicator.

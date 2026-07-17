@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons"
+import { router } from "expo-router"
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import Toast from "react-native-toast-message"
@@ -64,6 +65,16 @@ export default function MenuScreen() {
             )
           })
         )}
+      </View>
+
+      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <Pressable style={styles.row} accessibilityRole="button" onPress={() => router.push("/funds")}>
+          <View style={styles.rowLead}>
+            <Ionicons name="wallet-outline" size={20} color={colors.textInk} />
+            <Text style={[styles.rowLabel, { color: colors.textInk }]}>{t("menu.funds")}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={colors.textFaint} />
+        </Pressable>
       </View>
 
       <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>{t("settings.appearance")}</Text>
@@ -162,6 +173,11 @@ const styles = StyleSheet.create({
   },
   rowDisabled: {
     opacity: 0.5,
+  },
+  rowLead: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
   },
   rowLabel: {
     fontSize: 16,
