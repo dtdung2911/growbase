@@ -18,6 +18,9 @@ importers:
       '@growbase/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@hookform/resolvers':
+        specifier: ^3.10.0
+        version: 3.10.0(react-hook-form@7.81.0(@types/react@19.2.17)(react@19.2.3))
       '@supabase/supabase-js':
         specifier: ^2.46.1
         version: 2.110.6
@@ -69,9 +72,15 @@ importers:
       react:
         specifier: 19.2.3
         version: 19.2.3
+      react-hook-form:
+        specifier: ^7.81.0
+        version: 7.81.0(@types/react@19.2.17)(react@19.2.3)
       react-native:
         specifier: 0.85.3
         version: 0.85.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.2.3)
+      react-native-gesture-handler:
+        specifier: ~2.31.2
+        version: 2.31.2(@types/react@19.2.17)(react-native@0.85.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.2.3))(react@19.2.3)
       react-native-mmkv:
         specifier: ^4.3.2
         version: 4.3.2(@types/react@19.2.17)(react-native-nitro-modules@0.36.1(@types/react@19.2.17)(react-native@0.85.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.2.3))(react@19.2.3))(react-native@0.85.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.2.3))(react@19.2.3)
@@ -5777,6 +5786,10 @@ snapshots:
     dependencies:
       react-hook-form: 7.81.0(@types/react@18.3.31)(react@18.3.1)
 
+  '@hookform/resolvers@3.10.0(react-hook-form@7.81.0(@types/react@19.2.17)(react@19.2.3))':
+    dependencies:
+      react-hook-form: 7.81.0(@types/react@19.2.17)(react@19.2.3)
+
   '@iconify-react/ant-design@1.0.5(@types/react@18.3.31)(react@18.3.1)':
     dependencies:
       '@iconify/css-react': 1.0.2(@types/react@18.3.31)(react@18.3.1)
@@ -6623,9 +6636,7 @@ snapshots:
       metro-runtime: 0.84.4
     transitivePeerDependencies:
       - '@babel/core'
-      - bufferutil
       - supports-color
-      - utf-8-validate
 
   '@react-native/normalize-colors@0.74.89':
     optional: true
@@ -8594,6 +8605,12 @@ snapshots:
       react: 18.3.1
     optionalDependencies:
       '@types/react': 18.3.31
+
+  react-hook-form@7.81.0(@types/react@19.2.17)(react@19.2.3):
+    dependencies:
+      react: 19.2.3
+    optionalDependencies:
+      '@types/react': 19.2.17
 
   react-is@16.13.1: {}
 

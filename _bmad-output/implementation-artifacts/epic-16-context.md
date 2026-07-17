@@ -5,7 +5,6 @@
 ## Goal
 
 This epic is the heart of the mobile product: let a user capture a transaction in under 15 seconds, edit or delete it, and keep everything working reliably offline with no lost or duplicated records. It delivers the speed-optimized quick-add flow, a recent-transactions list with edit/delete, a durable offline mutation queue with idempotent sync, and per-transaction sync status plus cached reads so users trust their data even without connectivity.
-
 ## Stories
 
 - Story 16.1: Quick-add giao dịch (<15s)

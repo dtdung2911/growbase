@@ -208,3 +208,36 @@ source_spec: `spec-15-4-nav-shell-i18n-theme.md`
 - source_spec: `_bmad-output/implementation-artifacts/spec-16-1-quick-add-transaction.md`
   summary: The transaction `amount` field has no upper bound — only `z.number().positive()` — so an arbitrarily large value passes client-side validation on both quick-add and web, with only the API/DB layer (if any) as a backstop. Needs a shared-schema-level product decision on a sane max, applied consistently to web + mobile; out of scope for a mobile-only story.
   evidence: `packages/shared/src/schemas/transaction.ts` `createTransactionInput` amount field is `z.number().positive()` with no `.max()`; `apps/mobile/app/quick-add.tsx` `canSave` only checks `amount > 0`, so `999999999999` types and submits cleanly through the mobile quick-add form.
+## Deferred from: code review story 16-2 (transaction list edit/delete) — 17-07-2026
+
+- source_spec: `spec-16-2-transaction-list-edit-delete.md`
+  summary: [16-2] `useTransactions.ts` `isPending` stays true indefinitely when the query is `enabled: false` (household/user not yet loaded), so the transactions screen's skeleton loader never resolves to an error/empty state in that case.
+  evidence: `apps/mobile/src/features/transactions/useTransactions.ts` — TanStack Query v5 semantics: `isPending` is undefined by disabled state, not false. Likely unreachable in practice since bottom-tab nav is gated behind household/month context being set (Epic 15.3), but not proven unreachable. Fix: derive an explicit "not ready" branch instead of relying on `isPending` alone.
+
+- source_spec: `spec-16-2-transaction-list-edit-delete.md`
+  summary: [16-2] Edit/delete mutations don't invalidate the transaction-list cache on error, so a row that 404s/403s due to concurrent modification from another device (edited or deleted elsewhere) stays visible and actionable until next natural refetch.
+  evidence: `apps/mobile/src/features/transactions/useUpdateTransaction.ts`, `useDeleteTransaction.ts` — `onError` only surfaces a toast, no `invalidateQueries`/refetch. Concurrent-edit races are a pre-existing class of gap the web app also doesn't fully guard against; not introduced as a regression by this story. Fix: invalidate `keys.transactions` on error too, or refetch on focus.
+
+- source_spec: `spec-16-2-transaction-list-edit-delete.md`
+  summary: [16-2] Editing `transaction_date` to a day outside `currentMonth` moves the transaction to another month's list, but only the currently-viewed month's query key is invalidated — the destination month's cache stays stale until manually refetched, and `canModifyTransaction`'s own month-scoping isn't re-validated post-edit.
+  evidence: `apps/mobile/src/features/transactions/TransactionEditSheet.tsx` (free-text `transaction_date` field) + `useUpdateTransaction.ts` (invalidates only `keys.transactions(hid, currentMonth)`). Same limitation exists in the web edit flow (`apps/web/src/lib/hooks/useTransactions.ts`), so this is a pre-existing app-wide gap, not a 16-2-specific regression. Fix: invalidate transactions queries by predicate (all months) instead of a single month key.
+
+- source_spec: `spec-16-2-transaction-list-edit-delete.md`
+  summary: [16-2] `TransactionRow`'s swipe-to-reveal action panel has no shared "currently open" coordination across rows — swiping row A open then row B open leaves both open simultaneously.
+  evidence: `apps/mobile/src/features/transactions/TransactionRow.tsx` — each row owns an independent `Swipeable` ref. Cosmetic UX polish, not a correctness or safety issue. Fix: lift a shared ref/context that closes the previously-open row on new swipe-open.
+
+- source_spec: `spec-16-2-transaction-list-edit-delete.md`
+  summary: [16-2] No interaction/render tests exist for the new components containing the branching logic (`TransactionRow`, `TransactionEditSheet`, `DeleteConfirmSheet`, and `transactions.tsx`'s loading/error/empty/edit/delete orchestration) — only pure-logic units (`canModifyTransaction`, the two mutation hooks) are covered.
+  evidence: `apps/mobile/src/features/transactions/*.test.ts` covers hooks/predicates only; no `*.test.tsx` for the UI components. The `onRequestClose` guard bug fixed in this review pass is exactly the class of defect a basic interaction test would have caught. Fix: add `@testing-library/react-native` render/interaction tests for the four components.
+
+- source_spec: `spec-16-2-transaction-list-edit-delete.md`
+  summary: [16-2] No pull-to-refresh on the transactions `FlatList`; combined with the cache-invalidation gaps above, there's no manual way to force a resync short of leaving and returning to the tab.
+  evidence: `apps/mobile/app/(tabs)/transactions.tsx` `FlatList` has no `refreshing`/`onRefresh`. Enhancement, not a spec'd AC. Fix: wire `RefreshControl` to a manual `refetch()`.
+
+- source_spec: `spec-16-2-transaction-list-edit-delete.md`
+  summary: [16-2] Amount field renders `0` and empty identically (`field.value ? String(field.value) : ""`), so a rejected-as-blank validation error gives no indication the value was actually `0` vs genuinely empty.
+  evidence: `apps/mobile/src/features/transactions/TransactionEditSheet.tsx` amount `TextInput`. Minor UX polish, `amount.positive()` validation still correctly rejects both. Fix: use a sentinel (e.g. track raw string state) instead of falsy-checking the numeric value.
+
+- source_spec: `spec-16-2-transaction-list-edit-delete.md`
+  summary: [16-2] `useMyMemberId` resolving to `null` (stale store after a household switch, a removed member, a pending invite with no member row yet) silently disables edit/delete on every row with no error state or explanation — indistinguishable from intended read-only behavior.
+  evidence: `apps/mobile/src/features/transactions/useMyMemberId.ts` + `canModifyTransaction.ts`. Safe-by-default (fails closed, no destructive action possible), but silent. Fix: surface a banner/toast when member-id resolution fails outright (network/API error) vs. legitimately has no match.

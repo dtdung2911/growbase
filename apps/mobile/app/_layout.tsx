@@ -1,6 +1,7 @@
 import { Stack, useRouter, useSegments } from "expo-router"
 import { StatusBar } from "expo-status-bar"
 import { useEffect } from "react"
+import { GestureHandlerRootView } from "react-native-gesture-handler"
 import Toast from "react-native-toast-message"
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import { useAuthSession } from "@/features/auth/useAuthSession"
@@ -54,15 +55,17 @@ function AuthGate() {
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
-      <ThemeProvider>
-        <QueryProvider>
-          <TranslationProvider>
-            <AuthGate />
-            <Toast />
-          </TranslationProvider>
-        </QueryProvider>
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <QueryProvider>
+            <TranslationProvider>
+              <AuthGate />
+              <Toast />
+            </TranslationProvider>
+          </QueryProvider>
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   )
 }
