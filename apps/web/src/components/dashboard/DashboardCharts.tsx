@@ -42,10 +42,16 @@ export function IncomeExpenseBar({ monthly }: IncomeExpenseBarProps) {
   )
 
   return (
-    <div className="h-56">
-      <Chart type="line" height="100%" width="100%" options={options} series={series} />
+    <div className="h-96">
+      <Chart
+        type="line"
+        height="100%"
+        width="100%"
+        options={options}
+        series={series}
+      />
     </div>
-  )
+  );
 }
 
 type WeekdayChartProps = {
@@ -76,8 +82,7 @@ export function WeekdayChart({ data }: WeekdayChartProps) {
           bar: {
             distributed: true,
             horizontal: false,
-            borderRadius: 6,
-            columnWidth: "60%",
+            borderRadius: 0,
           },
         },
         dataLabels: { enabled: false },

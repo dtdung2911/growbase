@@ -99,7 +99,10 @@ export function DashboardView({
 
       {/* Income vs Expense bar chart + Spending donut */}
       <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
-        <section data-tour="income-expense" className="overflow-hidden rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
+        <section
+          data-tour="income-expense"
+          className="overflow-hidden rounded-[13px] border border-border/40 bg-card p-5 shadow-card"
+        >
           <h2 className="mb-1 text-sm font-semibold">
             {t("dashboard.incomeVsExpense")}
           </h2>
@@ -109,7 +112,10 @@ export function DashboardView({
           <IncomeExpenseBar monthly={data.monthlyIncomeExpense} />
         </section>
 
-        <section data-tour="spending" className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
+        <section
+          data-tour="spending"
+          className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card"
+        >
           <h2 className="mb-3 text-sm font-semibold">
             {t("dashboard.spending")}
           </h2>
@@ -122,8 +128,21 @@ export function DashboardView({
       </div>
 
       {/* Top expense categories + Weekday spending */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section data-tour="top-expenses" className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,320px)_1fr]">
+        <section
+          data-tour="weekday"
+          className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card"
+        >
+          <h2 className="mb-3 text-sm font-semibold">
+            {t("dashboard.weekdaySpending")}
+          </h2>
+          <WeekdayChart data={data.weekdaySpending} />
+        </section>
+
+        <section
+          data-tour="top-expenses"
+          className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card"
+        >
           <h2 className="mb-4 text-sm font-semibold">
             {t("dashboard.topExpenses")}
           </h2>
@@ -133,18 +152,14 @@ export function DashboardView({
             emptyMessage={dayZeroEmptyMessage}
           />
         </section>
-
-        <section data-tour="weekday" className="rounded-[13px] border border-border/40 bg-card p-5 shadow-card">
-          <h2 className="mb-3 text-sm font-semibold">
-            {t("dashboard.weekdaySpending")}
-          </h2>
-          <WeekdayChart data={data.weekdaySpending} />
-        </section>
       </div>
 
       {/* Budget */}
       {data.budgetLines.length > 0 && (
-        <section data-tour="budget" className="overflow-hidden rounded-[13px] border border-border/40 bg-card shadow-card">
+        <section
+          data-tour="budget"
+          className="overflow-hidden rounded-[13px] border border-border/40 bg-card shadow-card"
+        >
           <h2 className="px-5 pb-3 pt-5 text-sm font-semibold">
             {t("dashboard.budget")}
           </h2>

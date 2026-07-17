@@ -16,12 +16,12 @@ type SpendingDonutProps = {
 }
 
 const BEHAVIOR_COLORS: Record<string, string> = {
-  fixed: SEMANTIC.success,
-  variable: BRAND.primary,
+  variable: SEMANTIC.warning,
   wasteful: SEMANTIC.error,
-  debt_repayment: SEMANTIC.warning,
+  debt_repayment: SEMANTIC.success,
   savings_investment: SEMANTIC.violet,
-}
+  fixed: BRAND.primary,
+};
 
 export function SpendingDonut({ data, formatAmount, emptyMessage }: SpendingDonutProps) {
   const { t } = useTranslation()
@@ -59,7 +59,7 @@ export function SpendingDonut({ data, formatAmount, emptyMessage }: SpendingDonu
         labels,
         colors,
         plotOptions: {
-          pie: { donut: { size: "82%" } },
+          pie: { donut: { size: "68%" } },
         },
         dataLabels: { enabled: false },
         tooltip: {
@@ -69,7 +69,7 @@ export function SpendingDonut({ data, formatAmount, emptyMessage }: SpendingDonu
         legend: {
           show: hasData,
           position: "bottom",
-          fontSize: "12px",
+          fontSize: "16px",
           markers: { size: 5, shape: "circle" as const },
           formatter: (
             seriesName: string,
@@ -83,7 +83,7 @@ export function SpendingDonut({ data, formatAmount, emptyMessage }: SpendingDonu
             return `${seriesName} — ${formatAmount(value)}`;
           },
         },
-        stroke: { width: hasData ? 2 : 0 },
+        stroke: { width: hasData ? 3 : 0 },
         states: {
           hover: {
             filter: {

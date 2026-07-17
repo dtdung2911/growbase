@@ -20,19 +20,20 @@ export function incomeExpenseComboChart(
     chart: { toolbar: { show: true }, fontFamily: "inherit", stacked: true },
     colors: [BRAND.primary, SEMANTIC.error, SEMANTIC.warning],
     // plotOptions: { bar: { horizontal: false, borderRadius: 6, columnWidth: "20%" } },
-    stroke: { width: [2, 2, 2], curve: "smooth" },
-    markers: { size: [2, 2, 4], strokeWidth: 1 },
+    stroke: { width: [0, 0, 3], curve: "smooth" },
+    markers: { size: [0, 0, 3], strokeWidth: 1 },
     dataLabels: { enabled: false },
     xaxis: {
       categories,
-      axisBorder: { show: true },
+      labels: { style: { fontSize: "11px", fontWeight: 600 } },
+      axisBorder: { show: false },
       axisTicks: { show: false },
     },
     plotOptions: {
       bar: {
         horizontal: false,
-        columnWidth: "18%",
-        borderRadius: 10,
+        columnWidth: "18px",
+        borderRadius: 0,
         borderRadiusApplication: 'around', // 'around', 'end'
         borderRadiusWhenStacked: 'all', // 'all', 'last'
         isFunnel3d: true
