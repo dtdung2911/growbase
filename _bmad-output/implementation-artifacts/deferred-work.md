@@ -279,3 +279,9 @@ source_spec: `spec-15-4-nav-shell-i18n-theme.md`
 - source_spec: `spec-17-3-funds-view.md`
   summary: [17-3] A refetch error while online with stale cache present renders stale funds silently — no error/retry cue (only the no-cache error path shows an EmptyState).
   evidence: `apps/mobile/app/funds.tsx` handles `query.isError` only under `!funds`; matches the established mobile read-screen pattern (stats uses EmptyState-on-no-data, no toast). Offline-first behavior is acceptable but the missing cue is a minor app-wide UX gap. Fix later alongside a shared stale-error indicator.
+
+## Deferred from: code review of story 17-4 (2026-07-18)
+
+- source_spec: `spec-17-4-budget-view.md`
+  summary: [17-4] Budget screen shows an indefinite skeleton when `useBudget` is disabled (no household or app locked) — same app-wide react-query v5 pattern already logged under 17-3.
+  evidence: `apps/mobile/app/budget.tsx` skeleton gate `query.isPending && !query.isPaused`; `useBudget` `enabled: !!user && !!householdId && !isLocked`. A disabled v5 query stays `status:'pending'`/`fetchStatus:'idle'` so `isPaused` is false. Reachable only via the rare no-household state (Menu→Budget requires an unlocked household). Not caused by this story; identical to the deferred 17-3 funds entry. Fix systemically across read screens (treat `fetchStatus==="idle"` as non-skeleton).
