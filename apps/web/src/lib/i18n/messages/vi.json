@@ -99,6 +99,8 @@
   "tx.editTransaction": "Sửa giao dịch",
   "tx.transactionDetail": "Chi tiết giao dịch",
   "tx.systemTxReadonly": "Giao dịch hệ thống không thể sửa hoặc xoá.",
+  "tx.fundTxLocked": "Giao dịch gắn quỹ — không sửa/xoá trực tiếp. Hoàn tác hoặc chi từ trang quỹ.",
+  "tx.viewFund": "Xem quỹ",
   "tx.type": "Loại",
   "tx.deleteTransaction": "Xoá giao dịch",
   "tx.deleteConfirm": "Bạn có chắc chắn muốn xoá giao dịch này? Hành động không thể hoàn tác.",

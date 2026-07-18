@@ -173,7 +173,7 @@ development_status:
   epic-19: in-progress
   19-1-fund-ops-cache-invalidation: done
   19-2-system-savings-category: done
-  19-3-fund-linked-transaction-badge-lock: backlog
+  19-3-fund-linked-transaction-badge-lock: done
   19-4-revert-fund-contribution: backlog
   19-5-transaction-form-fund-tab: backlog
   19-6-spend-from-fund-rpc: backlog

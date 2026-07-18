@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
   const { data, error } = await auth.supabase
     .from("transactions")
     .select(
-      "id, household_id, member_id, amount, direction, transaction_type, category_id, account_id, fund_id, debt_entry_id, behavior_type, is_unusual_income, exclude_from_budget_report, description, transaction_date, created_at, updated_at, categories(id, name, icon), accounts(id, name, color)"
+      "id, household_id, member_id, amount, direction, transaction_type, category_id, account_id, fund_id, debt_entry_id, behavior_type, is_unusual_income, exclude_from_budget_report, description, transaction_date, created_at, updated_at, categories(id, name, icon), accounts(id, name, color), funds(id, name)"
     )
     .eq("household_id", auth.householdId)
     .gte("transaction_date", from)
@@ -34,8 +34,8 @@ export async function GET(request: NextRequest) {
   }
 
   const rows = (data ?? []).map((row) => {
-    const { categories: cat, accounts: acc, ...rest } = row as Record<string, unknown>
-    return { ...rest, category: cat ?? null, account: acc ?? null }
+    const { categories: cat, accounts: acc, funds: fund, ...rest } = row as Record<string, unknown>
+    return { ...rest, category: cat ?? null, account: acc ?? null, fund: fund ?? null }
   })
 
   return NextResponse.json({ data: rows, error: null })

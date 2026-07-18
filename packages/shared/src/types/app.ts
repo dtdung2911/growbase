@@ -76,6 +76,8 @@ export type TransactionWithJoins = {
   updated_at: string
   category: { id: string; name: string; icon: string | null } | null
   account: { id: string; name: string; color: string | null } | null
+  // Optional: chỉ GET /api/transactions join fund (dashboard/recent không cần)
+  fund?: { id: string; name: string } | null
 }
 
 export type Account = {

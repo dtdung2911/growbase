@@ -21,10 +21,10 @@ export async function PUT(request: Request, { params }: Params) {
 
     const input = parsed.data
 
-    // Verify ownership + fetch transaction_type for system guard
+    // Verify ownership + fetch transaction_type/fund_id for guards
     const { data: existing } = await auth.supabase
       .from("transactions")
-      .select("id, transaction_type")
+      .select("id, transaction_type, fund_id")
       .eq("id", input.id)
       .eq("household_id", auth.householdId)
       .maybeSingle()
@@ -41,6 +41,14 @@ export async function PUT(request: Request, { params }: Params) {
     if (SYSTEM_TYPES.includes(existing.transaction_type)) {
       return NextResponse.json(
         { data: null, error: "Giao dịch hệ thống không thể sửa" },
+        { status: 403 }
+      )
+    }
+
+    // 19-3: transaction gắn quỹ — sửa làm lệch số dư quỹ, thao tác từ trang quỹ
+    if (existing.fund_id) {
+      return NextResponse.json(
+        { data: null, error: "Giao dịch gắn quỹ — hoàn tác hoặc chi từ trang quỹ" },
         { status: 403 }
       )
     }
@@ -78,7 +86,7 @@ export async function DELETE(request: Request, { params }: Params) {
 
     const { data: existing } = await auth.supabase
       .from("transactions")
-      .select("id, transaction_type")
+      .select("id, transaction_type, fund_id")
       .eq("id", params.id)
       .eq("household_id", auth.householdId)
       .maybeSingle()
@@ -95,6 +103,14 @@ export async function DELETE(request: Request, { params }: Params) {
     if (SYSTEM_TYPES.includes(existing.transaction_type)) {
       return NextResponse.json(
         { data: null, error: "Giao dịch hệ thống không thể xoá" },
+        { status: 403 }
+      )
+    }
+
+    // 19-3: transaction gắn quỹ — xóa làm lệch số dư quỹ, thao tác từ trang quỹ
+    if (existing.fund_id) {
+      return NextResponse.json(
+        { data: null, error: "Giao dịch gắn quỹ — hoàn tác hoặc chi từ trang quỹ" },
         { status: 403 }
       )
     }

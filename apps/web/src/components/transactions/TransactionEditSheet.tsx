@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { Icon } from "@iconify/react"
 import {
   Sheet,
@@ -41,6 +42,8 @@ export function TransactionEditSheet({
   // R3: system-generated transactions are read-only
   const SYSTEM_TYPES = ["internal_transfer", "fund_contribution", "fund_withdrawal"]
   const isSystemTx = SYSTEM_TYPES.includes(transaction.transaction_type)
+  // 19-3: giao dịch gắn quỹ cũng khóa — sửa/xóa làm lệch số dư quỹ
+  const isLocked = isSystemTx || Boolean(transaction.fund_id)
 
   const handleSubmit = (data: CreateTransactionInput) => {
     updateMutation.mutate(
@@ -65,9 +68,9 @@ export function TransactionEditSheet({
           <SheetHeader>
             <div className="flex items-center justify-between">
               <SheetTitle>
-                {isSystemTx ? t("tx.transactionDetail") : t("tx.editTransaction")}
+                {isLocked ? t("tx.transactionDetail") : t("tx.editTransaction")}
               </SheetTitle>
-              {!isSystemTx && (
+              {!isLocked && (
                 <Button
                   variant="ghost"
                   size="icon"
@@ -79,11 +82,19 @@ export function TransactionEditSheet({
             </div>
           </SheetHeader>
           <div className="mt-4">
-            {isSystemTx ? (
+            {isLocked ? (
               <div className="space-y-3 text-sm">
                 <p className="text-muted-foreground">
-                  {t("tx.systemTxReadonly")}
+                  {transaction.fund_id ? t("tx.fundTxLocked") : t("tx.systemTxReadonly")}
                 </p>
+                {transaction.fund_id && (
+                  <Link
+                    href={`/funds/${transaction.fund_id}`}
+                    className="inline-flex items-center gap-1 text-primary hover:underline"
+                  >
+                    {t("tx.viewFund")} →
+                  </Link>
+                )}
                 <div className="grid grid-cols-2 gap-2">
                   <span className="text-muted-foreground">{t("tx.type")}</span>
                   <span>{transaction.transaction_type}</span>

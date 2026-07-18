@@ -99,6 +99,8 @@
   "tx.editTransaction": "Edit transaction",
   "tx.transactionDetail": "Transaction detail",
   "tx.systemTxReadonly": "System transactions cannot be edited or deleted.",
+  "tx.fundTxLocked": "Fund-linked transaction — cannot be edited or deleted directly. Revert or spend from the fund page.",
+  "tx.viewFund": "View fund",
   "tx.type": "Type",
   "tx.deleteTransaction": "Delete transaction",
   "tx.deleteConfirm": "Are you sure you want to delete this transaction? This action cannot be undone.",
