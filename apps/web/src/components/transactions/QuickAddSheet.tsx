@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/sheet"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TransactionForm } from "@/components/transactions/TransactionForm"
+import { FundContributeTab } from "@/components/transactions/FundContributeTab"
 import { InternalTransferForm } from "@/components/transactions/InternalTransferForm"
 import { useCreateTransaction } from "@/lib/hooks/useTransactions"
 import { useTransfer } from "@/lib/hooks/useTransfer"
@@ -46,6 +47,7 @@ export function QuickAddSheet({ open, onOpenChange }: QuickAddSheetProps) {
           <TabsList className="w-full">
             <TabsTrigger value="expense" className="flex-1 text-xs">{t("tx.expenseShort")}</TabsTrigger>
             <TabsTrigger value="income" className="flex-1 text-xs">{t("tx.incomeShort")}</TabsTrigger>
+            <TabsTrigger value="fund" className="flex-1 text-xs">{t("tx.fundShort")}</TabsTrigger>
             <TabsTrigger value="transfer" className="flex-1 text-xs">{t("tx.transferShort")}</TabsTrigger>
           </TabsList>
           <TabsContent value="expense" className="mt-4">
@@ -63,6 +65,9 @@ export function QuickAddSheet({ open, onOpenChange }: QuickAddSheetProps) {
               isPending={createTx.isPending}
               hideDirection
             />
+          </TabsContent>
+          <TabsContent value="fund" className="mt-4">
+            <FundContributeTab onClose={() => onOpenChange(false)} />
           </TabsContent>
           <TabsContent value="transfer" className="mt-4">
             <InternalTransferForm

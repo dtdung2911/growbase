@@ -175,7 +175,7 @@ development_status:
   19-2-system-savings-category: done
   19-3-fund-linked-transaction-badge-lock: done
   19-4-revert-fund-contribution: done
-  19-5-transaction-form-fund-tab: backlog
+  19-5-transaction-form-fund-tab: done
   19-6-spend-from-fund-rpc: backlog
   19-7-spend-from-fund-ui-reports: backlog
   19-8-default-funds-onboarding: backlog
