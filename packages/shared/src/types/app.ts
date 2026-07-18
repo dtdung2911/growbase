@@ -123,7 +123,7 @@ export type Fund = {
 export type FundTransaction = {
   id: string
   fund_id: string
-  transaction_type: "contribution" | "withdrawal" | "release" | "reset"
+  transaction_type: "contribution" | "withdrawal" | "release" | "reset" | "expense"
   amount: number
   direction: "in" | "out"
   balance_after: number
