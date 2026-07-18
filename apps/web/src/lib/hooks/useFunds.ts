@@ -215,6 +215,35 @@ export function useFundWithdraw(fundId: string) {
   })
 }
 
+export function useFundContributionRevert(fundId: string) {
+  const qc = useQueryClient()
+  const { t } = useTranslation()
+  const householdId = useAppStore((s) => s.householdId)
+  const month = useAppStore((s) => s.currentMonth)
+
+  return useMutation({
+    mutationFn: async (input: { fund_tx_id: string; transaction_date: string }) => {
+      const res = await fetch(`/api/funds/${fundId}/revert`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fund_tx_id: input.fund_tx_id }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error ?? t("funds.revertFailed"))
+      return json.data as { reverted: boolean }
+    },
+    onSuccess: (_data, variables) => {
+      if (householdId) {
+        invalidateFundOpCaches(qc, householdId, fundId, month, variables.transaction_date)
+      }
+      toast.success(t("funds.revertSuccess"), { duration: 2000 })
+    },
+    onError: (err: Error) => {
+      toast.error(err.message, { duration: 5000 })
+    },
+  })
+}
+
 // Đổi hạng goal funds: PATCH tuần tự priority_rank = index+1 cho MỌI quỹ theo thứ tự mới —
 // dedup + đóng gaps tự nhiên (trả deferred ghost ranks 12-1). Lỗi giữa chừng → refetch để hoà lại.
 export function useReorderGoalFunds() {

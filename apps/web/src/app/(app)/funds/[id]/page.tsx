@@ -2,10 +2,11 @@
 
 import { useState } from "react"
 import { Icon } from "@iconify/react"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils/cn"
 import { formatVND, formatVNDCompact } from "@growbase/shared/rules/currency"
 import { useTranslation } from "@/lib/i18n/useTranslation"
-import { useFundDetail, useDeleteFund } from "@/lib/hooks/useFunds"
+import { useFundDetail, useDeleteFund, useFundContributionRevert } from "@/lib/hooks/useFunds"
 import { useLivingPlan } from "@/lib/hooks/useLivingPlan"
 import { todayVN } from "@growbase/shared/rules/date"
 import { FUND_TYPE_CONFIG } from "@growbase/shared/types/app"
@@ -45,6 +46,8 @@ export default function FundDetailPage({
   const [withdrawOpen, setWithdrawOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
+  const [revertTx, setRevertTx] = useState<FundTransaction | null>(null)
+  const revertContribution = useFundContributionRevert(params.id)
 
   if (isLoading) {
     return (
@@ -236,6 +239,7 @@ export default function FundDetailPage({
                       <TableHead className="text-right">
                         {t("funds.balance")}
                       </TableHead>
+                      <TableHead />
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -268,6 +272,20 @@ export default function FundDetailPage({
                           </TableCell>
                           <TableCell className="text-right font-mono tabular-nums text-xs text-muted-foreground">
                             {formatVNDCompact(tx.balance_after)}
+                          </TableCell>
+                          <TableCell className="w-8 pr-2">
+                            {tx.transaction_type === "contribution" && !tx.is_automatic && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                aria-label={t("funds.revert")}
+                                disabled={revertContribution.isPending}
+                                onClick={() => setRevertTx(tx)}
+                              >
+                                <Icon icon="lucide:undo-2" className="h-4 w-4 text-muted-foreground" />
+                              </Button>
+                            )}
                           </TableCell>
                         </TableRow>
                       )
@@ -318,6 +336,15 @@ export default function FundDetailPage({
                         <p className="font-mono text-[11px] tabular-nums text-muted-foreground">
                           = {formatVNDCompact(tx.balance_after)}
                         </p>
+                        {tx.transaction_type === "contribution" && !tx.is_automatic && (
+                          <button
+                            className="mt-0.5 text-[11px] text-primary hover:underline disabled:opacity-50"
+                            disabled={revertContribution.isPending}
+                            onClick={() => setRevertTx(tx)}
+                          >
+                            {t("funds.revert")}
+                          </button>
+                        )}
                       </div>
                     </div>
                   )
@@ -371,6 +398,20 @@ export default function FundDetailPage({
           })
         }}
         isPending={deleteFund.isPending}
+      />
+      <ConfirmDialog
+        open={Boolean(revertTx)}
+        onOpenChange={(open) => !open && setRevertTx(null)}
+        title={t("funds.revert")}
+        description={t("funds.revertConfirm")}
+        onConfirm={() => {
+          if (!revertTx) return
+          revertContribution.mutate(
+            { fund_tx_id: revertTx.id, transaction_date: revertTx.transaction_date },
+            { onSuccess: () => setRevertTx(null) }
+          )
+        }}
+        isPending={revertContribution.isPending}
       />
     </div>
   )

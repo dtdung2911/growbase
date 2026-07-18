@@ -419,6 +419,13 @@ export type Database = {
         }
         Returns: string
       }
+      fund_contribution_revert: {
+        Args: {
+          p_household_id: string
+          p_fund_tx_id: string
+        }
+        Returns: undefined
+      }
       fund_contribute: {
         Args: {
           p_household_id: string
