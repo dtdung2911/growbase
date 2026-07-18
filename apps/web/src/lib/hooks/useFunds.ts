@@ -13,6 +13,30 @@ import type {
   UpdateFundInput,
 } from "@growbase/shared/schemas/fund"
 
+// Nạp/rút quỹ tạo transaction theo transaction_date — invalidate cả tháng của
+// giao dịch lẫn tháng đang xem, kèm budget/dashboard/reports bị ảnh hưởng.
+function invalidateFundOpCaches(
+  qc: ReturnType<typeof useQueryClient>,
+  householdId: string,
+  fundId: string,
+  storeMonth: string,
+  txDate: string
+) {
+  const txMonth = txDate.slice(0, 7)
+  const months = txMonth === storeMonth ? [storeMonth] : [txMonth, storeMonth]
+  for (const m of months) {
+    void qc.invalidateQueries({ queryKey: keys.transactions(householdId, m) })
+    void qc.invalidateQueries({ queryKey: keys.budget(householdId, m) })
+    void qc.invalidateQueries({ queryKey: keys.budgetActuals(householdId, m) })
+    void qc.invalidateQueries({ queryKey: keys.dashboard(householdId, m) })
+  }
+  void qc.invalidateQueries({ queryKey: keys.reportsByHousehold(householdId) })
+  void qc.invalidateQueries({ queryKey: keys.funds(householdId) })
+  void qc.invalidateQueries({ queryKey: keys.fundTransactions(householdId, fundId) })
+  void qc.invalidateQueries({ queryKey: keys.fundDetail(householdId, fundId) })
+  void qc.invalidateQueries({ queryKey: keys.livingPlan(householdId) })
+}
+
 export function useFunds() {
   const householdId = useAppStore((s) => s.householdId)
 
@@ -65,6 +89,7 @@ export function useCreateFund() {
       if (householdId) {
         void qc.invalidateQueries({ queryKey: keys.funds(householdId) })
         void qc.invalidateQueries({ queryKey: keys.dashboard(householdId, month) })
+        void qc.invalidateQueries({ queryKey: keys.livingPlan(householdId) })
       }
       toast.success("Đã tạo quỹ", { duration: 2000 })
     },
@@ -96,6 +121,7 @@ export function useUpdateFund(fundId: string) {
         void qc.invalidateQueries({ queryKey: keys.funds(householdId) })
         void qc.invalidateQueries({ queryKey: keys.fundDetail(householdId, fundId) })
         void qc.invalidateQueries({ queryKey: keys.dashboard(householdId, month) })
+        void qc.invalidateQueries({ queryKey: keys.livingPlan(householdId) })
       }
       toast.success(t("funds.updateSuccess"), { duration: 2000 })
     },
@@ -121,6 +147,9 @@ export function useDeleteFund(fundId: string) {
       if (householdId) {
         void qc.invalidateQueries({ queryKey: keys.funds(householdId) })
         void qc.invalidateQueries({ queryKey: keys.dashboard(householdId, month) })
+        void qc.invalidateQueries({ queryKey: keys.livingPlan(householdId) })
+        void qc.removeQueries({ queryKey: keys.fundDetail(householdId, fundId) })
+        void qc.removeQueries({ queryKey: keys.fundTransactions(householdId, fundId) })
       }
       toast.success("Đã xóa quỹ", { duration: 2000 })
     },
@@ -146,13 +175,9 @@ export function useFundContribute(fundId: string) {
       if (!res.ok) throw new Error(json.error ?? "Không nạp quỹ được")
       return json.data as { tx_id: string }
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       if (householdId) {
-        void qc.invalidateQueries({ queryKey: keys.funds(householdId) })
-        void qc.invalidateQueries({ queryKey: keys.transactions(householdId, month) })
-        void qc.invalidateQueries({ queryKey: keys.fundTransactions(householdId, fundId) })
-        void qc.invalidateQueries({ queryKey: keys.fundDetail(householdId, fundId) })
-        void qc.invalidateQueries({ queryKey: keys.livingPlan(householdId) })
+        invalidateFundOpCaches(qc, householdId, fundId, month, variables.transaction_date)
       }
       toast.success("Đã nạp quỹ", { duration: 2000 })
     },
@@ -178,13 +203,9 @@ export function useFundWithdraw(fundId: string) {
       if (!res.ok) throw new Error(json.error ?? "Không rút quỹ được")
       return json.data as { tx_id: string }
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       if (householdId) {
-        void qc.invalidateQueries({ queryKey: keys.funds(householdId) })
-        void qc.invalidateQueries({ queryKey: keys.transactions(householdId, month) })
-        void qc.invalidateQueries({ queryKey: keys.fundTransactions(householdId, fundId) })
-        void qc.invalidateQueries({ queryKey: keys.fundDetail(householdId, fundId) })
-        void qc.invalidateQueries({ queryKey: keys.livingPlan(householdId) })
+        invalidateFundOpCaches(qc, householdId, fundId, month, variables.transaction_date)
       }
       toast.success("Đã rút quỹ", { duration: 2000 })
     },
@@ -235,6 +256,7 @@ export function useReorderGoalFunds() {
 export function useFundRelease(fundId: string) {
   const qc = useQueryClient()
   const householdId = useAppStore((s) => s.householdId)
+  const month = useAppStore((s) => s.currentMonth)
 
   return useMutation({
     mutationFn: async () => {
@@ -246,6 +268,9 @@ export function useFundRelease(fundId: string) {
     onSuccess: () => {
       if (householdId) {
         void qc.invalidateQueries({ queryKey: keys.funds(householdId) })
+        void qc.invalidateQueries({ queryKey: keys.fundDetail(householdId, fundId) })
+        void qc.invalidateQueries({ queryKey: keys.livingPlan(householdId) })
+        void qc.invalidateQueries({ queryKey: keys.dashboard(householdId, month) })
       }
       toast.success("Đã giải phóng quỹ đệm", { duration: 2000 })
     },
