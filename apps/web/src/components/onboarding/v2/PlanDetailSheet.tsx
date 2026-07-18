@@ -69,7 +69,7 @@ export function PlanDetailSheet({ plan, funds, monthlyIncome }: PlanDetailSheetP
 
   const goalFunds = funds.filter((f) => f.fundType === "goal")
   const weights = ladderWeights(goalFunds.length)
-  const channels = planGoalChannels(plan, new Map(goalFunds.map((f) => [f.id, f.targetAmount])))
+  const channels = planGoalChannels(plan, new Map(goalFunds.map((f) => [f.id, f.targetAmount!])))
   const anyCompound = channels.some((c) => c.compoundMonths !== null)
 
   const allocById = new Map(plan.allocations.map((a) => [a.id, a]))

@@ -8,9 +8,9 @@ import type { OnboardingGoal } from "@growbase/shared/schemas/onboardingV2"
 export interface OnboardingFundResult {
   id: string
   name: string
-  fundType: "emergency" | "goal"
+  fundType: "emergency" | "goal" | "sinking" | "investment"
   presetId: string
-  targetAmount: number
+  targetAmount: number | null
 }
 
 export interface CompleteOnboardingV2Response {

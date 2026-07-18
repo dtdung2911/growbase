@@ -9,14 +9,15 @@ import { PRESET_ICON_NAMES } from "@growbase/shared/constants/fundIcons"
 import { addMonthsIso } from "@growbase/shared/rules/date"
 import {
   BUDGET_TEMPLATE,
+  ONBOARDING_EMERGENCY_MONTHS,
   estimateEmergencyTarget,
   estimateMonthlyLivingCost,
   calculateAllocationPlan,
   calculateTodayRemaining,
 } from "@growbase/shared/constants/budgetTemplate"
 
-// 19-8: bộ quỹ mặc định — khẩn cấp 6 tháng chi phí, dự phòng gợi ý 1 tháng
-const DEFAULT_EMERGENCY_MONTHS = 6
+// 19-8: bộ quỹ mặc định — khẩn cấp 6 tháng chi phí (hằng số shared, Tada preview dùng chung), dự phòng gợi ý 1 tháng
+const DEFAULT_EMERGENCY_MONTHS = ONBOARDING_EMERGENCY_MONTHS
 const DEFAULT_SINKING_MONTHS = 1
 
 // Tên do server tạo, localize theo locale user (fund names đã localize sẵn client-side trong p_goals)
@@ -95,8 +96,20 @@ export async function POST(req: Request) {
         name: g.name,
         fundType: "goal" as const,
         presetId: g.presetId,
-        targetAmount: g.targetAmount!,
+        targetAmount: g.targetAmount! as number | null,
       })),
+      {
+        name: names.sinkingFund,
+        fundType: "sinking" as const,
+        presetId: "sinking",
+        targetAmount: sinkingTarget as number | null,
+      },
+      {
+        name: names.investmentFund,
+        fundType: "investment" as const,
+        presetId: "investment",
+        targetAmount: null as number | null,
+      },
     ]
 
     const p_budget_pcts = BUDGET_TEMPLATE.map((b) => ({

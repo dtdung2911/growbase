@@ -43,6 +43,8 @@ export const SPENDING_COST_TYPE_GROUPS: readonly CostTypeGroupKey[] = [
 export const FLEXIBLE_COST_TYPE_GROUPS: readonly CostTypeGroupKey[] = ["variable", "wasteful"]
 
 export const EMERGENCY_FUND_MONTHS = 3
+// Bộ quỹ mặc định tạo lúc onboarding (19-8) — server và Tada preview phải cùng một số
+export const ONBOARDING_EMERGENCY_MONTHS = 6
 
 export function sumBudgetPct(groups: readonly CostTypeGroupKey[]): number {
   return BUDGET_TEMPLATE.filter((l) => groups.includes(l.costTypeGroup)).reduce((sum, l) => sum + l.budgetPct, 0)
