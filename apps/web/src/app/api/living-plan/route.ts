@@ -34,7 +34,7 @@ export async function GET() {
   const [fundsRes, incomeRes, lastMonthContribRes, householdRes] = await Promise.all([
     supabase
       .from("funds")
-      .select("id, name, fund_type, target_amount, current_balance, priority_rank, created_at")
+      .select("id, name, fund_type, target_amount, target_months_expense, current_balance, priority_rank, created_at")
       .eq("household_id", householdId)
       .eq("is_active", true),
     // CHỈ đếm transaction_type='income': fund_withdrawal cũng có direction='in' (rút quỹ về ví),
@@ -69,6 +69,9 @@ export async function GET() {
   // Target quỹ khẩn cấp = target_amount DB (user-editable, BR-OB-016). null → engine tự estimate theo income.
   const emergencyTargetAmount =
     emergency?.target_amount != null ? Number(emergency.target_amount) : null
+  // 19-9: số tháng của target — engine derive ngưỡng GĐ1 = target / months thay giả định /3
+  const emergencyTargetMonths =
+    emergency?.target_months_expense != null ? Number(emergency.target_months_expense) : null
 
   const goals = funds
     .filter((f) => f.fund_type === "goal")
@@ -126,6 +129,7 @@ export async function GET() {
       currentMonthIncome,
       emergencyBalance,
       emergencyTargetAmount,
+      emergencyTargetMonths,
       goals,
       contributedLastMonth,
     },

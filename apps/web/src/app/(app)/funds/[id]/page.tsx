@@ -6,7 +6,10 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils/cn"
 import { formatVND, formatVNDCompact } from "@growbase/shared/rules/currency"
 import { useTranslation } from "@/lib/i18n/useTranslation"
-import { useFundDetail, useDeleteFund, useFundContributionRevert } from "@/lib/hooks/useFunds"
+import { useFundDetail, useDeleteFund, useFundContributionRevert, useUpdateFund } from "@/lib/hooks/useFunds"
+import { estimateEmergencyTarget } from "@growbase/shared/constants/budgetTemplate"
+
+const EMERGENCY_MONTH_OPTIONS = [3, 4, 5, 6] as const
 import { useLivingPlan } from "@/lib/hooks/useLivingPlan"
 import { todayVN } from "@growbase/shared/rules/date"
 import { FUND_TYPE_CONFIG } from "@growbase/shared/types/app"
@@ -42,7 +45,8 @@ export default function FundDetailPage({
   const { t } = useTranslation()
   const { data, isLoading } = useFundDetail(params.id)
   const deleteFund = useDeleteFund(params.id)
-  const { plan, emergencyBalance, capacityThisMonth } = useLivingPlan()
+  const { plan, emergencyBalance, capacityThisMonth, trailingIncome } = useLivingPlan()
+  const updateFund = useUpdateFund(params.id)
   const [contributeOpen, setContributeOpen] = useState(false)
   const [withdrawOpen, setWithdrawOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -170,7 +174,39 @@ export default function FundDetailPage({
               </div>
             </>
           )}
+          {/* 19-9: quỹ không target = tích lũy mở, không progress % */}
+          {progress === null && (
+            <p className="text-xs text-muted-foreground">{t("funds.openAccumulation")}</p>
+          )}
         </div>
+
+        {/* 19-9: chips chỉnh target quỹ khẩn cấp theo số tháng chi phí */}
+        {fund.fund_type === "emergency" && trailingIncome > 0 && (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">{t("funds.targetMonths")}</span>
+            {EMERGENCY_MONTH_OPTIONS.map((m) => (
+              <button
+                key={m}
+                type="button"
+                disabled={updateFund.isPending}
+                onClick={() =>
+                  updateFund.mutate({
+                    target_amount: estimateEmergencyTarget(trailingIncome, m),
+                    target_months_expense: m,
+                  })
+                }
+                className={cn(
+                  "min-h-[32px] rounded-full border px-3 text-xs font-medium transition-colors",
+                  fund.target_months_expense === m
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border text-muted-foreground hover:bg-accent"
+                )}
+              >
+                {m} {t("funds.monthsShort")}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Action buttons */}
         <div className="grid grid-cols-2 gap-2">

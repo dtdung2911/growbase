@@ -170,7 +170,7 @@ development_status:
   18-1-local-daily-reminder: backlog
   18-2-registration-onboarding: backlog
   epic-18-retrospective: optional
-  epic-19: in-progress
+  epic-19: done
   19-1-fund-ops-cache-invalidation: done
   19-2-system-savings-category: done
   19-3-fund-linked-transaction-badge-lock: done
@@ -179,7 +179,7 @@ development_status:
   19-6-spend-from-fund-rpc: done
   19-7-spend-from-fund-ui-reports: done
   19-8-default-funds-onboarding: done
-  19-9-emergency-target-chips-engine: backlog
+  19-9-emergency-target-chips-engine: done
   epic-19-retrospective: optional
 
 action_items:

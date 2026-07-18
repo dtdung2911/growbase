@@ -117,6 +117,13 @@ export function FundCard({ fund, onContribute, onWithdraw }: FundCardProps) {
               </p>
             </div>
           )}
+
+          {/* 19-9: quỹ không target (vd đầu tư) = tích lũy mở, không progress % */}
+          {!goalProgress && progress === null && freedomProgress === null && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              {t("funds.openAccumulation")}
+            </p>
+          )}
         </div>
       </div>
       </Link>

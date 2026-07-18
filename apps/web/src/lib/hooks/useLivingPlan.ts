@@ -22,6 +22,7 @@ type LivingPlanResponse = {
   currentMonthIncome: number
   emergencyBalance: number
   emergencyTargetAmount: number | null
+  emergencyTargetMonths: number | null
   goals: LivingPlanGoal[]
   contributedLastMonth: boolean
 }
@@ -50,6 +51,7 @@ export function useLivingPlan() {
         emergencyBalance: data.emergencyBalance,
         // Target DB (user-editable) drive ngưỡng GĐ + timeline; null → engine estimate theo income.
         ...(data.emergencyTargetAmount != null ? { emergencyTarget: data.emergencyTargetAmount } : {}),
+        ...(data.emergencyTargetMonths != null ? { emergencyTargetMonths: data.emergencyTargetMonths } : {}),
         // goals đã sort theo priority_rank ở route (index 0 = hạng cao nhất);
         // initialBalance = số dư thật từng quỹ (lần đầu dùng balance thật, không phải snapshot).
         goals: data.goals.map((g) => ({
