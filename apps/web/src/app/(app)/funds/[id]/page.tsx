@@ -12,6 +12,7 @@ import { todayVN } from "@growbase/shared/rules/date"
 import { FUND_TYPE_CONFIG } from "@growbase/shared/types/app"
 import { ContributeModal } from "@/components/funds/ContributeModal"
 import { WithdrawModal } from "@/components/funds/WithdrawModal"
+import { FundExpenseModal } from "@/components/funds/FundExpenseModal"
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog"
 import { FundEditSheet } from "@/components/funds/FundEditSheet"
 import { SkeletonCard } from "@/components/shared/SkeletonCard"
@@ -47,6 +48,7 @@ export default function FundDetailPage({
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
   const [revertTx, setRevertTx] = useState<FundTransaction | null>(null)
+  const [expenseOpen, setExpenseOpen] = useState(false)
   const revertContribution = useFundContributionRevert(params.id)
 
   if (isLoading) {
@@ -193,6 +195,20 @@ export default function FundDetailPage({
           >
             <Icon icon="lucide:arrow-up-right" className="h-4 w-4" />
             {t("funds.withdraw")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setExpenseOpen(true)}
+            disabled={fund.current_balance === 0}
+            className={cn(
+              "col-span-2 flex min-h-[44px] items-center justify-center gap-2 rounded-full border text-sm font-medium transition-colors",
+              fund.current_balance > 0
+                ? "border-border text-foreground hover:bg-accent"
+                : "cursor-not-allowed border-border text-muted-foreground opacity-40"
+            )}
+          >
+            <Icon icon="lucide:shopping-cart" className="h-4 w-4" />
+            {t("funds.spendFromFund")}
           </button>
         </div>
       </div>
@@ -381,6 +397,11 @@ export default function FundDetailPage({
         fund={withdrawOpen ? fund : null}
         open={withdrawOpen}
         onClose={() => setWithdrawOpen(false)}
+      />
+      <FundExpenseModal
+        fund={fund}
+        open={expenseOpen}
+        onClose={() => setExpenseOpen(false)}
       />
       {canEdit && editOpen && (
         <FundEditSheet fund={fund} open={editOpen} onClose={() => setEditOpen(false)} />

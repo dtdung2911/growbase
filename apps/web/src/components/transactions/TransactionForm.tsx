@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Icon } from "@iconify/react"
@@ -19,6 +20,9 @@ import {
 } from "@/components/ui/select"
 import { useAccounts } from "@/lib/hooks/useAccounts"
 import { useDebtEntries } from "@/lib/hooks/useDebtEntries"
+import { useFunds } from "@/lib/hooks/useFunds"
+import { useCategories } from "@/lib/hooks/useCategories"
+import { formatVND } from "@growbase/shared/rules/currency"
 import { useAppStore } from "@/lib/stores/appStore"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import {
@@ -33,6 +37,19 @@ type TransactionFormProps = {
   onSubmit: (data: CreateTransactionInput) => void
   isPending: boolean
   hideDirection?: boolean
+  // 19-7: create-mode expense có "Nguồn tiền" = quỹ → submit đi đường fund expense
+  onSubmitFundExpense?: (fundId: string, data: CreateTransactionInput) => void
+}
+
+// So khớp tên không dấu: 1 từ (>2 ký tự) xuất hiện chéo nhau
+function normalizeName(s: string) {
+  return s.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "")
+}
+
+function nameMatches(a: string, b: string) {
+  const wordsA = normalizeName(a).split(/\s+/).filter((w) => w.length > 2)
+  const nb = normalizeName(b)
+  return wordsA.some((w) => nb.includes(w))
 }
 
 export function TransactionForm({
@@ -41,6 +58,7 @@ export function TransactionForm({
   onSubmit,
   isPending,
   hideDirection,
+  onSubmitFundExpense,
 }: TransactionFormProps) {
   const { t } = useTranslation()
   const householdId = useAppStore((s) => s.householdId) ?? ""
@@ -78,8 +96,29 @@ export function TransactionForm({
   // R2: behavior_type = DB trigger only, readonly in UI
   const behaviorType = initialData?.behavior_type as BehaviorType | null | undefined
 
+  // 19-7: Nguồn tiền — chỉ create-mode expense, khi parent hỗ trợ đường fund expense
+  const showFundSource =
+    !initialData && direction === "out" && transactionType === "expense" && Boolean(onSubmitFundExpense)
+  const [fundSourceId, setFundSourceId] = useState("")
+  const [suggestionDismissed, setSuggestionDismissed] = useState(false)
+  const { data: funds = [] } = useFunds()
+  const { data: categoryGroups = [] } = useCategories(householdId)
+  const categoryId = watch("category_id")
+  const categoryName = categoryGroups
+    .flatMap((g) => g.categories)
+    .find((c) => c.id === categoryId)?.name
+  const suggestedFund =
+    showFundSource && !fundSourceId && !suggestionDismissed && categoryName
+      ? funds.find((f) => f.current_balance > 0 && nameMatches(categoryName, f.name))
+      : undefined
+
+  const submitForm = handleSubmit((data) => {
+    if (showFundSource && fundSourceId) onSubmitFundExpense?.(fundSourceId, data)
+    else onSubmit(data)
+  })
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={submitForm} className="space-y-4">
       {/* Direction toggle — hidden when parent already has tabs */}
       {!hideDirection && (
         <div className="flex gap-2">
@@ -143,6 +182,53 @@ export function TransactionForm({
           )}
         />
       </div>
+
+      {/* Nguồn tiền (19-7) */}
+      {showFundSource && (
+        <div className="space-y-1">
+          <Label>{t("tx.fundSource")}</Label>
+          <Select
+            value={fundSourceId || "income"}
+            onValueChange={(v) => setFundSourceId(v === "income" ? "" : v)}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="income">{t("tx.sourceMonthlyIncome")}</SelectItem>
+              {funds.map((f) => (
+                <SelectItem key={f.id} value={f.id}>
+                  {f.name} —{" "}
+                  <span className="font-mono tabular-nums">
+                    {formatVND(f.current_balance)}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {suggestedFund && (
+            <div className="flex items-center justify-between gap-2 rounded-[13px] border border-border/40 bg-muted px-3 py-2 text-xs">
+              <span>{t("tx.fundSuggestion").replace("{fund}", suggestedFund.name)}</span>
+              <div className="flex shrink-0 gap-2">
+                <button
+                  type="button"
+                  className="font-medium text-primary hover:underline"
+                  onClick={() => setFundSourceId(suggestedFund.id)}
+                >
+                  {t("tx.useFundSource")}
+                </button>
+                <button
+                  type="button"
+                  className="text-muted-foreground hover:underline"
+                  onClick={() => setSuggestionDismissed(true)}
+                >
+                  {t("common.dismiss")}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Account */}
       <div className="space-y-1">

@@ -16,6 +16,14 @@ import {
   useDeleteTransaction,
 } from "@/lib/hooks/useTransactions"
 import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { useFunds, useChangeFundSource } from "@/lib/hooks/useFunds"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import { formatVND } from "@growbase/shared/rules/currency"
 import type { TransactionWithJoins } from "@growbase/shared/types/app"
@@ -44,6 +52,25 @@ export function TransactionEditSheet({
   const isSystemTx = SYSTEM_TYPES.includes(transaction.transaction_type)
   // 19-3: giao dịch gắn quỹ cũng khóa — sửa/xóa làm lệch số dư quỹ
   const isLocked = isSystemTx || Boolean(transaction.fund_id)
+
+  // 19-7: đổi nguồn tiền hậu kiểm — chỉ expense, đường được phép duy nhất trên tx gắn quỹ
+  const { data: funds = [] } = useFunds()
+  const changeSource = useChangeFundSource()
+  const canChangeSource = transaction.transaction_type === "expense"
+
+  const handleChangeSource = (value: string) => {
+    const fundId = value === "income" ? null : value
+    if (fundId === (transaction.fund_id ?? null)) return
+    changeSource.mutate(
+      {
+        transaction_id: transaction.id,
+        fund_id: fundId,
+        previous_fund_id: transaction.fund_id ?? null,
+        transaction_date: transaction.transaction_date,
+      },
+      { onSuccess: () => onOpenChange(false) }
+    )
+  }
 
   const handleSubmit = (data: CreateTransactionInput) => {
     updateMutation.mutate(
@@ -81,6 +108,31 @@ export function TransactionEditSheet({
               )}
             </div>
           </SheetHeader>
+          {canChangeSource && (
+            <div className="mt-4 space-y-1">
+              <p className="text-sm font-medium">{t("tx.fundSource")}</p>
+              <Select
+                value={transaction.fund_id ?? "income"}
+                onValueChange={handleChangeSource}
+                disabled={changeSource.isPending}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="income">{t("tx.sourceMonthlyIncome")}</SelectItem>
+                  {funds.map((f) => (
+                    <SelectItem key={f.id} value={f.id}>
+                      {f.name} —{" "}
+                      <span className="font-mono tabular-nums">
+                        {formatVND(f.current_balance)}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <div className="mt-4">
             {isLocked ? (
               <div className="space-y-3 text-sm">

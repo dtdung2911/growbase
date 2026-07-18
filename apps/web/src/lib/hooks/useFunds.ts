@@ -9,6 +9,7 @@ import type { Fund, FundTransaction } from "@growbase/shared/types/app"
 import type {
   FundContributeInput,
   FundWithdrawInput,
+  FundExpenseInput,
   CreateFundInput,
   UpdateFundInput,
 } from "@growbase/shared/schemas/fund"
@@ -208,6 +209,76 @@ export function useFundWithdraw(fundId: string) {
         invalidateFundOpCaches(qc, householdId, fundId, month, variables.transaction_date)
       }
       toast.success("Đã rút quỹ", { duration: 2000 })
+    },
+    onError: (err: Error) => {
+      toast.error(err.message, { duration: 5000 })
+    },
+  })
+}
+
+// Chi từ quỹ (19-7): fund_id trong input để dùng được từ cả form giao dịch
+// (quỹ chọn động) lẫn modal trang quỹ.
+export function useFundExpense() {
+  const qc = useQueryClient()
+  const { t } = useTranslation()
+  const householdId = useAppStore((s) => s.householdId)
+  const month = useAppStore((s) => s.currentMonth)
+
+  return useMutation({
+    mutationFn: async ({ fund_id, ...input }: FundExpenseInput & { fund_id: string }) => {
+      const res = await fetch(`/api/funds/${fund_id}/expense`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error ?? t("funds.expenseFailed"))
+      return json.data as { tx_id: string }
+    },
+    onSuccess: (_data, variables) => {
+      if (householdId) {
+        invalidateFundOpCaches(qc, householdId, variables.fund_id, month, variables.transaction_date)
+      }
+      toast.success(t("funds.expenseSuccess"), { duration: 2000 })
+    },
+    onError: (err: Error) => {
+      toast.error(err.message, { duration: 5000 })
+    },
+  })
+}
+
+// Đổi nguồn tiền hậu kiểm (19-7): gắn/bỏ fund_id trên expense hiện hữu.
+export function useChangeFundSource() {
+  const qc = useQueryClient()
+  const { t } = useTranslation()
+  const householdId = useAppStore((s) => s.householdId)
+  const month = useAppStore((s) => s.currentMonth)
+
+  return useMutation({
+    mutationFn: async (input: {
+      transaction_id: string
+      fund_id: string | null
+      previous_fund_id: string | null
+      transaction_date: string
+    }) => {
+      const res = await fetch(`/api/transactions/${input.transaction_id}/change-source`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fund_id: input.fund_id }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error ?? t("funds.changeSourceFailed"))
+      return json.data as { changed: boolean }
+    },
+    onSuccess: (_data, v) => {
+      if (householdId) {
+        // Invalidate cache của cả quỹ mới lẫn quỹ cũ
+        const fundIds = [v.fund_id, v.previous_fund_id].filter(Boolean) as string[]
+        for (const id of fundIds.length ? fundIds : [""]) {
+          invalidateFundOpCaches(qc, householdId, id, month, v.transaction_date)
+        }
+      }
+      toast.success(t("funds.changeSourceSuccess"), { duration: 2000 })
     },
     onError: (err: Error) => {
       toast.error(err.message, { duration: 5000 })
