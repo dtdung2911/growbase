@@ -48,8 +48,16 @@ export function sumBudgetPct(groups: readonly CostTypeGroupKey[]): number {
   return BUDGET_TEMPLATE.filter((l) => groups.includes(l.costTypeGroup)).reduce((sum, l) => sum + l.budgetPct, 0)
 }
 
-export function estimateEmergencyTarget(monthlyIncome: number): number {
-  const target = EMERGENCY_FUND_MONTHS * monthlyIncome * (sumBudgetPct(SPENDING_COST_TYPE_GROUPS) / 100)
+// Chi phí sinh hoạt ước tính 1 tháng = thu nhập × tổng % các line chi tiêu
+export function estimateMonthlyLivingCost(monthlyIncome: number): number {
+  return monthlyIncome * (sumBudgetPct(SPENDING_COST_TYPE_GROUPS) / 100)
+}
+
+export function estimateEmergencyTarget(
+  monthlyIncome: number,
+  months: number = EMERGENCY_FUND_MONTHS
+): number {
+  const target = months * estimateMonthlyLivingCost(monthlyIncome)
   return Math.floor(target / 100_000) * 100_000
 }
 
