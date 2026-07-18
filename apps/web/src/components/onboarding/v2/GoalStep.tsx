@@ -150,6 +150,37 @@ export function GoalStep() {
         </div>
       </div>
 
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {[
+          {
+            icon: PRESET_ICON_NAMES.sinking,
+            name: "funds.basicSinkingName",
+            desc: "funds.basicSinkingDesc",
+          },
+          {
+            icon: PRESET_ICON_NAMES.investment,
+            name: "funds.basicInvestmentName",
+            desc: "funds.basicInvestmentDesc",
+          },
+        ].map((fund) => (
+          <div
+            key={fund.name}
+            className="rounded-[13px] border border-border/40 bg-card p-4 shadow-card"
+          >
+            <div className="flex items-start gap-3">
+              <Icon icon={fund.icon} className="text-2xl text-primary" aria-hidden />
+              <div className="flex-1 space-y-1.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-semibold text-foreground">{t(fund.name)}</span>
+                  <Badge>{t("setupV2.goal.emergency.badge")}</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">{t(fund.desc)}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-2">
           <p className="text-sm font-medium text-foreground">
