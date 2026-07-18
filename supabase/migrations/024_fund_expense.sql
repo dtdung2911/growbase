@@ -34,7 +34,7 @@ BEGIN
   END IF;
 
   SELECT current_balance INTO v_balance
-  FROM funds WHERE id = p_fund_id AND household_id = p_household_id
+  FROM funds WHERE id = p_fund_id AND household_id = p_household_id AND is_active = true
   FOR UPDATE;
 
   IF NOT FOUND THEN RAISE EXCEPTION 'Fund not found'; END IF;
@@ -50,7 +50,7 @@ BEGIN
   ) VALUES (
     p_household_id, p_member_id, p_amount, 'out', 'expense',
     p_category_id, p_account_id, p_fund_id,
-    false, COALESCE(p_description, 'Chi từ quỹ'), p_date, 'manual'
+    false, COALESCE(NULLIF(p_description, ''), 'Chi từ quỹ'), p_date, 'manual'
   ) RETURNING id INTO v_tx_id;
 
   INSERT INTO fund_transactions (
@@ -58,7 +58,7 @@ BEGIN
     balance_after, linked_transaction_id, description, transaction_date
   ) VALUES (
     p_household_id, p_fund_id, 'expense', p_amount, 'out',
-    v_balance - p_amount, v_tx_id, p_description, p_date
+    v_balance - p_amount, v_tx_id, COALESCE(NULLIF(p_description, ''), 'Chi từ quỹ'), p_date
   );
 
   UPDATE funds SET current_balance = v_balance - p_amount, updated_at = now()
@@ -109,8 +109,10 @@ BEGIN
 
   -- Trừ quỹ mới
   IF p_fund_id IS NOT NULL THEN
+    -- is_active: không cho gắn expense vào quỹ đã xóa mềm (hoàn tiền quỹ cũ ở trên
+    -- vẫn chấp nhận quỹ inactive — tiền phải về đúng nơi đã trừ)
     SELECT current_balance INTO v_balance
-    FROM funds WHERE id = p_fund_id AND household_id = p_household_id
+    FROM funds WHERE id = p_fund_id AND household_id = p_household_id AND is_active = true
     FOR UPDATE;
 
     IF NOT FOUND THEN RAISE EXCEPTION 'Fund not found'; END IF;

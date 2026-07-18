@@ -19,11 +19,14 @@ BEGIN
     RAISE EXCEPTION 'Access denied: not a member of this household';
   END IF;
 
+  -- FOR UPDATE: khóa row nạp trước khi đảo số dư — request revert thứ 2 chạy song song
+  -- sẽ chờ, re-read thấy row đã bị xóa → NOT FOUND, không trừ số dư lần nữa.
   SELECT id, fund_id, amount, linked_transaction_id INTO v_ft
   FROM fund_transactions
   WHERE id = p_fund_tx_id
     AND household_id = p_household_id
-    AND transaction_type = 'contribution';
+    AND transaction_type = 'contribution'
+  FOR UPDATE;
 
   IF NOT FOUND THEN
     RAISE EXCEPTION 'Chỉ hoàn tác được lần nạp quỹ';

@@ -83,12 +83,15 @@ export async function GET(request: NextRequest) {
 
   const result: MonthlySummaryRow[] = monthList.map((m) => {
     const row = byMonth.get(m)!
-    row.savings = row.totalIncome - row.totalExpense
+    // Chi từ quỹ không tính vào savings/ratio — tiền đã rời thu nhập lúc nạp quỹ
+    // (fund_contribution direction='out' đã được đếm), tránh đếm hai lần.
+    const expenseFromIncome = row.totalExpense - row.expenseFromFund
+    row.savings = row.totalIncome - expenseFromIncome
     row.savingsRate = row.totalIncome > 0
       ? Math.round((row.savings / row.totalIncome) * 1000) / 10
       : 0
     row.expenseRatio = row.totalIncome > 0
-      ? Math.round((row.totalExpense / row.totalIncome) * 1000) / 10
+      ? Math.round((expenseFromIncome / row.totalIncome) * 1000) / 10
       : 0
     for (const bt of Object.keys(row.byBehavior)) {
       row.byBehavior[bt].pct = row.totalIncome > 0

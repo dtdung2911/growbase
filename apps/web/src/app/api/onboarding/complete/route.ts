@@ -67,12 +67,19 @@ export async function POST(req: Request) {
     const names = LOCALIZED_NAMES[locale]
 
     const emergencyTarget = estimateEmergencyTarget(monthlyIncome, DEFAULT_EMERGENCY_MONTHS)
-    const sinkingTarget =
+    // clamp 100k: income sát mức tối thiểu schema làm floor về 0 → RPC reject target <= 0
+    const sinkingTarget = Math.max(
+      100_000,
       Math.floor((DEFAULT_SINKING_MONTHS * estimateMonthlyLivingCost(monthlyIncome)) / 100_000) * 100_000
+    )
 
     // Engine chỉ để suy ra target_date mỗi goal fund; client (TadaStep) tự re-run cho storytelling.
+    // Truyền đúng target 6 tháng của quỹ khẩn cấp — thiếu thì engine tự estimate 3 tháng,
+    // target_date các goal fund ghi vào DB sẽ lạc quan gấp đôi so với useLivingPlan tính lại.
     const plan = calculateAllocationPlan({
       monthlyIncome,
+      emergencyTarget,
+      emergencyTargetMonths: DEFAULT_EMERGENCY_MONTHS,
       goals: goals.map((g, i) => ({ id: String(i), targetAmount: g.targetAmount! })),
     })
     const goalAllocs = plan.allocations.slice(1)

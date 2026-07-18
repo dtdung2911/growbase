@@ -31,7 +31,8 @@ function invalidateFundOpCaches(
     void qc.invalidateQueries({ queryKey: keys.budgetActuals(householdId, m) })
     void qc.invalidateQueries({ queryKey: keys.dashboard(householdId, m) })
   }
-  void qc.invalidateQueries({ queryKey: keys.reportsByHousehold(householdId) })
+  // màn Reports thực tế cache dưới key monthlySummary (useMonthlyReport), không phải "reports"
+  void qc.invalidateQueries({ queryKey: keys.monthlySummaryByHousehold(householdId) })
   void qc.invalidateQueries({ queryKey: keys.funds(householdId) })
   void qc.invalidateQueries({ queryKey: keys.fundTransactions(householdId, fundId) })
   void qc.invalidateQueries({ queryKey: keys.fundDetail(householdId, fundId) })

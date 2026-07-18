@@ -68,6 +68,8 @@ export async function PUT(request: Request, { params }: Params) {
       })
       .eq("id", input.id)
       .eq("household_id", auth.householdId)
+      // chốt chặn race: nếu transaction vừa bị gắn quỹ giữa lúc check và update thì bỏ qua
+      .is("fund_id", null)
       .select("id")
       .single()
 
@@ -120,6 +122,7 @@ export async function DELETE(request: Request, { params }: Params) {
       .delete()
       .eq("id", params.id)
       .eq("household_id", auth.householdId)
+      .is("fund_id", null)
 
     if (error) {
       return NextResponse.json({ data: null, error: error.message }, { status: 500 })

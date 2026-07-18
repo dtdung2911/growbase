@@ -183,7 +183,7 @@ export default function FundDetailPage({
         {/* 19-9: chips chỉnh target quỹ khẩn cấp theo số tháng chi phí */}
         {fund.fund_type === "emergency" && trailingIncome > 0 && (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">{t("funds.targetMonths")}</span>
+            <span className="text-xs text-muted-foreground">{t("funds.targetLabel")}</span>
             {EMERGENCY_MONTH_OPTIONS.map((m) => (
               <button
                 key={m}
@@ -304,9 +304,11 @@ export default function FundDetailPage({
                           </TableCell>
                           <TableCell className="text-sm">
                             {tx.description ||
-                              (isIn
-                                ? t("funds.deposit")
-                                : t("funds.withdraw"))}
+                              (tx.transaction_type === "expense"
+                                ? t("funds.spendFromFund")
+                                : isIn
+                                  ? t("funds.deposit")
+                                  : t("funds.withdraw"))}
                             {tx.is_automatic && (
                               <span className="ml-1.5 text-[10px] text-muted-foreground">
                                 ({t("funds.auto")})
