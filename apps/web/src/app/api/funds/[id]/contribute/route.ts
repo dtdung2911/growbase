@@ -29,19 +29,19 @@ export async function POST(request: Request, { params }: Params) {
 
     const input = parsed.data
 
-    // Fund contributions are recorded against the household's savings_investment category
+    // Resolve đích danh category hệ thống "Tiết kiệm & Quỹ" (022) — không dò sort_order
     const { data: savingsCategory } = await auth.supabase
       .from("categories")
       .select("id")
       .eq("household_id", auth.householdId)
       .eq("default_behavior_type", "savings_investment")
-      .order("sort_order")
+      .eq("is_system", true)
       .limit(1)
       .maybeSingle()
 
     if (!savingsCategory) {
       return NextResponse.json(
-        { data: null, error: "Không tìm thấy danh mục tiết kiệm cho gia đình" },
+        { data: null, error: "Không tìm thấy danh mục hệ thống 'Tiết kiệm & Quỹ' cho gia đình" },
         { status: 500 }
       )
     }
