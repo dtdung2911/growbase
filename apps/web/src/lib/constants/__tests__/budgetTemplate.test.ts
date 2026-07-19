@@ -169,6 +169,26 @@ describe("calculateAllocationPlan", () => {
     expect(plan.allocations.every((a) => a.timelineMonths !== null)).toBe(true)
   })
 
+  // 19-9: engine đọc số tháng target từ fund, bỏ giả định cứng /3
+  it("emergencyTargetMonths: threshold GĐ1 = target / months", () => {
+    const plan = calculateAllocationPlan({
+      monthlyIncome: 20_000_000,
+      goals: [],
+      emergencyTarget: 97_200_000, // 6 tháng × 16.2tr
+      emergencyTargetMonths: 6,
+    })
+    expect(plan.stage1Threshold).toBe(16_200_000)
+  })
+
+  it("emergencyTargetMonths thiếu: giữ giả định /3 (backward compat)", () => {
+    const plan = calculateAllocationPlan({
+      monthlyIncome: 20_000_000,
+      goals: [],
+      emergencyTarget: 48_600_000,
+    })
+    expect(plan.stage1Threshold).toBe(16_200_000)
+  })
+
   it("income 100tr: mọi quỹ hoàn thành, timeline hữu hạn và tăng dần theo hạng", () => {
     const plan = calculateAllocationPlan({
       monthlyIncome: 100_000_000,

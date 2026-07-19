@@ -5,6 +5,8 @@ export type MonthlySummaryRow = {
   month: string
   totalIncome: number
   totalExpense: number
+  // 19-7: phần tổng chi lấy từ quỹ (expense có fund_id) — phần còn lại là từ thu nhập
+  expenseFromFund: number
   expenseRatio: number
   savings: number
   savingsRate: number
@@ -36,7 +38,7 @@ export async function GET(request: NextRequest) {
 
   const { data: txs, error } = await auth.supabase
     .from("transactions")
-    .select("amount, direction, behavior_type, transaction_date, exclude_from_budget_report")
+    .select("amount, direction, behavior_type, transaction_date, exclude_from_budget_report, transaction_type, fund_id")
     .eq("household_id", hid)
     .gte("transaction_date", startDate)
     .lte("transaction_date", endDateStr)
@@ -51,6 +53,7 @@ export async function GET(request: NextRequest) {
       month: m,
       totalIncome: 0,
       totalExpense: 0,
+      expenseFromFund: 0,
       expenseRatio: 0,
       savings: 0,
       savingsRate: 0,
@@ -67,6 +70,9 @@ export async function GET(request: NextRequest) {
       row.totalIncome += tx.amount
     } else {
       row.totalExpense += tx.amount
+      if (tx.transaction_type === "expense" && tx.fund_id) {
+        row.expenseFromFund += tx.amount
+      }
       if (!tx.exclude_from_budget_report && tx.behavior_type) {
         const bt = tx.behavior_type as string
         if (!row.byBehavior[bt]) row.byBehavior[bt] = { total: 0, pct: 0 }
@@ -77,12 +83,15 @@ export async function GET(request: NextRequest) {
 
   const result: MonthlySummaryRow[] = monthList.map((m) => {
     const row = byMonth.get(m)!
-    row.savings = row.totalIncome - row.totalExpense
+    // Chi từ quỹ không tính vào savings/ratio — tiền đã rời thu nhập lúc nạp quỹ
+    // (fund_contribution direction='out' đã được đếm), tránh đếm hai lần.
+    const expenseFromIncome = row.totalExpense - row.expenseFromFund
+    row.savings = row.totalIncome - expenseFromIncome
     row.savingsRate = row.totalIncome > 0
       ? Math.round((row.savings / row.totalIncome) * 1000) / 10
       : 0
     row.expenseRatio = row.totalIncome > 0
-      ? Math.round((row.totalExpense / row.totalIncome) * 1000) / 10
+      ? Math.round((expenseFromIncome / row.totalIncome) * 1000) / 10
       : 0
     for (const bt of Object.keys(row.byBehavior)) {
       row.byBehavior[bt].pct = row.totalIncome > 0

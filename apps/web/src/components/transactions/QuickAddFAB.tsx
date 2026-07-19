@@ -13,7 +13,7 @@ export function QuickAddFAB() {
       <Button
         size="icon"
         aria-label="Add transaction"
-        className="fixed bottom-20 right-4 z-40 h-14 w-14 rounded-full shadow-float"
+        className="fixed bottom-20 right-4 z-40 h-14 w-14 rounded-full shadow-float lg:bottom-6 lg:right-6"
         onClick={() => setOpen(true)}
       >
         <Icon icon="lucide:plus" className="h-6 w-6" />

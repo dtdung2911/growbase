@@ -76,6 +76,8 @@ export type TransactionWithJoins = {
   updated_at: string
   category: { id: string; name: string; icon: string | null } | null
   account: { id: string; name: string; color: string | null } | null
+  // Optional: chỉ GET /api/transactions join fund (dashboard/recent không cần)
+  fund?: { id: string; name: string } | null
 }
 
 export type Account = {
@@ -121,7 +123,7 @@ export type Fund = {
 export type FundTransaction = {
   id: string
   fund_id: string
-  transaction_type: "contribution" | "withdrawal" | "release" | "reset"
+  transaction_type: "contribution" | "withdrawal" | "release" | "reset" | "expense"
   amount: number
   direction: "in" | "out"
   balance_after: number

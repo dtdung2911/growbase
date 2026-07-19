@@ -82,6 +82,7 @@ export function StageEventCard() {
               emergencyTarget,
               capacityThisMonth,
               hasIncompleteGoals,
+              stage1Threshold: plan.stage1Threshold,
             })
           : null
       setView({ kind: "event", transition, months })

@@ -56,7 +56,7 @@ export function ContributeModal({ fund, open, onClose, suggestedAmount }: Contri
   )
 }
 
-function ContributeForm({
+export function ContributeForm({
   fund,
   onClose,
   suggestedAmount,

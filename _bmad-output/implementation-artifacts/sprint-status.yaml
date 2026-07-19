@@ -36,7 +36,7 @@
 # - Retrospective appends its action items to action_items; sprint-status surfaces open ones
 
 generated: 02-07-2026
-last_updated: 17-07-2026
+last_updated: 18-07-2026
 project: growbase
 project_key: NOKEY
 tracking_system: file-system
@@ -170,6 +170,17 @@ development_status:
   18-1-local-daily-reminder: backlog
   18-2-registration-onboarding: backlog
   epic-18-retrospective: optional
+  epic-19: done
+  19-1-fund-ops-cache-invalidation: done
+  19-2-system-savings-category: done
+  19-3-fund-linked-transaction-badge-lock: done
+  19-4-revert-fund-contribution: done
+  19-5-transaction-form-fund-tab: done
+  19-6-spend-from-fund-rpc: done
+  19-7-spend-from-fund-ui-reports: done
+  19-8-default-funds-onboarding: done
+  19-9-emergency-target-chips-engine: done
+  epic-19-retrospective: optional
 
 action_items:
   - epic: 3

@@ -14,6 +14,8 @@ import { formatVNDCompact } from "@growbase/shared/rules/currency"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import { useLivingPlan } from "@/lib/hooks/useLivingPlan"
 import { useMembers } from "@/lib/hooks/useMembers"
+import { useCreateFund } from "@/lib/hooks/useFunds"
+import { PRESET_ICON_NAMES } from "@growbase/shared/constants/fundIcons"
 import { useAppStore } from "@/lib/stores/appStore"
 import { FUND_TYPE_CONFIG } from "@growbase/shared/types/app"
 import type { Fund, FundType } from "@growbase/shared/types/app"
@@ -41,6 +43,50 @@ export function FundList({ funds }: FundListProps) {
 
   const isOwner =
     (membersData?.members ?? []).find((m) => m.user_id === user?.id)?.role === "owner"
+
+  // 19-8: bộ quỹ cơ bản — household cũ không backfill, chỉ gợi ý qua banner
+  const householdId = useAppStore((s) => s.householdId)
+  const createFund = useCreateFund()
+  const bannerKey = `growbase-basics-banner-dismissed-${householdId ?? ""}`
+  const [basicsDismissed, setBasicsDismissed] = useState(
+    () => typeof window !== "undefined" && localStorage.getItem(bannerKey) === "1"
+  )
+  const missingBasics = (["emergency", "sinking", "investment"] as const).filter(
+    (type) => !funds.some((f) => f.fund_type === type && f.is_active)
+  )
+
+  const dismissBasicsBanner = () => {
+    localStorage.setItem(bannerKey, "1")
+    setBasicsDismissed(true)
+  }
+
+  const createMissingBasics = () => {
+    // Tạo tuần tự; target user tự chỉnh sau (client không biết thu nhập để ước tính)
+    const presets = {
+      emergency: {
+        name: t("funds.basicEmergencyName"),
+        description: t("funds.basicEmergencyDesc"),
+        fund_type: "emergency" as const,
+        icon: PRESET_ICON_NAMES.emergency,
+        target_months_expense: 6,
+      },
+      sinking: {
+        name: t("funds.basicSinkingName"),
+        description: t("funds.basicSinkingDesc"),
+        fund_type: "sinking" as const,
+        icon: PRESET_ICON_NAMES.sinking,
+      },
+      investment: {
+        name: t("funds.basicInvestmentName"),
+        description: t("funds.basicInvestmentDesc"),
+        fund_type: "investment" as const,
+        icon: PRESET_ICON_NAMES.investment,
+      },
+    }
+    for (const type of missingBasics) {
+      createFund.mutate(presets[type])
+    }
+  }
 
   // Hạng ưu tiên: rank asc (null cuối), rồi created_at, rồi id — khớp sort route 12.1.
   const goalFundsActive = useMemo(
@@ -98,6 +144,37 @@ export function FundList({ funds }: FundListProps) {
         </Button>
         {isOwner && goalFundsActive.length >= 2 && <RankSheet goalFunds={goalFundsActive} />}
       </div>
+
+      {/* 19-8: banner gợi ý bộ quỹ cơ bản cho household chưa đủ (không backfill tự động) */}
+      {missingBasics.length > 0 && !basicsDismissed && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-[13px] border border-border/40 bg-card p-3 shadow-card">
+          <div className="min-w-0">
+            <p className="text-sm font-medium">{t("funds.basicsBannerTitle")}</p>
+            <p className="text-xs text-muted-foreground">
+              {t("funds.basicsBannerDesc")}{" "}
+              {missingBasics.map((type) => t(`funds.type.${type}`)).join(" · ")}
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <Button
+              size="sm"
+              className="min-h-[44px]"
+              disabled={createFund.isPending}
+              onClick={createMissingBasics}
+            >
+              {t("funds.basicsBannerCta")}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="min-h-[44px]"
+              onClick={dismissBasicsBanner}
+            >
+              {t("common.dismiss")}
+            </Button>
+          </div>
+        </div>
+      )}
 
       <FundsPlanStrip goalFunds={goalFundsActive} />
 

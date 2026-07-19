@@ -20,7 +20,7 @@ import { formatVNDCompact } from "@growbase/shared/rules/currency"
 import { GOAL_PRESETS, presetTargetDate } from "@/lib/constants/goalPresets"
 import { useCreateFund } from "@/lib/hooks/useFunds"
 import { useTranslation } from "@/lib/i18n/useTranslation"
-import { FUND_TYPE_CONFIG, type FundType } from "@growbase/shared/types/app"
+import { FUND_TYPE_CONFIG, type Fund, type FundType } from "@growbase/shared/types/app"
 import ChevronRightCircleDuotoneIcon from "@iconify-react/si/chevron-right-circle-duotone";
 import {
   createFundSchema,
@@ -28,6 +28,7 @@ import {
 } from "@growbase/shared/schemas/fund"
 
 type FundFormProps = {
+  onCreated?: (fund: Fund) => void
   open: boolean
   onClose: () => void
 }
@@ -50,20 +51,20 @@ const DESC_KEY: Record<FundType, string> = {
 
 const MONTHS_OPTIONS = [3, 6, 12]
 
-export function FundForm({ open, onClose }: FundFormProps) {
+export function FundForm({ open, onClose, onCreated }: FundFormProps) {
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
       <SheetContent
         side="bottom"
         className="max-h-[92vh] overflow-y-auto rounded-t-2xl"
       >
-        {open && <FundFormBody onClose={onClose} />}
+        {open && <FundFormBody onClose={onClose} onCreated={onCreated} />}
       </SheetContent>
     </Sheet>
   )
 }
 
-function FundFormBody({ onClose }: { onClose: () => void }) {
+function FundFormBody({ onClose, onCreated }: { onClose: () => void; onCreated?: (fund: Fund) => void }) {
   const { t, locale } = useTranslation()
   const createFund = useCreateFund()
   const [step, setStep] = useState(1)
@@ -98,10 +99,11 @@ function FundFormBody({ onClose }: { onClose: () => void }) {
         color: config.color,
       },
       {
-        onSuccess: () => {
+        onSuccess: (fund) => {
           reset()
           setStep(1)
           onClose()
+          onCreated?.(fund)
         },
       }
     )

@@ -26,7 +26,9 @@ import {
   BUDGET_SEGMENTS,
   FLEXIBLE_COST_TYPE_GROUPS,
   MAX_ALLOCATION_MONTHS,
+  ONBOARDING_EMERGENCY_MONTHS,
   calculateAllocationPlan,
+  estimateEmergencyTarget,
   sumBudgetPct,
 } from "@growbase/shared/constants/budgetTemplate"
 import { TADA_REVEAL_STAGES, pickThreeStageKey, type TadaRevealStage } from "@/lib/constants/tadaReveal"
@@ -132,9 +134,15 @@ export function TadaStep() {
     .filter((f) => f.fundType === "goal")
     .map((f) => ({
       id: f.id,
-      targetAmount: adjustFund && f.id === adjustFund.id ? targetAmount : f.targetAmount,
+      targetAmount: adjustFund && f.id === adjustFund.id ? targetAmount : f.targetAmount!,
     }))
-  const livePlan = calculateAllocationPlan({ monthlyIncome, goals: engineGoals })
+  // Cùng tham số với server (route complete): khẩn cấp 6 tháng — lệch là timeline preview sai gấp đôi.
+  const livePlan = calculateAllocationPlan({
+    monthlyIncome,
+    emergencyTarget: estimateEmergencyTarget(monthlyIncome, ONBOARDING_EMERGENCY_MONTHS),
+    emergencyTargetMonths: ONBOARDING_EMERGENCY_MONTHS,
+    goals: engineGoals,
+  })
   const allocById = new Map(livePlan.allocations.map((a) => [a.id, a]))
   const allocFor = (f: OnboardingFundResult) =>
     allocById.get(f.fundType === "emergency" ? "emergency" : f.id)
@@ -197,15 +205,22 @@ export function TadaStep() {
               <Icon icon={iconFor(f)} className="text-2xl text-primary" aria-hidden />
               <div className="flex-1">
                 <p className="font-semibold text-primary">{f.name}</p>
-                <p className="font-mono text-sm tabular-nums text-muted-foreground">
-                  {formatVND(targetFor(f))}
-                </p>
+                {targetFor(f) !== null ? (
+                  <p className="font-mono text-sm tabular-nums text-muted-foreground">
+                    {formatVND(targetFor(f)!)}
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">{t("funds.basicInvestmentDesc")}</p>
+                )}
                 {fundMonthly(f) !== null && (
                   <p className="font-mono text-xs tabular-nums text-muted-foreground">
                     {t("setupV2.tada.fundMonthly", { amount: formatVND(fundMonthly(f)!) })}
                   </p>
                 )}
-                <p className="text-xs text-muted-foreground">{timelineLabel(fundTimeline(f))}</p>
+                {/* Sinking/investment không nằm trong allocation engine — không có timeline để hứa */}
+                {(f.fundType === "emergency" || f.fundType === "goal") && (
+                  <p className="text-xs text-muted-foreground">{timelineLabel(fundTimeline(f))}</p>
+                )}
               </div>
             </div>
           ))}

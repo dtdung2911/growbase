@@ -150,6 +150,43 @@ export function GoalStep() {
         </div>
       </div>
 
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {[
+          {
+            icon: PRESET_ICON_NAMES.sinking,
+            name: "funds.basicSinkingName",
+            desc: "funds.basicSinkingDesc",
+          },
+          {
+            icon: PRESET_ICON_NAMES.investment,
+            name: "funds.basicInvestmentName",
+            desc: "funds.basicInvestmentDesc",
+          },
+        ].map((fund) => (
+          <div
+            key={fund.name}
+            className="rounded-[13px] border border-primary/90 bg-card p-4 shadow-card"
+          >
+            <div className="flex items-start gap-3">
+              <Icon
+                icon={fund.icon}
+                className="text-2xl text-primary"
+                aria-hidden
+              />
+              <div className="flex-1 space-y-1.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-semibold text-primary">
+                    {t(fund.name)}
+                  </span>
+                  <Badge>{t("setupV2.goal.emergency.badge")}</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">{t(fund.desc)}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-2">
           <p className="text-sm font-medium text-foreground">
@@ -254,7 +291,9 @@ export function GoalStep() {
                                 role="radio"
                                 aria-checked={active}
                                 onClick={() =>
-                                  updateGoalField(preset.presetId, { icon: choice })
+                                  updateGoalField(preset.presetId, {
+                                    icon: choice,
+                                  })
                                 }
                                 className={cn(
                                   "flex h-11 min-h-[44px] items-center justify-center rounded-[13px] border transition-colors motion-reduce:transition-none",
@@ -319,7 +358,9 @@ export function GoalStep() {
                             <CompoundLine
                               template={t("setupV2.goal.compoundLine")}
                               months={compoundMonths}
-                              channel={t(`setupV2.goal.channel.${calc.tierKey}`)}
+                              channel={t(
+                                `setupV2.goal.channel.${calc.tierKey}`,
+                              )}
                             />
                           )}
                           {/* GIỮ escape tĩnh chỉ khi cả compound cũng null (compound line là lối thoát thật). */}
@@ -378,7 +419,9 @@ export function GoalStep() {
 
         {anyCompound && (
           <p className="rounded bg-warning/10 px-2 py-1 text-xs text-foreground">
-            {t("setupV2.goal.compoundDisclaimer", { year: COMPOUND_RATES_YEAR })}
+            {t("setupV2.goal.compoundDisclaimer", {
+              year: COMPOUND_RATES_YEAR,
+            })}
           </p>
         )}
 

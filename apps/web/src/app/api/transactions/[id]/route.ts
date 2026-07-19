@@ -21,10 +21,10 @@ export async function PUT(request: Request, { params }: Params) {
 
     const input = parsed.data
 
-    // Verify ownership + fetch transaction_type for system guard
+    // Verify ownership + fetch transaction_type/fund_id for guards
     const { data: existing } = await auth.supabase
       .from("transactions")
-      .select("id, transaction_type")
+      .select("id, transaction_type, fund_id")
       .eq("id", input.id)
       .eq("household_id", auth.householdId)
       .maybeSingle()
@@ -45,6 +45,14 @@ export async function PUT(request: Request, { params }: Params) {
       )
     }
 
+    // 19-3: transaction gắn quỹ — sửa làm lệch số dư quỹ, thao tác từ trang quỹ
+    if (existing.fund_id) {
+      return NextResponse.json(
+        { data: null, error: "Giao dịch gắn quỹ — hoàn tác hoặc chi từ trang quỹ" },
+        { status: 403 }
+      )
+    }
+
     const { data, error } = await auth.supabase
       .from("transactions")
       .update({
@@ -60,6 +68,8 @@ export async function PUT(request: Request, { params }: Params) {
       })
       .eq("id", input.id)
       .eq("household_id", auth.householdId)
+      // chốt chặn race: nếu transaction vừa bị gắn quỹ giữa lúc check và update thì bỏ qua
+      .is("fund_id", null)
       .select("id")
       .single()
 
@@ -78,7 +88,7 @@ export async function DELETE(request: Request, { params }: Params) {
 
     const { data: existing } = await auth.supabase
       .from("transactions")
-      .select("id, transaction_type")
+      .select("id, transaction_type, fund_id")
       .eq("id", params.id)
       .eq("household_id", auth.householdId)
       .maybeSingle()
@@ -99,11 +109,20 @@ export async function DELETE(request: Request, { params }: Params) {
       )
     }
 
+    // 19-3: transaction gắn quỹ — xóa làm lệch số dư quỹ, thao tác từ trang quỹ
+    if (existing.fund_id) {
+      return NextResponse.json(
+        { data: null, error: "Giao dịch gắn quỹ — hoàn tác hoặc chi từ trang quỹ" },
+        { status: 403 }
+      )
+    }
+
     const { error } = await auth.supabase
       .from("transactions")
       .delete()
       .eq("id", params.id)
       .eq("household_id", auth.householdId)
+      .is("fund_id", null)
 
     if (error) {
       return NextResponse.json({ data: null, error: error.message }, { status: 500 })

@@ -3,6 +3,8 @@
 // Ở lib/constants để cả validations (server) + API route import mà không kéo components tree vào server bundle.
 export const PRESET_ICON_NAMES: Record<string, string> = {
   emergency: "stash:shield-duotone",
+  sinking: "ph:umbrella-duotone",
+  investment: "ph:trend-up-duotone",
   education: "ph:graduation-cap-duotone",
   house: "ph:house-line-duotone",
   travel: "ph:island-duotone",

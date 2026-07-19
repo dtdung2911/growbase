@@ -2,15 +2,20 @@
 
 import { useState } from "react"
 import { Icon } from "@iconify/react"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils/cn"
 import { formatVND, formatVNDCompact } from "@growbase/shared/rules/currency"
 import { useTranslation } from "@/lib/i18n/useTranslation"
-import { useFundDetail, useDeleteFund } from "@/lib/hooks/useFunds"
+import { useFundDetail, useDeleteFund, useFundContributionRevert, useUpdateFund } from "@/lib/hooks/useFunds"
+import { estimateEmergencyTarget } from "@growbase/shared/constants/budgetTemplate"
+
+const EMERGENCY_MONTH_OPTIONS = [3, 4, 5, 6] as const
 import { useLivingPlan } from "@/lib/hooks/useLivingPlan"
 import { todayVN } from "@growbase/shared/rules/date"
 import { FUND_TYPE_CONFIG } from "@growbase/shared/types/app"
 import { ContributeModal } from "@/components/funds/ContributeModal"
 import { WithdrawModal } from "@/components/funds/WithdrawModal"
+import { FundExpenseModal } from "@/components/funds/FundExpenseModal"
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog"
 import { FundEditSheet } from "@/components/funds/FundEditSheet"
 import { SkeletonCard } from "@/components/shared/SkeletonCard"
@@ -40,11 +45,15 @@ export default function FundDetailPage({
   const { t } = useTranslation()
   const { data, isLoading } = useFundDetail(params.id)
   const deleteFund = useDeleteFund(params.id)
-  const { plan, emergencyBalance, capacityThisMonth } = useLivingPlan()
+  const { plan, emergencyBalance, capacityThisMonth, trailingIncome } = useLivingPlan()
+  const updateFund = useUpdateFund(params.id)
   const [contributeOpen, setContributeOpen] = useState(false)
   const [withdrawOpen, setWithdrawOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
+  const [revertTx, setRevertTx] = useState<FundTransaction | null>(null)
+  const [expenseOpen, setExpenseOpen] = useState(false)
+  const revertContribution = useFundContributionRevert(params.id)
 
   if (isLoading) {
     return (
@@ -165,7 +174,39 @@ export default function FundDetailPage({
               </div>
             </>
           )}
+          {/* 19-9: quỹ không target = tích lũy mở, không progress % */}
+          {progress === null && (
+            <p className="text-xs text-muted-foreground">{t("funds.openAccumulation")}</p>
+          )}
         </div>
+
+        {/* 19-9: chips chỉnh target quỹ khẩn cấp theo số tháng chi phí */}
+        {fund.fund_type === "emergency" && trailingIncome > 0 && (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">{t("funds.targetLabel")}</span>
+            {EMERGENCY_MONTH_OPTIONS.map((m) => (
+              <button
+                key={m}
+                type="button"
+                disabled={updateFund.isPending}
+                onClick={() =>
+                  updateFund.mutate({
+                    target_amount: estimateEmergencyTarget(trailingIncome, m),
+                    target_months_expense: m,
+                  })
+                }
+                className={cn(
+                  "min-h-[32px] rounded-full border px-3 text-xs font-medium transition-colors",
+                  fund.target_months_expense === m
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border text-muted-foreground hover:bg-accent"
+                )}
+              >
+                {m} {t("funds.monthsShort")}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Action buttons */}
         <div className="grid grid-cols-2 gap-2">
@@ -190,6 +231,20 @@ export default function FundDetailPage({
           >
             <Icon icon="lucide:arrow-up-right" className="h-4 w-4" />
             {t("funds.withdraw")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setExpenseOpen(true)}
+            disabled={fund.current_balance === 0}
+            className={cn(
+              "col-span-2 flex min-h-[44px] items-center justify-center gap-2 rounded-full border text-sm font-medium transition-colors",
+              fund.current_balance > 0
+                ? "border-border text-foreground hover:bg-accent"
+                : "cursor-not-allowed border-border text-muted-foreground opacity-40"
+            )}
+          >
+            <Icon icon="lucide:shopping-cart" className="h-4 w-4" />
+            {t("funds.spendFromFund")}
           </button>
         </div>
       </div>
@@ -236,6 +291,7 @@ export default function FundDetailPage({
                       <TableHead className="text-right">
                         {t("funds.balance")}
                       </TableHead>
+                      <TableHead />
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -248,9 +304,11 @@ export default function FundDetailPage({
                           </TableCell>
                           <TableCell className="text-sm">
                             {tx.description ||
-                              (isIn
-                                ? t("funds.deposit")
-                                : t("funds.withdraw"))}
+                              (tx.transaction_type === "expense"
+                                ? t("funds.spendFromFund")
+                                : isIn
+                                  ? t("funds.deposit")
+                                  : t("funds.withdraw"))}
                             {tx.is_automatic && (
                               <span className="ml-1.5 text-[10px] text-muted-foreground">
                                 ({t("funds.auto")})
@@ -268,6 +326,20 @@ export default function FundDetailPage({
                           </TableCell>
                           <TableCell className="text-right font-mono tabular-nums text-xs text-muted-foreground">
                             {formatVNDCompact(tx.balance_after)}
+                          </TableCell>
+                          <TableCell className="w-8 pr-2">
+                            {tx.transaction_type === "contribution" && !tx.is_automatic && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                aria-label={t("funds.revert")}
+                                disabled={revertContribution.isPending}
+                                onClick={() => setRevertTx(tx)}
+                              >
+                                <Icon icon="lucide:undo-2" className="h-4 w-4 text-muted-foreground" />
+                              </Button>
+                            )}
                           </TableCell>
                         </TableRow>
                       )
@@ -318,6 +390,15 @@ export default function FundDetailPage({
                         <p className="font-mono text-[11px] tabular-nums text-muted-foreground">
                           = {formatVNDCompact(tx.balance_after)}
                         </p>
+                        {tx.transaction_type === "contribution" && !tx.is_automatic && (
+                          <button
+                            className="mt-0.5 text-[11px] text-primary hover:underline disabled:opacity-50"
+                            disabled={revertContribution.isPending}
+                            onClick={() => setRevertTx(tx)}
+                          >
+                            {t("funds.revert")}
+                          </button>
+                        )}
                       </div>
                     </div>
                   )
@@ -355,6 +436,11 @@ export default function FundDetailPage({
         open={withdrawOpen}
         onClose={() => setWithdrawOpen(false)}
       />
+      <FundExpenseModal
+        fund={fund}
+        open={expenseOpen}
+        onClose={() => setExpenseOpen(false)}
+      />
       {canEdit && editOpen && (
         <FundEditSheet fund={fund} open={editOpen} onClose={() => setEditOpen(false)} />
       )}
@@ -371,6 +457,20 @@ export default function FundDetailPage({
           })
         }}
         isPending={deleteFund.isPending}
+      />
+      <ConfirmDialog
+        open={Boolean(revertTx)}
+        onOpenChange={(open) => !open && setRevertTx(null)}
+        title={t("funds.revert")}
+        description={t("funds.revertConfirm")}
+        onConfirm={() => {
+          if (!revertTx) return
+          revertContribution.mutate(
+            { fund_tx_id: revertTx.id, transaction_date: revertTx.transaction_date },
+            { onSuccess: () => setRevertTx(null) }
+          )
+        }}
+        isPending={revertContribution.isPending}
       />
     </div>
   )

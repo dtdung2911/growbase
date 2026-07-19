@@ -43,13 +43,23 @@ export const SPENDING_COST_TYPE_GROUPS: readonly CostTypeGroupKey[] = [
 export const FLEXIBLE_COST_TYPE_GROUPS: readonly CostTypeGroupKey[] = ["variable", "wasteful"]
 
 export const EMERGENCY_FUND_MONTHS = 3
+// Bộ quỹ mặc định tạo lúc onboarding (19-8) — server và Tada preview phải cùng một số
+export const ONBOARDING_EMERGENCY_MONTHS = 6
 
 export function sumBudgetPct(groups: readonly CostTypeGroupKey[]): number {
   return BUDGET_TEMPLATE.filter((l) => groups.includes(l.costTypeGroup)).reduce((sum, l) => sum + l.budgetPct, 0)
 }
 
-export function estimateEmergencyTarget(monthlyIncome: number): number {
-  const target = EMERGENCY_FUND_MONTHS * monthlyIncome * (sumBudgetPct(SPENDING_COST_TYPE_GROUPS) / 100)
+// Chi phí sinh hoạt ước tính 1 tháng = thu nhập × tổng % các line chi tiêu
+export function estimateMonthlyLivingCost(monthlyIncome: number): number {
+  return monthlyIncome * (sumBudgetPct(SPENDING_COST_TYPE_GROUPS) / 100)
+}
+
+export function estimateEmergencyTarget(
+  monthlyIncome: number,
+  months: number = EMERGENCY_FUND_MONTHS
+): number {
+  const target = months * estimateMonthlyLivingCost(monthlyIncome)
   return Math.floor(target / 100_000) * 100_000
 }
 
@@ -65,6 +75,8 @@ export interface AllocationInput {
   emergencyBalance?: number
   // Target quỹ khẩn cấp từ DB (user-editable, BR-OB-014/016). Bỏ trống → estimate theo income (caller cũ).
   emergencyTarget?: number
+  // 19-9: số tháng của target (fund.target_months_expense) — bỏ giả định cứng target = 3 tháng.
+  emergencyTargetMonths?: number
 }
 
 export interface FundAllocation {
@@ -79,6 +91,7 @@ export interface FundAllocation {
 export interface AllocationPlan {
   capacityMonthly: number
   emergencyTarget: number
+  stage1Threshold?: number // ngưỡng GĐ1 (1× chi tiêu thiết yếu) — 19-9: expose cho stage helpers
   stage1EndMonth: number | null // emergency đạt 1× chi tiêu thiết yếu (0 = đã đạt sẵn)
   stage2EndMonth: number | null // emergency đạt target 3×
   allocations: FundAllocation[] // emergency đầu tiên, rồi goals theo hạng
@@ -110,10 +123,11 @@ export function calculateAllocationPlan(input: AllocationInput): AllocationPlan 
   const capacity = input.monthlyIncome * (sumBudgetPct(["savings_investment"]) / 100)
   const hasTargetOverride = input.emergencyTarget !== undefined
   const emergencyTarget = input.emergencyTarget ?? estimateEmergencyTarget(input.monthlyIncome)
-  // Có override (target DB): ngưỡng GĐ derive từ target — target/3 = 1× chi tiêu thiết yếu, nhất quán
-  // currentStage helper 12.2 (BR-OB-016). Không override: giữ estimate income×81% cũ (regression guard).
+  // Có override (target DB): ngưỡng GĐ1 = 1× chi tiêu thiết yếu = target / số tháng của target.
+  // 19-9: đọc số tháng từ fund (emergencyTargetMonths); thiếu → giữ giả định /3 (backward compat).
+  // Không override: giữ estimate income×81% cũ (regression guard).
   const stage1Threshold = hasTargetOverride
-    ? emergencyTarget / 3
+    ? emergencyTarget / (input.emergencyTargetMonths ?? 3)
     : input.monthlyIncome * (sumBudgetPct(SPENDING_COST_TYPE_GROUPS) / 100)
 
   const emergencyInitial = input.emergencyBalance ?? 0
@@ -201,6 +215,7 @@ export function calculateAllocationPlan(input: AllocationInput): AllocationPlan 
   return {
     capacityMonthly: Math.floor(capacity),
     emergencyTarget,
+    stage1Threshold,
     stage1EndMonth,
     stage2EndMonth,
     allocations: [

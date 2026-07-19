@@ -59,5 +59,14 @@ export const fundWithdrawSchema = z.object({
   transaction_date: z.string().default(() => new Date().toISOString().slice(0, 10)),
 })
 
+export const fundExpenseSchema = z.object({
+  amount: z.number().positive("Số tiền phải lớn hơn 0"),
+  category_id: z.string().uuid("Danh mục không hợp lệ"),
+  account_id: z.string().uuid("Tài khoản không hợp lệ"),
+  description: z.string().optional(),
+  transaction_date: z.string().default(() => new Date().toISOString().slice(0, 10)),
+})
+
 export type FundContributeInput = z.infer<typeof fundContributeSchema>
 export type FundWithdrawInput = z.infer<typeof fundWithdrawSchema>
+export type FundExpenseInput = z.infer<typeof fundExpenseSchema>

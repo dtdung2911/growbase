@@ -9,6 +9,7 @@ export const keys = {
   budget: (hid: string, month: string) => ["budget", hid, month] as const,
   reports: (hid: string, month: string, tab: string) =>
     ["reports", hid, month, tab] as const,
+  reportsByHousehold: (hid: string) => ["reports", hid] as const,
   debts: (hid: string) => ["debts", hid] as const,
   categories: (hid: string) => ["categories", hid] as const,
   costTypes: (hid: string) => ["costTypes", hid] as const,
@@ -41,5 +42,6 @@ export const keys = {
     ["eventBudget", hid, eventBudgetId] as const,
   monthlySummary: (hid: string, months: number) =>
     ["monthlySummary", hid, months] as const,
+  monthlySummaryByHousehold: (hid: string) => ["monthlySummary", hid] as const,
   livingPlan: (hid: string) => ["livingPlan", hid] as const,
 }

@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils/cn"
 import { formatVND } from "@growbase/shared/rules/currency"
 import { Badge } from "@/components/ui/badge"
@@ -15,6 +16,7 @@ type TransactionItemProps = {
 
 export function TransactionItem({ transaction: tx, costTypeCode, onClick }: TransactionItemProps) {
   const { t } = useTranslation()
+  const router = useRouter()
   const isIncome = tx.direction === "in"
   const categoryName = tx.category?.name ?? t("tx.uncategorized")
   const categoryIcon = tx.category?.icon ?? "💰"
@@ -53,6 +55,22 @@ export function TransactionItem({ transaction: tx, costTypeCode, onClick }: Tran
               {t(`behavior.${behaviorType}`)}
             </Badge>
           ) : null}
+          {tx.fund_id && tx.fund && (
+            // Row là <button> nên không nest <a> — span role=link + stopPropagation
+            <Badge
+              variant="secondary"
+              role="link"
+              tabIndex={0}
+              aria-label={t("tx.viewFund")}
+              className="shrink-0 cursor-pointer text-[10px] px-1 py-0 hover:brightness-[0.8]"
+              onClick={(e) => {
+                e.stopPropagation()
+                router.push(`/funds/${tx.fund_id}`)
+              }}
+            >
+              · {tx.fund.name}
+            </Badge>
+          )}
         </div>
         {tx.description && (
           <p className="truncate text-xs text-muted-foreground">

@@ -27,14 +27,17 @@ export function monthsToRefill({
   emergencyTarget,
   capacityThisMonth,
   hasIncompleteGoals,
+  stage1Threshold,
 }: {
   toStage: 1 | 2
   emergencyBalance: number
   emergencyTarget: number
   capacityThisMonth: number
   hasIncompleteGoals: boolean
+  // 19-9: ngưỡng GĐ1 từ plan (target / số tháng thật) — thiếu thì giữ giả định /3
+  stage1Threshold?: number
 }): number | null {
-  const threshold = toStage === 2 ? emergencyTarget : emergencyTarget / 3
+  const threshold = toStage === 2 ? emergencyTarget : (stage1Threshold ?? emergencyTarget / 3)
   const share = toStage === 1 || !hasIncompleteGoals ? 1 : 0.7
   const rate = capacityThisMonth * share
   const gap = threshold - emergencyBalance

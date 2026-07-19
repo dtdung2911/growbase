@@ -4,7 +4,7 @@ import type { ReactNode } from "react"
 import { DesktopDrawer } from "@/components/layout/DesktopDrawer"
 import { BottomNav } from "@/components/layout/BottomNav"
 import { TopHeader } from "@/components/layout/TopHeader"
-import { ThemeToggle } from "@/components/layout/ThemeToggle"
+import { QuickAddFAB } from "@/components/transactions/QuickAddFAB"
 
 type AppShellProps = {
   children: ReactNode
@@ -21,7 +21,7 @@ export function AppShell({ children }: AppShellProps) {
         </main>
       </div>
       <BottomNav />
-      <ThemeToggle />
+      <QuickAddFAB />
     </>
   );
 }

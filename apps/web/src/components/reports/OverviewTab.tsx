@@ -230,7 +230,12 @@ export function OverviewTab({ data }: OverviewTabProps) {
                   {formatVND(row.totalIncome)}
                 </TableCell>
                 <TableCell className="text-right font-mono tabular-nums text-expense">
-                  {formatVND(row.totalExpense)}
+                  <div>{formatVND(row.totalExpense - row.expenseFromFund)}</div>
+                  {row.expenseFromFund > 0 && (
+                    <div className="text-[11px] text-muted-foreground">
+                      {t("reports.fromFund")}: {formatVND(row.expenseFromFund)}
+                    </div>
+                  )}
                 </TableCell>
                 <TableCell className="text-right font-mono tabular-nums text-muted-foreground">
                   {row.expenseRatio}%
