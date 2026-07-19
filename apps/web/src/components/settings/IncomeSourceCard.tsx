@@ -1,0 +1,57 @@
+"use client"
+
+import { Button } from "@/components/ui/button"
+import { Icon } from "@iconify/react"
+import { formatVND } from "@growbase/shared/rules/currency"
+import { useTranslation } from "@/lib/i18n/useTranslation"
+import type { IncomeSource } from "@growbase/shared/types/app"
+
+type IncomeSourceCardProps = {
+  source: IncomeSource
+  ownerName?: string
+  isFormerMember?: boolean
+  onEdit: () => void
+}
+
+export function IncomeSourceCard({ source, ownerName, isFormerMember, onEdit }: IncomeSourceCardProps) {
+  const { t, locale } = useTranslation()
+  const fromDate = new Date(source.effective_from).toLocaleDateString(
+    locale === "vi" ? "vi-VN" : "en-US"
+  )
+
+  return (
+    <div className="rounded-[13px] border border-border/40 bg-card p-4 shadow-card">
+      <div className="flex items-start justify-between">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <h4 className="text-sm font-semibold">{source.source_name}</h4>
+            {ownerName ? (
+              <span className="rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-medium text-primary">
+                {ownerName}
+              </span>
+            ) : isFormerMember ? (
+              <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                {t("settings.income.formerMember")}
+              </span>
+            ) : null}
+          </div>
+          <p className="font-mono text-sm font-semibold tabular-nums text-foreground">
+            {formatVND(source.monthly_amount)}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {t("settings.income.effectiveFrom", { date: fromDate })}
+          </p>
+        </div>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="min-h-[44px] min-w-[44px]"
+          onClick={onEdit}
+        >
+          <Icon icon="lucide:pencil" className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+    </div>
+  )
+}

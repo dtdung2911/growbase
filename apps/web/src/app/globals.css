@@ -1,0 +1,568 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Page: cool blue-gray surface */
+    --background: 210 54% 96%;
+    --foreground: 218 24% 22%;
+
+    /* Cards: pure white */
+    --card: 0 0% 100%;
+    --card-foreground: 218 30% 16%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 218 30% 16%;
+
+    --primary-color: #0084DB;
+    --primary-color-hover: #006BB3;
+    --primary-color-pressed: #005A99;
+
+    /* Brand primary: #0084DB */
+    --primary: 204 100% 43%;
+    --primary-hover: 205 100% 36%;
+    --primary-pressed: 206 100% 27%;
+    --primary-foreground: 0 0% 100%;
+    --primary-soft: 210 100% 96%;
+
+    --light-primary: rgb(229 243 251 / 92%);
+    --light-primary-pressed: rgb(70 203 235 / 100%);
+    
+    /* Secondary */
+    --secondary: 210 40% 97%;
+    --secondary-foreground: 218 24% 22%;
+
+    /* Muted */
+    --muted: 210 40% 97%;
+    --muted-foreground: 215 15% 56%;
+    --faint: 215 17% 70%;
+
+    /* Accent */
+    --accent: 210 40% 97%;
+    --accent-foreground: 218 24% 22%;
+
+    /* Destructive */
+    --destructive: 9 100% 40%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Semantic colors */
+    --success: 149 62% 36%;
+    --success-soft: 147 65% 94%;
+    --warning: 33 100% 62%;
+    --warning-soft: 36 100% 95%;
+    --error: 9 100% 75%;
+    --error-soft: 10 100% 96%;
+    --info: 191 73% 59%;
+    --info-soft: 194 78% 95%;
+    --violet: 256 100% 74%;
+
+    /* Animation */
+    --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+    --duration-fast: 100ms;
+    --duration-normal: 250ms;
+    --duration-slow: 1000ms;
+
+    /* Borders */
+    --border: 212 45% 93%;
+    --input: 212 45% 93%;
+    --ring: 204 100% 43%;
+    --radius: 0.9375rem;
+
+    /* Surface levels */
+    --surface: 210 54% 96%;
+    --surface-2: 210 40% 97%;
+    --elevated: 210 30% 93%;
+    --inset: 210 35% 95%;
+
+    /* Ink: darkest text for headings */
+    --ink: 218 30% 16%;
+
+    /* Layout */
+    --sidebar-width: 272px;
+    --topbar-height: 72px;
+    --page-gap: 28px;
+
+    /* Login page */
+    --login-page-bg: #e5e9ef;
+    --login-panel-bg: #EBF5FF;
+    --login-form-bg: #FFFFFF;
+    --login-border: #DBEAFE;
+    --login-text-primary: #05101A;
+    --login-text-muted: #94A3B8;
+    --login-text-secondary: #64748B;
+    --login-input-bg: #F8FAFC;
+    --login-browser-bar: #EFF6FF;
+  }
+
+  .dark {
+    /* Page: brand dark bg #05101A */
+    --background: 209 68% 6%;
+    --foreground: 210 20% 92%;
+
+    /* Cards */
+    --card: 209 45% 10%;
+    --card-foreground: 210 20% 92%;
+    --popover: 209 45% 10%;
+    --popover-foreground: 210 20% 92%;
+
+    /* Brand primary (lighter in dark for contrast) */
+    --primary: 204 90% 48%;
+    --primary-hover: 205 90% 42%;
+    --primary-pressed: 206 90% 34%;
+    --primary-foreground: 0 0% 100%;
+    --primary-soft: 204 40% 14%;
+
+    /* Secondary */
+    --secondary: 215 25% 14%;
+    --secondary-foreground: 210 20% 88%;
+
+    /* Muted */
+    --muted: 215 25% 14%;
+    --muted-foreground: 215 15% 55%;
+    --faint: 215 12% 38%;
+
+    /* Accent */
+    --accent: 215 25% 14%;
+    --accent-foreground: 210 20% 88%;
+
+    /* Destructive */
+    --destructive: 9 80% 55%;
+    --destructive-foreground: 0 0% 98%;
+
+    /* Semantic colors dark */
+    --success: 149 50% 42%;
+    --success-soft: 149 30% 12%;
+    --warning: 33 80% 55%;
+    --warning-soft: 33 40% 12%;
+    --error: 9 70% 55%;
+    --error-soft: 9 30% 12%;
+    --info: 191 60% 45%;
+    --info-soft: 191 30% 12%;
+    --violet: 256 70% 60%;
+
+    /* Borders */
+    --border: 215 20% 16%;
+    --input: 215 20% 16%;
+    --ring: 204 90% 48%;
+
+    /* Surface levels */
+    --surface: 215 30% 8%;
+    --surface-2: 215 25% 10%;
+    --elevated: 215 25% 12%;
+    --inset: 215 30% 6%;
+
+    /* Ink */
+    --ink: 210 20% 92%;
+
+    /* Layout */
+    --sidebar-width: 272px;
+    --topbar-height: 72px;
+    --page-gap: 28px;
+
+    /* Login page */
+    --login-page-bg: #05101A;
+    --login-panel-bg: #030C13;
+    --login-form-bg: #05101A;
+    --login-border: #172A3A;
+    --login-text-primary: #EFF6FF;
+    --login-text-muted: #3D617A;
+    --login-text-secondary: #64748B;
+    --login-input-bg: transparent;
+    --login-browser-bar: #030C13;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    font-size: 15px;
+    line-height: 1.45;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-primary/50 ring-offset-2 ring-offset-background;
+  }
+}
+
+@layer utilities {
+  .font-mono-tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Page entry animation */
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page-in {
+  animation: page-in 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Budget progress fill (Spike template) */
+@keyframes fillProgress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ── Login page decorative blobs (Spike template) ── */
+.login-shell {
+  position: relative;
+  overflow: hidden;
+  background: hsl(var(--background));
+}
+
+.login-shell::before,
+.login-shell::after {
+  position: absolute;
+  z-index: 0;
+  content: "";
+  filter: blur(2px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.login-shell::before {
+  top: -160px;
+  right: -160px;
+  width: 480px;
+  height: 480px;
+  background: #51c5ef;
+  border-radius: 47% 53% 62% 38% / 42% 49% 51% 58%;
+}
+
+.login-shell::after {
+  bottom: -180px;
+  left: -160px;
+  width: 460px;
+  height: 460px;
+  background: #ff927d;
+  border-radius: 58% 42% 38% 62% / 51% 58% 42% 49%;
+}
+
+.dark .login-shell::before,
+.dark .login-shell::after {
+  opacity: 0.22;
+}
+
+button {
+    transition-duration: 0.28s !important;
+    transition-property: box-shadow, transform, opacity, background !important;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+button.bg-primary {
+  box-shadow: rgba(0, 133, 219, 0.3) 0px 4px 12px 0px;
+}
+
+button.bg-primary:hover {
+  box-shadow: none;
+  --tw-brightness: brightness(1);
+}
+
+/* Icon button hover lift */
+.icon-btn-hover {
+  transition: background 180ms ease, color 180ms ease, transform 180ms ease;
+}
+.icon-btn-hover:hover {
+  transform: translateY(-1px);
+}
+
+/* ── Sidebar nav active "notch" effect ── */
+.sidebar-nav {
+  --nav-corner: 20px;
+  --nav-item-mr: 16px;
+  padding-right: 0;
+}
+
+.sidebar-nav-brand {
+  border-right: 1px solid hsl(var(--border));
+}
+
+.sidebar-nav-div {
+  padding-top: 16px;
+}
+.sidebar-nav-div[data-active="false"] {
+  border-right: 1px solid hsl(var(--border));
+}
+
+.sidebar-nav-paragraph {
+  padding-top: 20px;
+  padding-bottom: 0.625rem;
+  border-right: 1px solid hsl(var(--border));
+}
+
+.sidebar-nav-link {
+  position: relative;
+  margin-right: var(--nav-item-mr);
+  border-radius: 999px;
+  transition: background 220ms ease, color 220ms ease;
+}
+
+.sidebar-nav-link:hover {
+  color: hsl(var(--primary));
+  background: hsl(var(--primary-soft));
+}
+
+.sidebar-nav-link[data-active="true"] {
+  margin-right: 0;
+  padding-right: calc(16px + var(--nav-item-mr));
+  border-radius: 999px 0 0 999px;
+  background: hsl(var(--background));
+  color: hsl(var(--primary));
+  isolation: isolate;
+  box-shadow:
+    inset 1px 0 0 hsl(var(--border) / 0.5), 
+    inset 0 6px 6px hsl(0deg 0% 0% / 3%), 
+    inset 0 -1px 0 hsl(var(--border) / 0.4);
+}
+
+.header-custom::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+  top: 64px;
+  border-top-left-radius: 20px;
+  border-top: 1px solid hsl(var(--border));
+  box-shadow: -8px -8px 0 8px hsl(var(--card));
+}
+
+.sidebar-nav-link[data-active="true"] {
+  border-top: 1px solid hsl(var(--border));
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.sidebar-nav-link[data-active="true"]::before {
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.sidebar-nav-link[data-active="true"]::after {
+  border-top: 1px solid hsl(var(--border));
+}
+
+.apexcharts-bar-series.apexcharts-plot-series  .apexcharts-series path {
+  clip-path: inset(3% 8% 3% 8% round 10px);
+}
+
+.sidebar-nav-link[data-active="true"]::before,
+.sidebar-nav-link[data-active="true"]::after {
+  position: absolute;
+  right: 0;
+  width: var(--nav-corner);
+  height: var(--nav-corner);
+  content: "";
+  background: transparent;
+  pointer-events: none;
+}
+
+.sidebar-nav-link[data-active="true"]::before {
+  top: calc(var(--nav-corner) * -1);
+  border-bottom-right-radius: var(--nav-corner);
+  box-shadow: 8px 8px 0 8px hsl(var(--background));
+}
+
+.sidebar-nav-link[data-active="true"]::after {
+  bottom: calc(var(--nav-corner) * -1);
+  border-top-right-radius: var(--nav-corner);
+  box-shadow: 8px -8px 0 8px hsl(var(--background));
+}
+
+.sidebar-nav-link[data-active="true"] svg,
+.sidebar-nav-link[data-active="true"] span {
+  position: relative;
+  z-index: 1;
+}
+
+/* ================================================
+   Smooth entrance animations for cards, panels, tables
+   ================================================ */
+
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes table-row-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Cards and panels: slide-up + fade */
+.shadow-panel,
+.shadow-card,
+.shadow-soft-xs {
+  animation: card-enter 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.shadow-card {
+  /* border: 1px solid hsl(var(--border)); */
+  box-shadow: rgba(37, 83, 185, 0.1) 0px 2px 6px 0px;
+}
+
+/* Stagger children in list containers */
+.space-y-2 > .shadow-panel,
+.space-y-2 > .shadow-card,
+.space-y-3 > .shadow-panel,
+.space-y-3 > .shadow-card,
+.space-y-4 > .shadow-panel,
+.space-y-4 > .shadow-card,
+.divide-y > *,
+.grid > .shadow-panel,
+.grid > .shadow-card {
+  animation: card-enter 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.space-y-2 > :nth-child(1) { animation-delay: 0ms; }
+.space-y-2 > :nth-child(2) { animation-delay: 40ms; }
+.space-y-2 > :nth-child(3) { animation-delay: 80ms; }
+.space-y-2 > :nth-child(4) { animation-delay: 120ms; }
+.space-y-2 > :nth-child(5) { animation-delay: 160ms; }
+.space-y-2 > :nth-child(n+6) { animation-delay: 200ms; }
+
+.space-y-3 > :nth-child(1) { animation-delay: 0ms; }
+.space-y-3 > :nth-child(2) { animation-delay: 50ms; }
+.space-y-3 > :nth-child(3) { animation-delay: 100ms; }
+.space-y-3 > :nth-child(4) { animation-delay: 150ms; }
+.space-y-3 > :nth-child(5) { animation-delay: 200ms; }
+.space-y-3 > :nth-child(n+6) { animation-delay: 250ms; }
+
+.space-y-4 > :nth-child(1) { animation-delay: 0ms; }
+.space-y-4 > :nth-child(2) { animation-delay: 60ms; }
+.space-y-4 > :nth-child(3) { animation-delay: 120ms; }
+.space-y-4 > :nth-child(4) { animation-delay: 180ms; }
+.space-y-4 > :nth-child(n+5) { animation-delay: 240ms; }
+
+/* Grid children stagger */
+.grid > :nth-child(1) { animation-delay: 0ms; }
+.grid > :nth-child(2) { animation-delay: 50ms; }
+.grid > :nth-child(3) { animation-delay: 100ms; }
+.grid > :nth-child(4) { animation-delay: 150ms; }
+.grid > :nth-child(n+5) { animation-delay: 200ms; }
+
+/* Table rows: fast fade-in stagger */
+tbody > tr {
+  animation: table-row-enter 300ms ease both;
+}
+
+tbody > tr:nth-child(1) { animation-delay: 0ms; }
+tbody > tr:nth-child(2) { animation-delay: 30ms; }
+tbody > tr:nth-child(3) { animation-delay: 60ms; }
+tbody > tr:nth-child(4) { animation-delay: 90ms; }
+tbody > tr:nth-child(5) { animation-delay: 120ms; }
+tbody > tr:nth-child(6) { animation-delay: 150ms; }
+tbody > tr:nth-child(7) { animation-delay: 180ms; }
+tbody > tr:nth-child(8) { animation-delay: 210ms; }
+tbody > tr:nth-child(n+9) { animation-delay: 240ms; }
+
+/* Metric cards on dashboard */
+.grid-cols-2 > *,
+.lg\:grid-cols-4 > * {
+  animation: card-enter 350ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.grid-cols-2 > :nth-child(1) { animation-delay: 0ms; }
+.grid-cols-2 > :nth-child(2) { animation-delay: 60ms; }
+.grid-cols-2 > :nth-child(3) { animation-delay: 120ms; }
+.grid-cols-2 > :nth-child(4) { animation-delay: 180ms; }
+
+/* Tab content: fade in */
+[data-state="active"][role="tabpanel"] {
+  animation: card-enter 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Respect reduced motion — global blanket rule */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.02ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.02ms !important;
+  }
+}
+
+/* driver.js tour popover (onboarding demo) — khớp brand token, theme-aware.
+   Đặt sau import "driver.js/dist/driver.css" (root layout) để thắng theo source order. */
+.driver-popover {
+  font-family: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  background-color: hsl(var(--card));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+  border-radius: 18px;
+  box-shadow: 0 8px 18px rgba(0, 132, 219, 0.26);
+  max-width: 340px;
+  padding: 22px;
+}
+.driver-popover-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: hsl(var(--ink));
+}
+.driver-popover-description {
+  color: hsl(var(--primary));
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.driver-popover-progress-text {
+  color: hsl(var(--faint));
+  font-size: 12px;
+  font-weight: 600;
+}
+.driver-popover-close-btn {
+  color: hsl(var(--muted-foreground));
+  transition: color 200ms ease;
+}
+.driver-popover-close-btn:hover {
+  color: hsl(var(--foreground));
+}
+.driver-popover-footer button {
+  text-shadow: none;
+  border: 0;
+  border-radius: 9999px;
+  min-height: 36px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: filter 200ms ease, background-color 200ms ease;
+}
+.driver-popover-footer button.driver-popover-prev-btn {
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+}
+.driver-popover-footer button.driver-popover-next-btn {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+.driver-popover-footer button.driver-popover-next-btn:hover {
+  filter: brightness(0.85);
+}

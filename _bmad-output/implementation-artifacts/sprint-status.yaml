@@ -36,7 +36,7 @@
 # - Retrospective appends its action items to action_items; sprint-status surfaces open ones
 
 generated: 02-07-2026
-last_updated: 17-07-2026
+last_updated: 18-07-2026
 project: growbase
 project_key: NOKEY
 tracking_system: file-system
@@ -141,6 +141,47 @@ development_status:
   epic-14-retrospective: optional
 
 # Action items committed during retrospectives (section created by the retrospective workflow)
+  # --- Mobile initiative (GrowBase Mobile, RN companion) — epics 14-18 ---
+  epic-14: in-progress
+  14-1-pnpm-monorepo-shared-package: done
+  14-2-scaffold-expo-app: done
+  14-3-api-fetch-client: done
+  14-4-backend-touches: done
+  epic-14-retrospective: optional
+  epic-15: backlog
+  15-1-auth-login-secure-session: done
+  15-2-faceid-unlock: done
+  15-3-household-month-context: done
+  15-4-nav-shell-i18n-theme: done
+  epic-15-retrospective: optional
+  epic-16: done
+  16-1-quick-add-transaction: done
+  16-2-transaction-list-edit-delete: done
+  16-3-offline-queue-sync: done
+  16-4-sync-status-cached-read: done
+  epic-16-retrospective: optional
+  epic-17: backlog
+  17-1-home-glance: done
+  17-2-monthly-stats-charts: done
+  17-3-funds-view: done
+  17-4-budget-view: done
+  epic-17-retrospective: optional
+  epic-18: backlog
+  18-1-local-daily-reminder: backlog
+  18-2-registration-onboarding: backlog
+  epic-18-retrospective: optional
+  epic-19: done
+  19-1-fund-ops-cache-invalidation: done
+  19-2-system-savings-category: done
+  19-3-fund-linked-transaction-badge-lock: done
+  19-4-revert-fund-contribution: done
+  19-5-transaction-form-fund-tab: done
+  19-6-spend-from-fund-rpc: done
+  19-7-spend-from-fund-ui-reports: done
+  19-8-default-funds-onboarding: done
+  19-9-emergency-target-chips-engine: done
+  epic-19-retrospective: optional
+
 action_items:
   - epic: 3
     action: "Viết lại docs/06_STYLE_GUIDE.md theo đúng hiện trạng thực tế + bổ sung rule chặt chẽ, cụ thể cho dev agent (khi nào dùng radius nào, dark-mode token nào) để chặn lỗi lặp lại (rounded-2xl sai chuẩn xuất hiện ở 4/6 stories; hardcoded gray phá dark mode xuất hiện 2 lần trong 1 review)"

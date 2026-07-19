@@ -1,0 +1,53 @@
+{
+  "name": "@growbase/mobile",
+  "main": "expo-router/entry",
+  "version": "1.0.0",
+  "dependencies": {
+    "@expo/vector-icons": "^15.0.2",
+    "@growbase/shared": "workspace:*",
+    "@hookform/resolvers": "^3.10.0",
+    "@react-native-community/netinfo": "^11.4.1",
+    "@supabase/supabase-js": "^2.46.1",
+    "@tanstack/query-sync-storage-persister": "^5.101.2",
+    "@tanstack/react-query": "^5.101.2",
+    "@tanstack/react-query-persist-client": "^5.101.2",
+    "aes-js": "^3.1.2",
+    "expo": "~56.0.16",
+    "expo-constants": "~56.0.21",
+    "expo-crypto": "~56.0.4",
+    "expo-dev-client": "~56.0.13",
+    "expo-linking": "~56.0.15",
+    "expo-local-authentication": "~56.0.4",
+    "expo-router": "~56.2.15",
+    "expo-secure-store": "~15.0.7",
+    "expo-splash-screen": "~56.0.13",
+    "expo-status-bar": "~56.0.4",
+    "expo-system-ui": "~56.0.5",
+    "react": "19.2.3",
+    "react-hook-form": "^7.81.0",
+    "react-native": "0.85.3",
+    "react-native-gesture-handler": "~2.31.2",
+    "react-native-gifted-charts": "^1.4.77",
+    "react-native-mmkv": "^4.3.2",
+    "react-native-nitro-modules": "^0.36.1",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "4.25.2",
+    "react-native-svg": "^15.15.5",
+    "react-native-toast-message": "^2.2.1",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@types/aes-js": "^3.1.4",
+    "@types/react": "~19.2.2",
+    "typescript": "~6.0.3",
+    "vitest": "^2.1.9"
+  },
+  "scripts": {
+    "start": "expo start --dev-client",
+    "android": "expo start --android --dev-client",
+    "ios": "expo start --ios --dev-client",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "private": true
+}

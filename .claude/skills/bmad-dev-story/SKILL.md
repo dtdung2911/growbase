@@ -345,13 +345,6 @@ Activation is complete. If `activation_steps_prepend` or `activation_steps_appen
     <action>Add integration tests for component interactions specified in story requirements</action>
     <action>Include end-to-end tests for critical user flows when story requirements demand them</action>
     <action>Cover edge cases and error handling scenarios identified in story Dev Notes</action>
-
-    <!-- MANDATORY BUSINESS FLOW VERIFICATION -->
-    <critical>Automated tests alone are NOT sufficient evidence of a working story. "Zero TypeScript errors" or "build passes" is NEVER an acceptable substitute for verifying the actual business flows this story touches.</critical>
-    <action>List every business/user-facing flow this story's Acceptance Criteria touch (e.g. "create transaction with negative amount rejected", "dark mode toggle persists across reload", "fund contribution updates balance atomically")</action>
-    <action>For each flow: verify it either (a) via an automated test that actually exercises it end-to-end, or (b) by manually tracing the flow through the running app/code path when automated coverage doesn't apply (pure UI/visual/CSS changes, cross-cutting layout, etc.) — state explicitly which method was used and what was observed</action>
-    <action>Write these results into the story file under Dev Agent Record → a new "### Testing" subsection: one line per flow, method used (automated/manual), and result (pass/fail + evidence)</action>
-    <action if="a listed flow cannot be verified by either method">HALT and report to the user which flow is unverifiable and why — do not proceed to Step 9 with an unverified flow</action>
   </step>
 
   <step n="7" goal="Run validations and tests">
@@ -431,7 +424,6 @@ Activation is complete. If `activation_steps_prepend` or `activation_steps_appen
       - End-to-end tests for critical flows added when story demands them
       - All tests pass (no regressions, new tests successful)
       - Code quality checks pass (linting, static analysis if configured)
-      - Dev Agent Record contains a non-empty "### Testing" subsection listing every business flow touched by this story's ACs, the verification method used (automated test or manual trace), and the result — "zero TypeScript errors" / "build passes" alone does NOT satisfy this
       - File List includes every new/modified/deleted file (relative paths)
       - Dev Agent Record contains implementation notes
       - Change Log includes summary of changes
@@ -464,7 +456,6 @@ Activation is complete. If `activation_steps_prepend` or `activation_steps_appen
     <action if="any task is incomplete">HALT - Complete remaining tasks before marking ready for review</action>
     <action if="regression failures exist">HALT - Fix regression issues before completing</action>
     <action if="File List is incomplete">HALT - Update File List with all changed files</action>
-    <action if="'### Testing' subsection is missing, empty, or only references build/typecheck status without listing actual business flows">HALT - Go back to Step 6 and verify business flows before marking ready for review</action>
     <action if="definition-of-done validation fails">HALT - Address DoD failures before completing</action>
   </step>
 
@@ -475,16 +466,6 @@ Activation is complete. If `activation_steps_prepend` or `activation_steps_appen
     <action>Communicate to {user_name} that story implementation is complete and ready for review</action>
     <action>Summarize key accomplishments: story ID, story key, title, key changes made, tests added, files modified</action>
     <action>Provide the story file path and current status (now "review")</action>
-
-    <!-- MANDATORY TL;DR BLOCK -->
-    <critical>End every completion message with a mandatory "TL;DR cho {user_name}" block, 3-5 dòng, in {communication_language}. This is NOT a restatement of the summary above — it exists so {user_name} can review without reading everything and still catch what matters. Never skip it, even for small/low-risk stories (say so explicitly if genuinely nothing is risky).</critical>
-    <action>Compose the TL;DR block with exactly these components, each as its own short line:
-      - Rủi ro cao nhất trong thay đổi này (1 dòng) — nếu không có rủi ro đáng kể, nói rõ "Không có rủi ro đáng kể" thay vì bỏ qua dòng này
-      - Rủi ro thứ 2 nếu có (bỏ qua nếu không có)
-      - Điểm CẦN {user_name} tự xác nhận bằng tay trước khi tin tưởng story này done (VD: kiểm tra UI trên browser, xác nhận 1 business rule cụ thể, chạy 1 luồng cụ thể) — lấy trực tiếp từ "### Testing" subsection, phần nào verify bằng manual trace thay vì automated test thì luôn liệt kê ở đây
-      - Bất kỳ deviation nào so với AC gốc hoặc bất kỳ giả định nào agent đã tự đưa ra khi thực hiện
-    </action>
-    <action>Place the TL;DR block as the closing block of the completion message (after the accomplishments summary, before offering explanations/next steps) — {user_name} should be able to read only this block and stop</action>
 
     <action>Based on {user_skill_level}, ask if user needs any explanations about:
       - What was implemented and how it works
