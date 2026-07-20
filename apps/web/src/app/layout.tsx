@@ -1,18 +1,22 @@
 import type { Metadata, Viewport } from "next"
-import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google"
+import localFont from "next/font/local"
 import { Providers } from "./providers"
 // Trước globals.css để override .driver-popover (tour onboarding) thắng theo source order.
 import "driver.js/dist/driver.css"
 import "./globals.css"
 
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ["latin", "vietnamese"],
+// Self-hosted (next/font/local): build không cần fetch fonts.gstatic.com —
+// prod self-host build offline được. Variable TTF phủ đủ glyph latin + vietnamese.
+const jakarta = localFont({
+  src: "./fonts/PlusJakartaSans.woff2",
+  weight: "200 800",
   variable: "--font-jakarta",
   display: "swap",
 })
 
-const jetbrains = JetBrains_Mono({
-  subsets: ["latin"],
+const jetbrains = localFont({
+  src: "./fonts/JetBrainsMono.woff2",
+  weight: "100 800",
   variable: "--font-jetbrains",
   display: "swap",
 })
