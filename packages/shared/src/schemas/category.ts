@@ -9,6 +9,7 @@ export const createCategorySchema = z.object({
     "wasteful",
     "debt_repayment",
     "savings_investment",
+    "income",
     "loan",
   ]),
   icon: z.string().optional(),

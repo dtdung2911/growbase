@@ -37,6 +37,7 @@ export type BehaviorType =
   | "wasteful"
   | "debt_repayment"
   | "savings_investment"
+  | "income"
   | "loan"
 
 export type FundType =
