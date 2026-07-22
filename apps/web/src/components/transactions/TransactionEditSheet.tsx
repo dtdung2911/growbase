@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { format, parseISO } from "date-fns"
 import Link from "next/link"
 import { Icon } from "@iconify/react"
 import {
@@ -153,7 +154,7 @@ export function TransactionEditSheet({
                   <span className="text-muted-foreground">{t("tx.amount")}</span>
                   <span className="font-mono tabular-nums">{formatVND(transaction.amount)}</span>
                   <span className="text-muted-foreground">{t("tx.date")}</span>
-                  <span>{transaction.transaction_date}</span>
+                  <span>{format(parseISO(transaction.transaction_date), "dd/MM/yyyy HH:mm")}</span>
                   {transaction.description && (
                     <>
                       <span className="text-muted-foreground">{t("tx.description")}</span>

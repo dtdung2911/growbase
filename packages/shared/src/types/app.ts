@@ -72,7 +72,7 @@ export type TransactionWithJoins = {
   is_unusual_income: boolean
   exclude_from_budget_report: boolean
   description: string | null
-  transaction_date: string
+  transaction_date: string // timestamptz ISO (VN business day) kể từ migration 027
   created_at: string
   updated_at: string
   category: { id: string; name: string; icon: string | null } | null
@@ -129,7 +129,7 @@ export type FundTransaction = {
   direction: "in" | "out"
   balance_after: number
   description: string | null
-  transaction_date: string
+  transaction_date: string // timestamptz ISO kể từ migration 027
   is_automatic: boolean
   created_at: string
 }

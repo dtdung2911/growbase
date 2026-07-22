@@ -44,7 +44,7 @@ export const fundContributeSchema = z.object({
   amount: z.number().positive("Số tiền phải lớn hơn 0"),
   account_id: z.string().uuid("Tài khoản không hợp lệ"),
   description: z.string().optional(),
-  transaction_date: z.string().default(() => new Date().toISOString().slice(0, 10)),
+  transaction_date: z.string().default(() => new Date().toISOString()),
 })
 
 export const fundWithdrawSchema = z.object({
@@ -56,7 +56,7 @@ export const fundWithdrawSchema = z.object({
     .trim()
     .min(1, "Vui lòng nhập lý do rút quỹ")
     .max(200, "Lý do rút tối đa 200 ký tự"),
-  transaction_date: z.string().default(() => new Date().toISOString().slice(0, 10)),
+  transaction_date: z.string().default(() => new Date().toISOString()),
 })
 
 export const fundExpenseSchema = z.object({
@@ -64,7 +64,7 @@ export const fundExpenseSchema = z.object({
   category_id: z.string().uuid("Danh mục không hợp lệ"),
   account_id: z.string().uuid("Tài khoản không hợp lệ"),
   description: z.string().optional(),
-  transaction_date: z.string().default(() => new Date().toISOString().slice(0, 10)),
+  transaction_date: z.string().default(() => new Date().toISOString()),
 })
 
 export type FundContributeInput = z.infer<typeof fundContributeSchema>

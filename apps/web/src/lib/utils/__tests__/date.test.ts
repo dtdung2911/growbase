@@ -3,35 +3,35 @@ import { monthRange, toYearMonth, firstDayOfMonth, yesterday } from "@growbase/s
 
 describe("monthRange", () => {
   it("returns first and last day of a 31-day month", () => {
-    expect(monthRange("2026-01")).toEqual({
+    expect(monthRange("2026-01")).toMatchObject({
       from: "2026-01-01",
       to: "2026-01-31",
     })
   })
 
   it("returns first and last day of a 30-day month", () => {
-    expect(monthRange("2026-04")).toEqual({
+    expect(monthRange("2026-04")).toMatchObject({
       from: "2026-04-01",
       to: "2026-04-30",
     })
   })
 
   it("handles February in a non-leap year (28 days)", () => {
-    expect(monthRange("2026-02")).toEqual({
+    expect(monthRange("2026-02")).toMatchObject({
       from: "2026-02-01",
       to: "2026-02-28",
     })
   })
 
   it("handles February in a leap year (29 days)", () => {
-    expect(monthRange("2024-02")).toEqual({
+    expect(monthRange("2024-02")).toMatchObject({
       from: "2024-02-01",
       to: "2024-02-29",
     })
   })
 
   it("handles December (year boundary, end of year)", () => {
-    expect(monthRange("2026-12")).toEqual({
+    expect(monthRange("2026-12")).toMatchObject({
       from: "2026-12-01",
       to: "2026-12-31",
     })
@@ -40,6 +40,12 @@ describe("monthRange", () => {
   it("does not bleed into the next month", () => {
     // last day phải thuộc đúng tháng được hỏi
     expect(monthRange("2026-11").to).toBe("2026-11-30")
+  })
+
+  it("exposes half-open VN-timezone bounds [fromTs, toTs)", () => {
+    const r = monthRange("2026-07")
+    expect(r.fromTs).toBe("2026-07-01T00:00:00+07:00")
+    expect(r.toTs).toBe("2026-08-01T00:00:00+07:00")
   })
 })
 

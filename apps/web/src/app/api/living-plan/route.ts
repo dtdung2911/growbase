@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { withAuth } from "@/lib/supabase/auth-check"
-import { monthRange, todayVN } from "@growbase/shared/rules/date"
+import { monthRange, todayVN, txMonthVN } from "@growbase/shared/rules/date"
 import { trailingHouseholdIncome } from "@growbase/shared/rules/trailingIncome"
 
 function addMonths(month: string, delta: number): string {
@@ -24,8 +24,8 @@ export async function GET() {
     addMonths(currentMonth, -2),
     addMonths(currentMonth, -1),
   ]
-  const windowFrom = monthRange(trailingMonths[0]).from
-  const windowTo = monthRange(currentMonth).to // gồm cả tháng hiện tại cho currentMonthIncome
+  const windowFrom = monthRange(trailingMonths[0]).fromTs
+  const windowTo = monthRange(currentMonth).toTs // gồm cả tháng hiện tại cho currentMonthIncome
 
   // Drift (BR-OB-017): hộ có góp quỹ nào trong tháng lịch TRƯỚC? head+count → không kéo rows,
   // chỉ cần biết có/không. StageEventCard dùng cờ này để kể tử tế khi tháng trước bỏ trống.
@@ -45,14 +45,14 @@ export async function GET() {
       .eq("household_id", householdId)
       .eq("transaction_type", "income")
       .gte("transaction_date", windowFrom)
-      .lte("transaction_date", windowTo),
+      .lt("transaction_date", windowTo),
     supabase
       .from("transactions")
       .select("id", { count: "exact", head: true })
       .eq("household_id", householdId)
       .eq("transaction_type", "fund_contribution")
-      .gte("transaction_date", lastMonth.from)
-      .lte("transaction_date", lastMonth.to),
+      .gte("transaction_date", lastMonth.fromTs)
+      .lt("transaction_date", lastMonth.toTs),
     supabase.from("households").select("created_at").eq("id", householdId).single(),
   ])
 
@@ -92,12 +92,10 @@ export async function GET() {
       priorityRank: f.priority_rank as number | null,
     }))
 
-  const sumMonthIncome = (mm: string) => {
-    const { from, to } = monthRange(mm)
-    return (incomeRes.data ?? [])
-      .filter((tx) => tx.transaction_date >= from && tx.transaction_date <= to)
+  const sumMonthIncome = (mm: string) =>
+    (incomeRes.data ?? [])
+      .filter((tx) => txMonthVN(tx.transaction_date as string) === mm)
       .reduce((sum, tx) => sum + Number(tx.amount), 0)
-  }
   const monthlyTotals = trailingMonths.map(sumMonthIncome)
   const currentMonthIncome = sumMonthIncome(currentMonth)
 

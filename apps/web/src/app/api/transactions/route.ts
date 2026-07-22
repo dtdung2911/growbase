@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  const { from, to } = monthRange(month)
+  const { fromTs, toTs } = monthRange(month)
 
   const { data, error } = await auth.supabase
     .from("transactions")
@@ -24,8 +24,8 @@ export async function GET(request: NextRequest) {
       "id, household_id, member_id, amount, direction, transaction_type, category_id, account_id, fund_id, debt_entry_id, behavior_type, is_unusual_income, exclude_from_budget_report, description, transaction_date, created_at, updated_at, categories(id, name, icon), accounts(id, name, color), funds(id, name)"
     )
     .eq("household_id", auth.householdId)
-    .gte("transaction_date", from)
-    .lte("transaction_date", to)
+    .gte("transaction_date", fromTs)
+    .lt("transaction_date", toTs)
     .order("transaction_date", { ascending: false })
     .order("created_at", { ascending: false })
 

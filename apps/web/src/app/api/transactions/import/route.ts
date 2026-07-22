@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { withAuth } from "@/lib/supabase/auth-check"
 import { withIdempotency } from "@/lib/api/idempotency"
+import { txDateVN } from "@growbase/shared/rules/date"
 import { z } from "zod"
 
 const importRowSchema = z.object({
@@ -40,9 +41,11 @@ export async function POST(request: Request) {
       .eq("household_id", hid)
       .eq("import_source", "csv")
 
+    // Dedup theo NGÀY (VN) — transaction_date giờ là timestamptz nên chuẩn hóa về ngày
+    // để giữ nguyên ngữ nghĩa chống trùng (cùng ngày + số tiền + mô tả = trùng).
     const existingSet = new Set(
       (existing.data ?? []).map((t) =>
-        `${t.transaction_date}|${t.amount}|${(t.description ?? "").slice(0, 50)}`
+        `${txDateVN(t.transaction_date)}|${t.amount}|${(t.description ?? "").slice(0, 50)}`
       )
     )
 
@@ -50,7 +53,7 @@ export async function POST(request: Request) {
     const duplicates = []
 
     for (const row of rows) {
-      const key = `${row.transaction_date}|${row.amount}|${(row.description ?? "").slice(0, 50)}`
+      const key = `${txDateVN(row.transaction_date)}|${row.amount}|${(row.description ?? "").slice(0, 50)}`
       if (existingSet.has(key)) {
         duplicates.push(row)
         continue
