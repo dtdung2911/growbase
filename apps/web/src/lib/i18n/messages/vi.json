@@ -940,5 +940,7 @@
   "setup.invited.title": "Bạn được mời",
   "setup.invited.subtitle": "Bạn có lời mời tham gia gia đình đang chờ",
   "setup.invited.join": "Tham gia",
-  "setup.invited.createNew": "Tạo gia đình mới"
+  "setup.invited.createNew": "Tạo gia đình mới",
+  "import.templateHint": "Chưa có file?",
+  "import.downloadTemplate": "Tải template mẫu"
 }
