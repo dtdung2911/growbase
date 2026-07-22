@@ -1,6 +1,11 @@
 ---
 spec: import-transactions-v2
-status: approved
+status: implemented
+implementation:
+  - Goal 1 commit 9762fca — migration 027 (both cols → timestamptz, VN-tz boundaries), fixed BETWEEN bug class + 8 consumers. Test: tx 31/14:00 VN counted in budget.
+  - Goal 2 commit 259c24b — excel template download, parseDate datetime, editable note preview, parseAmount rewrite (was returning 1 for "1.000.000"). tsc clean, vitest 545, build OK.
+  - Key: DB session TZ = UTC → boundaries made VN-tz-aware via monthRange fromTs/toTs + txDateVN/txMonthVN (date.ts).
+  - Deferred: apps/mobile canModifyTransaction.ts slice(0,7) UTC-month (out of web scope).
 branch: feat/import-transactions-v2
 decisions:
   - SPLIT confirmed — implement Goal 1 (migration + fix consumers + test) fully, THEN Goal 2 (import).
