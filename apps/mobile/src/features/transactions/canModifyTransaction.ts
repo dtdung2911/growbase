@@ -1,4 +1,5 @@
 import type { TransactionWithJoins } from "@growbase/shared/types/app"
+import { txMonthVN } from "@growbase/shared/rules/date"
 
 // Mirrors the web PUT/DELETE R3 guard: system-generated transactions are immutable.
 const SYSTEM_TRANSACTION_TYPES = new Set([
@@ -15,7 +16,7 @@ export function canModifyTransaction(
   currentMonth: string,
 ): boolean {
   if (!myMemberId || tx.member_id !== myMemberId) return false
-  if (tx.transaction_date.slice(0, 7) !== currentMonth) return false
+  if (txMonthVN(tx.transaction_date) !== currentMonth) return false
   if (SYSTEM_TRANSACTION_TYPES.has(tx.transaction_type)) return false
   return true
 }

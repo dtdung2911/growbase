@@ -52,5 +52,21 @@ function formatDateCell(date: Date): string {
   const y = date.getFullYear()
   const m = String(date.getMonth() + 1).padStart(2, "0")
   const d = String(date.getDate()).padStart(2, "0")
-  return `${y}-${m}-${d}`
+  const dateStr = `${y}-${m}-${d}`
+  const hh = date.getHours()
+  const mm = date.getMinutes()
+  if (hh === 0 && mm === 0 && date.getSeconds() === 0) return dateStr
+  return `${dateStr}T${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`
+}
+
+export function downloadImportTemplate(): void {
+  const aoa = [
+    ["Ngày giờ", "thu", "chi", "diễn giải"],
+    ["22/07/2026 14:30", "", "50000", "Cà phê"],
+    ["23/07/2026 09:00", "20000000", "", "Lương tháng 7"],
+  ]
+  const ws = XLSX.utils.aoa_to_sheet(aoa)
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, "GiaoDich")
+  XLSX.writeFile(wb, "growbase-import-template.xlsx")
 }

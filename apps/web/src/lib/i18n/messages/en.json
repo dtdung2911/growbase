@@ -940,5 +940,7 @@
   "setup.invited.title": "You are invited",
   "setup.invited.subtitle": "You have a pending invitation to join a household",
   "setup.invited.join": "Join",
-  "setup.invited.createNew": "Create a new household"
+  "setup.invited.createNew": "Create a new household",
+  "import.templateHint": "No file yet?",
+  "import.downloadTemplate": "Download template"
 }

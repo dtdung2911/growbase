@@ -7,6 +7,7 @@ import {
   type FundAllocation,
 } from "@growbase/shared/constants/budgetTemplate"
 import { currentStage } from "@growbase/shared/rules/currentStage"
+import { txMonthVN } from "@growbase/shared/rules/date"
 import type { Fund, FundTransaction } from "@growbase/shared/types/app"
 
 // Tab "Kế hoạch" chỉ cho quỹ trong allocation engine: emergency (id "emergency") + goal (id thật).
@@ -54,13 +55,13 @@ export function fundGoalChannel(fund: Fund, plan: AllocationPlan): FundChannel |
 
 // Đã góp (direction "in") cho quỹ trong tháng yearMonth ("YYYY-MM")? Dùng history đã fetch, không API mới.
 export function hasContributedInMonth(history: FundTransaction[], yearMonth: string): boolean {
-  return history.some((tx) => tx.direction === "in" && tx.transaction_date.startsWith(yearMonth))
+  return history.some((tx) => tx.direction === "in" && txMonthVN(tx.transaction_date) === yearMonth)
 }
 
 // Tổng đã góp (direction "in") trong tháng yearMonth ("YYYY-MM"). Dùng history đã fetch, không API mới.
 export function sumContributedInMonth(history: FundTransaction[], yearMonth: string): number {
   return history
-    .filter((tx) => tx.direction === "in" && tx.transaction_date.startsWith(yearMonth))
+    .filter((tx) => tx.direction === "in" && txMonthVN(tx.transaction_date) === yearMonth)
     .reduce((sum, tx) => sum + tx.amount, 0)
 }
 

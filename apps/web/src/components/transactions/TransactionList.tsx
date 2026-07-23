@@ -5,6 +5,7 @@ import { format, parseISO } from "date-fns"
 import { vi } from "date-fns/locale"
 import { cn } from "@/lib/utils/cn"
 import { formatVND } from "@growbase/shared/rules/currency"
+import { txDateVN } from "@growbase/shared/rules/date"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import { useCategories } from "@/lib/hooks/useCategories"
 import { useAppStore } from "@/lib/stores/appStore"
@@ -41,7 +42,7 @@ type DateGroup = {
 function groupByDate(txs: TransactionWithJoins[]): DateGroup[] {
   const map = new Map<string, TransactionWithJoins[]>()
   for (const tx of txs) {
-    const d = tx.transaction_date
+    const d = txDateVN(tx.transaction_date)
     const arr = map.get(d) ?? []
     arr.push(tx)
     map.set(d, arr)
@@ -144,7 +145,7 @@ export function TransactionList({ transactions }: TransactionListProps) {
                   onClick={() => setEditTx(tx)}
                 >
                   <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                    {format(parseISO(tx.transaction_date), "dd/MM")}
+                    {format(parseISO(tx.transaction_date), "dd/MM HH:mm")}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
