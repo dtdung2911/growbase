@@ -22,7 +22,7 @@ import {
   type CsvRow,
   type ColumnMapping,
 } from "@/lib/utils/csv"
-import { parseExcel } from "@/lib/utils/excel"
+import { parseExcel, downloadImportTemplate } from "@/lib/utils/excel"
 import { matchCategory } from "@/lib/utils/category-matcher"
 import { Button } from "@/components/ui/button"
 import { PageHeader } from "@/components/shared/PageHeader"
@@ -70,6 +70,16 @@ function detectFileType(name: string): FileType | null {
   if (lower.endsWith(".csv")) return "csv"
   if (EXCEL_EXTENSIONS.some((ext) => lower.endsWith(ext))) return "excel"
   return null
+}
+
+// Hiển thị đúng giờ tường người nhập (không reparse về local), chấp nhận cả
+// "YYYY-MM-DD" lẫn "YYYY-MM-DDTHH:mm:ss+07:00" từ parseDate.
+function formatPreviewDate(value: string | null): string {
+  if (!value) return "—"
+  const [datePart, timePart] = value.split("T")
+  const [y, m, d] = datePart.split("-")
+  const base = `${d}/${m}/${y}`
+  return timePart ? `${base} ${timePart.slice(0, 5)}` : base
 }
 
 export function ImportClient() {
@@ -245,6 +255,12 @@ export function ImportClient() {
     )
   }
 
+  function setRowDescription(index: number, description: string) {
+    setPreviewRows((prev) =>
+      prev.map((r) => (r.index === index ? { ...r, description } : r))
+    )
+  }
+
   async function handleImport() {
     if (!accountId) return
     const payload: ImportRow[] = selectedRows.map((r) => ({
@@ -320,6 +336,7 @@ export function ImportClient() {
             onToggleAll={toggleAll}
             onToggleRow={toggleRow}
             onSetCategory={setRowCategory}
+            onSetDescription={setRowDescription}
           />
         )}
 
@@ -518,6 +535,18 @@ function UploadStep({
         />
       </div>
 
+      <div className="mt-3 flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
+        <Icon icon="lucide:download" className="h-4 w-4" />
+        <span>{t("import.templateHint")}</span>
+        <button
+          type="button"
+          onClick={() => downloadImportTemplate()}
+          className="min-h-[44px] font-medium text-primary hover:underline"
+        >
+          {t("import.downloadTemplate")}
+        </button>
+      </div>
+
       {fileName && rowCount > 0 && (
         <div className="mt-4 flex items-center gap-2 rounded-[13px] border border-success/20 bg-success-soft/40 px-4 py-3">
           <Icon icon="lucide:file-check-2" className="h-5 w-5 text-success" />
@@ -698,6 +727,7 @@ type PreviewStepProps = {
   onToggleAll: () => void
   onToggleRow: (index: number) => void
   onSetCategory: (index: number, categoryId: string) => void
+  onSetDescription: (index: number, description: string) => void
 }
 
 function PreviewStep({
@@ -713,6 +743,7 @@ function PreviewStep({
   onToggleAll,
   onToggleRow,
   onSetCategory,
+  onSetDescription,
 }: PreviewStepProps) {
   const { t } = useTranslation()
 
@@ -802,12 +833,16 @@ function PreviewStep({
                     />
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
-                    {row.date ?? "—"}
+                    {formatPreviewDate(row.date)}
                   </TableCell>
                   <TableCell className="max-w-[280px]">
-                    <span className="block text-sm break-all line-clamp-3">
-                      {row.description || "—"}
-                    </span>
+                    <input
+                      type="text"
+                      className="w-full rounded-md border border-border bg-transparent px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      value={row.description}
+                      onChange={(e) => onSetDescription(row.index, e.target.value)}
+                      placeholder="—"
+                    />
                   </TableCell>
                   <TableCell className="min-w-[180px]">
                     <div className="flex items-center gap-2">
@@ -879,7 +914,7 @@ function PreviewStep({
               <div className="min-w-0 flex-1 space-y-2">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-xs text-muted-foreground">
-                    {row.date ?? "—"}
+                    {formatPreviewDate(row.date)}
                   </span>
                   <span
                     className={cn(
@@ -891,7 +926,13 @@ function PreviewStep({
                     {formatVND(row.amount)}
                   </span>
                 </div>
-                <p className="text-sm whitespace-pre-wrap break-words">{row.description || "—"}</p>
+                <input
+                  type="text"
+                  className="w-full rounded-md border border-border bg-transparent px-2 py-1 text-base focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  value={row.description}
+                  onChange={(e) => onSetDescription(row.index, e.target.value)}
+                  placeholder="—"
+                />
                 {catInfo && (
                   <div className="flex flex-wrap gap-1.5">
                     <Badge variant="outline" className="text-[10px]">{catInfo.groupName}</Badge>

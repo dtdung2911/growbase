@@ -34,7 +34,7 @@ describe("fundContributeSchema", () => {
     const r = fundContributeSchema.safeParse(validContribute)
     expect(r.success).toBe(true)
     if (r.success) {
-      expect(r.data.transaction_date).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+      expect(r.data.transaction_date).toMatch(/^\d{4}-\d{2}-\d{2}(T.*)?$/)
     }
   })
 
@@ -100,7 +100,7 @@ describe("fundWithdrawSchema", () => {
     const r = fundWithdrawSchema.safeParse(validWithdraw)
     expect(r.success).toBe(true)
     if (r.success) {
-      expect(r.data.transaction_date).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+      expect(r.data.transaction_date).toMatch(/^\d{4}-\d{2}-\d{2}(T.*)?$/)
     }
   })
 

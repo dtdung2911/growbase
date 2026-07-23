@@ -47,7 +47,7 @@ describe("createTransactionSchema", () => {
     const r = createTransactionSchema.safeParse(validCreate)
     expect(r.success).toBe(true)
     if (r.success) {
-      expect(r.data.transaction_date).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+      expect(r.data.transaction_date).toMatch(/^\d{4}-\d{2}-\d{2}(T.*)?$/)
     }
   })
 
@@ -173,7 +173,7 @@ describe("createTransferSchema", () => {
     const r = createTransferSchema.safeParse(validTransfer)
     expect(r.success).toBe(true)
     if (r.success) {
-      expect(r.data.transaction_date).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+      expect(r.data.transaction_date).toMatch(/^\d{4}-\d{2}-\d{2}(T.*)?$/)
     }
   })
 

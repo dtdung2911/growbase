@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTransactions } from "@/lib/hooks/useTransactions"
+import { txDateVN } from "@growbase/shared/rules/date"
 
 const REMINDER_HOUR = 18
 const DISMISS_KEY_PREFIX = "tx-reminder-dismissed:"
@@ -37,7 +38,7 @@ export function useTransactionReminder(): {
   }, [storageKey])
 
   const hasTodayTransaction = useMemo(
-    () => (transactions ?? []).some((tx) => tx.transaction_date === today),
+    () => (transactions ?? []).some((tx) => txDateVN(tx.transaction_date) === today),
     [transactions, today]
   )
 

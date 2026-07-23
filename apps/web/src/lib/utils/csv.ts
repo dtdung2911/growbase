@@ -107,42 +107,53 @@ export function autoDetectMapping(headers: string[]): ColumnMapping {
 }
 
 export function parseAmount(value: string): number {
-  const stripped = value.replace(/[^\d.,-]/g, "")
+  const stripped = value.replace(/[^\d.,-]/g, "").replace(/-/g, "")
   if (!stripped) return 0
 
   const lastDot = stripped.lastIndexOf(".")
   const lastComma = stripped.lastIndexOf(",")
+  const lastSep = Math.max(lastDot, lastComma)
 
   let cleaned: string
-  if (lastDot > lastComma) {
-    // dot is decimal: "142,560.00" → remove commas, keep last dot
-    cleaned = stripped.replace(/,/g, "")
-  } else if (lastComma > lastDot) {
-    // comma is decimal: "142.560,00" → remove dots, comma→dot
-    cleaned = stripped.replace(/\./g, "").replace(",", ".")
+  if (lastSep === -1) {
+    cleaned = stripped
   } else {
-    // no separator or only one type
-    cleaned = stripped.replace(/,/g, "")
+    const sep = lastDot > lastComma ? "." : ","
+    const decimals = stripped.length - lastSep - 1
+    const sepCount = stripped.split(sep).length - 1
+    // Dấu cuối là thập phân chỉ khi loại đó xuất hiện đúng 1 lần và theo sau 1-2 chữ số;
+    // "1.000.000"/"1,000,000" (nhiều dấu) = phân tách nghìn → không thập phân.
+    if (sepCount === 1 && decimals >= 1 && decimals <= 2) {
+      cleaned = `${stripped.slice(0, lastSep).replace(/[.,]/g, "")}.${stripped.slice(lastSep + 1)}`
+    } else {
+      cleaned = stripped.replace(/[.,]/g, "")
+    }
   }
 
   const num = parseFloat(cleaned)
   return isNaN(num) ? 0 : Math.abs(num)
 }
 
+// Trả date-only "YYYY-MM-DD" khi ô chỉ có ngày; nếu có giờ (H:i hoặc H:i:s) thì
+// trả ISO đủ giờ với offset VN "+07:00" để giữ đúng giờ tường (wall-clock) người nhập.
 export function parseDate(value: string): string | null {
   const trimmed = value.trim()
+  const time = trimmed.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*$/)
 
-  // DD/MM/YYYY or DD-MM-YYYY (with optional time portion)
+  const build = (y: string, mo: string, d: string) => {
+    const date = `${y}-${mo.padStart(2, "0")}-${d.padStart(2, "0")}`
+    if (!time) return date
+    return `${date}T${time[1].padStart(2, "0")}:${time[2]}:${time[3] ?? "00"}+07:00`
+  }
+
   const dmy = trimmed.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})/)
-  if (dmy) return `${dmy[3]}-${dmy[2].padStart(2, "0")}-${dmy[1].padStart(2, "0")}`
+  if (dmy) return build(dmy[3], dmy[2], dmy[1])
 
-  // YYYY-MM-DD (with optional time portion)
   const ymd = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})/)
-  if (ymd) return `${ymd[1]}-${ymd[2]}-${ymd[3]}`
+  if (ymd) return build(ymd[1], ymd[2], ymd[3])
 
-  // YYYY/MM/DD (with optional time portion)
   const ymd2 = trimmed.match(/^(\d{4})\/(\d{2})\/(\d{2})/)
-  if (ymd2) return `${ymd2[1]}-${ymd2[2]}-${ymd2[3]}`
+  if (ymd2) return build(ymd2[1], ymd2[2], ymd2[3])
 
   return null
 }

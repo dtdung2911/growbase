@@ -9,7 +9,7 @@ export const createTransactionSchema = z.object({
   category_id: z.string().uuid("Danh mục không hợp lệ"),
   account_id: z.string().uuid("Tài khoản không hợp lệ"),
   description: z.string().optional(),
-  transaction_date: z.string().default(() => new Date().toISOString().slice(0, 10)),
+  transaction_date: z.string().default(() => new Date().toISOString()),
   is_unusual_income: z.boolean().default(false),
   debt_entry_id: z.string().uuid().optional().nullable(),
 })
@@ -24,7 +24,7 @@ export const createTransferSchema = z
     to_account_id: z.string().uuid("Tài khoản đích không hợp lệ"),
     amount: z.number().positive("Số tiền phải lớn hơn 0"),
     description: z.string().optional(),
-    transaction_date: z.string().default(() => new Date().toISOString().slice(0, 10)),
+    transaction_date: z.string().default(() => new Date().toISOString()),
     is_credit_card_payment: z.boolean().default(false),
   })
   .refine((d) => d.from_account_id !== d.to_account_id, {

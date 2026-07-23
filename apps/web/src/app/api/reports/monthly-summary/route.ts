@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { withAuth } from "@/lib/supabase/auth-check"
+import { monthRange, txMonthVN } from "@growbase/shared/rules/date"
 
 export type MonthlySummaryRow = {
   month: string
@@ -27,21 +28,15 @@ export async function GET(request: NextRequest) {
     monthList.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`)
   }
 
-  const startDate = `${monthList[monthList.length - 1]}-01`
-  const endMonth = monthList[0]
-  const endDate = new Date(
-    Number(endMonth.split("-")[0]),
-    Number(endMonth.split("-")[1]),
-    0
-  )
-  const endDateStr = endDate.toISOString().split("T")[0]
+  const { fromTs: startTs } = monthRange(monthList[monthList.length - 1])
+  const { toTs: endTs } = monthRange(monthList[0])
 
   const { data: txs, error } = await auth.supabase
     .from("transactions")
     .select("amount, direction, behavior_type, transaction_date, exclude_from_budget_report, transaction_type, fund_id")
     .eq("household_id", hid)
-    .gte("transaction_date", startDate)
-    .lte("transaction_date", endDateStr)
+    .gte("transaction_date", startTs)
+    .lt("transaction_date", endTs)
 
   if (error) {
     return NextResponse.json({ data: null, error: error.message }, { status: 500 })
@@ -62,7 +57,7 @@ export async function GET(request: NextRequest) {
   }
 
   for (const tx of txs ?? []) {
-    const txMonth = (tx.transaction_date as string).slice(0, 7)
+    const txMonth = txMonthVN(tx.transaction_date as string)
     const row = byMonth.get(txMonth)
     if (!row) continue
 

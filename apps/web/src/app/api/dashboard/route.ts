@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { withAuth } from "@/lib/supabase/auth-check"
-import { monthRange, todayVN, yesterdayVN } from "@growbase/shared/rules/date"
+import { monthRange, todayVN, yesterdayVN, txDateVN, txMonthVN } from "@growbase/shared/rules/date"
 import type { BehaviorType, SpendingByBehavior } from "@growbase/shared/types/app"
 
 function prevMonth(month: string) {
@@ -20,9 +20,9 @@ export async function GET(request: NextRequest) {
 
   const hid = auth.householdId
   const { supabase } = auth
-  const { from, to } = monthRange(month)
+  const { fromTs, toTs } = monthRange(month)
   const prev = prevMonth(month)
-  const { from: prevFrom, to: prevTo } = monthRange(prev)
+  const { fromTs: prevFromTs } = monthRange(prev)
 
   // Fetch current + prev month transactions in one query
   const { data: allTxs, error: txErr } = await supabase
@@ -33,15 +33,15 @@ export async function GET(request: NextRequest) {
       category:categories(id, name, icon)
     `)
     .eq("household_id", hid)
-    .gte("transaction_date", prevFrom)
-    .lte("transaction_date", to)
+    .gte("transaction_date", prevFromTs)
+    .lt("transaction_date", toTs)
 
   if (txErr) {
     return NextResponse.json({ data: null, error: txErr.message }, { status: 500 })
   }
 
   const currentTxs = (allTxs ?? []).filter(
-    (tx) => tx.transaction_date >= from && tx.transaction_date <= to
+    (tx) => txMonthVN(tx.transaction_date as string) === month
   )
 
   // Query riêng cho "hôm qua" (theo giờ VN): allTxs chỉ phủ tháng đang xem + tháng trước,
@@ -50,7 +50,8 @@ export async function GET(request: NextRequest) {
     .from("transactions")
     .select("amount, direction, behavior_type")
     .eq("household_id", hid)
-    .eq("transaction_date", yesterdayVN())
+    .gte("transaction_date", `${yesterdayVN()}T00:00:00+07:00`)
+    .lt("transaction_date", `${todayVN()}T00:00:00+07:00`)
     .eq("exclude_from_budget_report", false)
 
   if (yErr) {
@@ -58,7 +59,7 @@ export async function GET(request: NextRequest) {
   }
   const yesterdayTransactions = yesterdayTxs ?? []
   const prevTxs = (allTxs ?? []).filter(
-    (tx) => tx.transaction_date >= prevFrom && tx.transaction_date <= prevTo
+    (tx) => txMonthVN(tx.transaction_date as string) === prev
   )
 
   // Aggregates
@@ -110,7 +111,7 @@ export async function GET(request: NextRequest) {
           categoryMap.set(cat.id, { name: cat.name, icon: cat.icon, amount: amt })
         }
       }
-      const dow = new Date(tx.transaction_date as string).getDay()
+      const dow = new Date(txDateVN(tx.transaction_date as string) + "T00:00:00").getDay()
       weekdayMap.set(dow, (weekdayMap.get(dow) ?? 0) + amt)
     }
   }
@@ -166,8 +167,8 @@ export async function GET(request: NextRequest) {
     .from("transactions")
     .select("transaction_date, amount, transaction_type")
     .eq("household_id", hid)
-    .gte("transaction_date", `${year}-01-01`)
-    .lte("transaction_date", to)
+    .gte("transaction_date", `${year}-01-01T00:00:00+07:00`)
+    .lt("transaction_date", toTs)
 
   // Budget lines
   const { data: budgetData, error: budgetErr } = await supabase.rpc("get_budget_with_actuals", {
@@ -199,8 +200,8 @@ export async function GET(request: NextRequest) {
       account:accounts(id, name)
     `)
     .eq("household_id", hid)
-    .gte("transaction_date", from)
-    .lte("transaction_date", to)
+    .gte("transaction_date", fromTs)
+    .lt("transaction_date", toTs)
     .order("transaction_date", { ascending: false })
     .limit(10)
 
@@ -246,7 +247,9 @@ export async function GET(request: NextRequest) {
     expense: 0,
   }))
   for (const tx of yearTxs ?? []) {
-    const idx = Number((tx.transaction_date as string).slice(5, 7)) - 1
+    const mm = txMonthVN(tx.transaction_date as string)
+    if (!mm.startsWith(year)) continue
+    const idx = Number(mm.slice(5, 7)) - 1
     const bucket = monthlyIncomeExpense[idx]
     if (!bucket) continue
     const amt = tx.amount as number

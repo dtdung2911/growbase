@@ -52,6 +52,7 @@ type CategoryRow = {
     | "wasteful"
     | "debt_repayment"
     | "savings_investment"
+    | "income"
     | "loan"
   is_system: boolean
   is_active: boolean
@@ -95,11 +96,11 @@ type TransactionRow = {
   account_id: string
   fund_id: string | null
   debt_entry_id: string | null
-  behavior_type: "fixed" | "variable" | "wasteful" | "debt_repayment" | "savings_investment" | null
+  behavior_type: "fixed" | "variable" | "wasteful" | "debt_repayment" | "savings_investment" | "income" | "loan" | null
   is_unusual_income: boolean
   exclude_from_budget_report: boolean
   description: string | null
-  transaction_date: string
+  transaction_date: string // timestamptz ISO kể từ migration 027
   import_source: string | null
   created_at: string
   updated_at: string
@@ -159,7 +160,7 @@ type FundTransactionRow = {
   balance_after: number
   linked_transaction_id: string | null
   description: string | null
-  transaction_date: string
+  transaction_date: string // timestamptz ISO kể từ migration 027
   is_automatic: boolean
   created_at: string
 }
